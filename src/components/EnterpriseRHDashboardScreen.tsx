@@ -11,7 +11,8 @@ import {
   Sparkles,
   Dna,
   Target,
-  Gauge
+  Gauge,
+  Activity
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,6 +115,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
   const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
   const [orgScore, setOrgScore] = useState<{ overall: number | null; previous: number | null; confidence: number | null } | null>(null);
+  const [impactSummary, setImpactSummary] = useState<{ count: number; avg: number | null; top: { source_type: string; impact: number } | null }>({ count: 0, avg: null, top: null });
 
   const load = async () => {
     if (!organization?.id) return;
@@ -176,6 +178,20 @@ export default function EnterpriseRHDashboardScreen() {
       });
     } else {
       setOrgScore(null);
+    }
+    const { data: impRows } = await (supabase as any)
+      .from("impact_measurements")
+      .select("source_type, impact_score, measured_at")
+      .eq("organization_id", organization.id)
+      .order("measured_at", { ascending: false })
+      .limit(50);
+    const impList = ((impRows ?? []) as { source_type: string; impact_score: number | null }[]).filter((r) => r.impact_score != null);
+    if (impList.length) {
+      const avg = impList.reduce((s, r) => s + Number(r.impact_score), 0) / impList.length;
+      const top = [...impList].sort((a, b) => Number(b.impact_score) - Number(a.impact_score))[0];
+      setImpactSummary({ count: impList.length, avg, top: { source_type: top.source_type, impact: Number(top.impact_score) } });
+    } else {
+      setImpactSummary({ count: 0, avg: null, top: null });
     }
     setLoading(false);
   };
