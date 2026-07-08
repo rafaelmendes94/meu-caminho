@@ -167,6 +167,7 @@ import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetail
 import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
 import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
 import PlatformAnalyticsScreen from "./pages/PlatformAnalyticsScreen.tsx";
+import PlatformSystemHealthScreen from "./pages/PlatformSystemHealthScreen.tsx";
 import PlatformBillingScreen from "./pages/PlatformBillingScreen.tsx";
 import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
 import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
