@@ -153,6 +153,7 @@ import EnterpriseSetupScreen from "./pages/EnterpriseSetupScreen.tsx";
 import EnterpriseAcceptInvitePage from "./pages/EnterpriseAcceptInvitePage.tsx";
 import OnboardingChatScreen from "./pages/OnboardingChatScreen.tsx";
 import OnboardingConcluidoScreen from "./pages/OnboardingConcluidoScreen.tsx";
+import PulseSettingsScreen from "./pages/PulseSettingsScreen.tsx";
 
 
 
@@ -269,6 +270,7 @@ const App = () => (
           <Route path="/enterprise/aceite-privacidade" element={<EnterprisePrivacyConsentScreen />} />
           <Route path="/onboarding" element={<Auth><OnboardingChatScreen /></Auth>} />
           <Route path="/onboarding/concluido" element={<Auth><OnboardingConcluidoScreen /></Auth>} />
+          <Route path="/enterprise/pulse/configuracoes" element={<Ent><PulseSettingsScreen /></Ent>} />
           <Route path="/enterprise/cadastro" element={<EnterpriseEmployeeRegisterScreen />} />
           <Route path="/enterprise/boas-vindas" element={<EnterpriseWelcomeJourneyScreen />} />
           <Route path="/enterprise" element={<Ent><EnterpriseHomeScreen /></Ent>} />
