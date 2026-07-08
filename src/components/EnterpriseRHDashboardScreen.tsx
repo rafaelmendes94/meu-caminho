@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   Zap,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Dna
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,6 +109,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [loading, setLoading] = useState(false);
   const [recomputing, setRecomputing] = useState(false);
   const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
+  const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -128,6 +130,23 @@ export default function EnterpriseRHDashboardScreen() {
       critical: list.filter((s) => s.severity === "critical").length,
       top: list[0] ?? null,
     });
+    const { data: dnaRow } = await (supabase as any)
+      .from("organizational_dna_reports")
+      .select("overall_score, generated_at, strengths")
+      .eq("organization_id", organization.id)
+      .order("generated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (dnaRow) {
+      const s = Array.isArray((dnaRow as any).strengths) ? (dnaRow as any).strengths : [];
+      setDna({
+        overall: (dnaRow as any).overall_score ?? null,
+        generated_at: (dnaRow as any).generated_at ?? null,
+        strengths: s.slice(0, 3).map((x: unknown) => typeof x === "string" ? x : JSON.stringify(x)),
+      });
+    } else {
+      setDna(null);
+    }
     setLoading(false);
   };
 
@@ -236,6 +255,41 @@ export default function EnterpriseRHDashboardScreen() {
           </button>
           <p className="text-[10px] text-[#999] italic mt-2 px-1">
             A Inteligência Preditiva utiliza apenas dados agregados e anonimizados. Nenhuma pessoa é identificada.
+          </p>
+        </section>
+
+        {/* DNA Organizacional — card discreto */}
+        <section>
+          <button
+            onClick={() => navigate('/enterprise/rh/dna-organizacional')}
+            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
+          >
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
+                <Dna className="h-5 w-5 text-[#F88A2B]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">DNA Organizacional™</div>
+                <div className="text-[15px] font-bold text-[#111] mt-1">
+                  {dna
+                    ? `Score geral ${dna.overall != null ? Math.round(dna.overall) : "•••"}/100`
+                    : "Ainda não gerado — visualize o comportamento coletivo agregado."}
+                </div>
+                {dna?.strengths?.length ? (
+                  <div className="text-[11px] text-[#666] mt-1 truncate">
+                    Forças: {dna.strengths.join(" · ")}
+                  </div>
+                ) : dna?.generated_at ? (
+                  <div className="text-[11px] text-[#666] mt-1">
+                    Última geração: {new Date(dna.generated_at).toLocaleDateString("pt-BR")}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
+          </button>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            O DNA Organizacional™ é elaborado exclusivamente com dados agregados e anonimizados. Nenhuma pessoa é identificada.
           </p>
         </section>
 
