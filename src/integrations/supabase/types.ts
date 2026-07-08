@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          created_at: string
+          evidence: Json
+          id: string
+          message: string
+          organization_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          created_at?: string
+          evidence?: Json
+          id?: string
+          message: string
+          organization_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          created_at?: string
+          evidence?: Json
+          id?: string
+          message?: string
+          organization_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emotional_checkins: {
         Row: {
           created_at: string
@@ -599,6 +655,26 @@ export type Database = {
     }
     Functions: {
       current_organization_id: { Args: never; Returns: string }
+      get_capacity_pulse: {
+        Args: { _days?: number; _organization_id: string }
+        Returns: {
+          avg_value: number
+          dimension: string
+          participants_count: number
+          response_count: number
+        }[]
+      }
+      get_emotional_map: {
+        Args: { _organization_id: string; _weeks?: number }
+        Returns: {
+          avg_energy: number
+          avg_mood: number
+          avg_stress: number
+          equilibrium_index: number
+          participants_count: number
+          week_of: string
+        }[]
+      }
       get_pulse_aggregate: {
         Args: { _days?: number; _organization_id: string }
         Returns: {
@@ -607,6 +683,10 @@ export type Database = {
           participants_count: number
           response_count: number
         }[]
+      }
+      get_rh_dashboard_summary: {
+        Args: { _organization_id: string }
+        Returns: Json
       }
       get_weekly_checkin_aggregate: {
         Args: { _organization_id: string }
