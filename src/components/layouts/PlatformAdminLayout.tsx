@@ -12,6 +12,7 @@ const items = [
   { to: "/admin/system", label: "System Health" },
   { to: "/admin/support", label: "Suporte" },
   { to: "/admin/audit", label: "Auditoria" },
+  { to: "/admin/settings", label: "Configurações" },
 ];
 
 export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
