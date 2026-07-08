@@ -242,6 +242,7 @@ export const EnterpriseRHLayout = ({ children, title }: { children: React.ReactN
             <SidebarItem to="/enterprise/rh/organograma" icon={Network} label="Organograma Vivo" />
             <SidebarItem to="/enterprise/rh/dna-organizacional" icon={Dna} label="DNA Organizacional" />
             <SidebarItem to="/enterprise/rh/conselho-executivo" icon={Sparkle} label="Conselho Executivo IA" />
+            <SidebarItem to="/enterprise/rh/insights-semanais" icon={Sparkles} label="Insights Semanais IA" />
             <SidebarItem to="/enterprise/rh/alertas" icon={AlertTriangle} label="Alertas" />
             <SidebarItem to="/enterprise/rh/privacidade" icon={Lock} label="Privacidade" />
             <SidebarItem to="/enterprise/rh/compliance" icon={ShieldCheck} label="Compliance" />
