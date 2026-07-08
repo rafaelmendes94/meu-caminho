@@ -151,6 +151,8 @@ import EnterpriseRHLoginScreen from "./pages/EnterpriseRHLoginScreen.tsx";
 import EnterpriseRHWelcomeScreen from "./pages/EnterpriseRHWelcomeScreen.tsx";
 import EnterpriseSetupScreen from "./pages/EnterpriseSetupScreen.tsx";
 import EnterpriseAcceptInvitePage from "./pages/EnterpriseAcceptInvitePage.tsx";
+import OnboardingChatScreen from "./pages/OnboardingChatScreen.tsx";
+import OnboardingConcluidoScreen from "./pages/OnboardingConcluidoScreen.tsx";
 
 
 
@@ -165,7 +167,7 @@ const RH = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute requiredRoles={["owner", "rh_admin"]}>{children}</ProtectedRoute>
 );
 const Ent = ({ children }: { children: ReactNode }) => (
-  <ProtectedRoute requiredRoles={["owner", "rh_admin", "leader", "employee"]}>{children}</ProtectedRoute>
+  <ProtectedRoute requiredRoles={["owner", "rh_admin", "leader", "employee"]} requireEmployeeProfile>{children}</ProtectedRoute>
 );
 const Auth = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute>{children}</ProtectedRoute>
@@ -265,6 +267,8 @@ const App = () => (
           <Route path="/enterprise/convite" element={<EnterpriseInviteAcceptanceScreen />} />
           <Route path="/enterprise/setup" element={<Auth><EnterpriseSetupScreen /></Auth>} />
           <Route path="/enterprise/aceite-privacidade" element={<EnterprisePrivacyConsentScreen />} />
+          <Route path="/onboarding" element={<Auth><OnboardingChatScreen /></Auth>} />
+          <Route path="/onboarding/concluido" element={<Auth><OnboardingConcluidoScreen /></Auth>} />
           <Route path="/enterprise/cadastro" element={<EnterpriseEmployeeRegisterScreen />} />
           <Route path="/enterprise/boas-vindas" element={<EnterpriseWelcomeJourneyScreen />} />
           <Route path="/enterprise" element={<Ent><EnterpriseHomeScreen /></Ent>} />
