@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, Send, ShieldCheck, MessageSquarePlus, Loader2, Dna, ChevronRight, Info } from "lucide-react";
+import { Sparkles, Send, ShieldCheck, MessageSquarePlus, Loader2, Dna, ChevronRight, Info, Target } from "lucide-react";
 
 type ExecMessage = {
   id: string;
@@ -61,6 +62,7 @@ const ConfidenceBadge = ({ level }: { level: string }) => {
 
 const EnterpriseExecutiveCouncilScreen = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ExecMessage[]>([]);
@@ -159,6 +161,18 @@ const EnterpriseExecutiveCouncilScreen = () => {
     () => messages.filter((m) => m.role !== "system"),
     [messages],
   );
+
+  const generatePlan = async (messageId: string) => {
+    const { data, error } = await supabase.functions.invoke("generate-action-plan", {
+      body: { source_type: "executive_ai", source_id: messageId },
+    });
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao gerar plano", description: error?.message ?? String((data as any)?.error), variant: "destructive" });
+    } else {
+      toast({ title: "Plano de ação criado" });
+      navigate("/enterprise/rh/plano-acao");
+    }
+  };
 
   return (
     <EnterpriseRHLayout title="Conselho Executivo IA">
@@ -285,6 +299,12 @@ const EnterpriseExecutiveCouncilScreen = () => {
                               ))}
                             </div>
                           )}
+                          <button
+                            onClick={() => generatePlan(m.id)}
+                            className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80"
+                          >
+                            <Target className="w-3 h-3" /> Gerar plano de ação
+                          </button>
                         </>
                       ) : (
                         <p className="text-sm text-[#0B0908] whitespace-pre-wrap">{m.content}</p>
