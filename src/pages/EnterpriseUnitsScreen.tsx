@@ -222,7 +222,7 @@ const EnterpriseUnitsScreen = () => {
                         Acessar
                       </button>
                       <button className="py-2.5 px-4 bg-[#F7F4F2] text-[#0B0908] text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-white border border-black/5 transition-colors">
-                        {unit.id === 4 ? 'Configurar' : 'Insights'}
+                        Insights
                       </button>
                     </div>
                   </div>
