@@ -438,3 +438,13 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
 );
 
 export default EnterpriseEmployeeAdminScreen;
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <span className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">{label}</span>
+      <div>{children}</div>
+      <style>{`.admin-input{width:100%;padding:0.75rem 1rem;border-radius:1rem;border:1px solid rgba(0,0,0,0.05);background:#fff;font-size:0.875rem}`}</style>
+    </div>
+  );
+}
