@@ -67,6 +67,8 @@ export default function EnterpriseTeamManagementScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { organization } = useAuth();
   const [stats, setStats] = useState<{ invited: number; active: number; pending: number } | null>(null);
+  const [members, setMembers] = useState<Array<{ id: string; full_name: string | null; job_title: string | null; department_name: string | null; unit_name: string | null; status: string | null }>>([]);
+  const [pending, setPending] = useState<Array<{ id: string; email: string; department: string | null; full_name: string | null }>>([]);
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -81,6 +83,28 @@ export default function EnterpriseTeamManagementScreen() {
         active: profilesRes.count ?? 0,
         pending: pendingRes.count ?? 0,
       });
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, job_title, status, departments(name), units(name)")
+        .eq("organization_id", organization.id)
+        .order("full_name");
+      // deno-lint-ignore no-explicit-any
+      setMembers((profs as any[] ?? []).map((p) => ({
+        id: p.id,
+        full_name: p.full_name,
+        job_title: p.job_title,
+        status: p.status,
+        department_name: p.departments?.name ?? null,
+        unit_name: p.units?.name ?? null,
+      })));
+      const { data: pendList } = await supabase
+        .from("enterprise_invites")
+        .select("id, email, department, full_name")
+        .eq("organization_id", organization.id)
+        .is("accepted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      setPending((pendList as unknown as typeof pending) ?? []);
     })();
   }, [organization?.id]);
 
@@ -115,13 +139,30 @@ export default function EnterpriseTeamManagementScreen() {
           {/* Ativação por área */}
           <section className="space-y-6">
             <h3 className="text-[20px] font-extrabold text-[#111] px-1 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              Ativação por área
+              Colaboradores
             </h3>
-            <div className="grid grid-cols-1 gap-4">
-              <AreaCard area="Comercial" activePercentage={92} />
-              <AreaCard area="Operações" activePercentage={78} />
-              <AreaCard area="Produto" activePercentage={84} />
-              <AreaCard area="Atendimento" activePercentage={71} />
+            <div className="rounded-[32px] bg-white p-6 border border-black/5 shadow-sm max-h-[420px] overflow-y-auto">
+              {members.length === 0 ? (
+                <p className="text-[13px] text-[#666] py-6 text-center">Nenhum colaborador ainda.</p>
+              ) : (
+                <ul className="divide-y divide-black/5">
+                  {members.map((m) => (
+                    <li
+                      key={m.id}
+                      className="py-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-black/[0.02] px-2 rounded-xl"
+                      onClick={() => navigate(`/enterprise/rh/equipe/${m.id}`)}
+                    >
+                      <div>
+                        <p className="text-[14px] font-bold text-[#111]">{m.full_name ?? "Sem nome"}</p>
+                        <p className="text-[11px] text-[#666]">
+                          {[m.job_title, m.department_name, m.unit_name].filter(Boolean).join(" · ") || "—"}
+                        </p>
+                      </div>
+                      <span className="text-[10px] uppercase tracking-widest text-black/40">{m.status ?? "active"}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </section>
 
@@ -132,14 +173,23 @@ export default function EnterpriseTeamManagementScreen() {
             </h3>
             <div className="rounded-[32px] p-8 bg-white border border-black/5 shadow-sm h-full">
               <div className="flex flex-col">
-                <PendingInviteItem name="Ana C." area="Operações" />
-                <PendingInviteItem name="Bruno M." area="Atendimento" />
-                <PendingInviteItem name="Carla R." area="Produto" />
-                <PendingInviteItem name="Daniel S." area="RH / Gente" />
-                <PendingInviteItem name="Eduardo F." area="Comercial" />
+                {pending.length === 0 ? (
+                  <p className="text-[13px] text-[#666] py-6 text-center">Nenhum convite pendente.</p>
+                ) : (
+                  pending.map((p) => (
+                    <PendingInviteItem
+                      key={p.id}
+                      name={p.full_name ?? p.email}
+                      area={p.department ?? "—"}
+                    />
+                  ))
+                )}
               </div>
-              <button className="w-full mt-6 py-4 text-[#F88A2B] font-bold text-sm uppercase tracking-widest font-montserrat hover:bg-[#F88A2B]/5 rounded-2xl transition-all">
-                Ver todos os pendentes
+              <button
+                onClick={() => navigate('/enterprise/rh/equipe/convidar')}
+                className="w-full mt-6 py-4 text-[#F88A2B] font-bold text-sm uppercase tracking-widest font-montserrat hover:bg-[#F88A2B]/5 rounded-2xl transition-all"
+              >
+                Convidar mais colaboradores
               </button>
             </div>
           </section>
