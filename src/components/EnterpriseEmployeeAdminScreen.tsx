@@ -1,0 +1,333 @@
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { 
+  ArrowLeft, 
+  ShieldCheck, 
+  Building2, 
+  Briefcase, 
+  Mail, 
+  Calendar, 
+  UserCircle2, 
+  Settings, 
+  History, 
+  Lock, 
+  EyeOff, 
+  MessageSquareOff,
+  RefreshCw,
+  LogOut,
+  ChevronRight,
+  ShieldAlert,
+  Edit2
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
+
+const EnterpriseEmployeeAdminScreen = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  // Mock data for the employee
+  const employee = {
+    name: "Ana Costa",
+    email: "ana.costa@empresa.com",
+    department: "Operações",
+    role: "Coordenação",
+    manager: "Sérgio Mendes",
+    activationDate: "12/03/2026",
+    status: "Ativo",
+    licenseStatus: "Premium Enterprise"
+  };
+
+  const adminActions = [
+    { title: "Reenviar convite", icon: Mail },
+    { title: "Resetar acesso", icon: RefreshCw },
+    { title: "Alterar departamento", icon: Building2 },
+    { title: "Liberar licença", icon: Lock },
+    { title: "Desativar conta", icon: LogOut }
+  ];
+
+  return (
+    <EnterpriseRHLayout title="Administração de colaboradores">
+      <div className="space-y-12 animate-fade-in py-2">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 rounded-full bg-white border border-[#E5E0DA] flex items-center justify-center hover:bg-[#F88A2B]/5 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">Perfil administrativo</h1>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1 h-1 bg-[#F88A2B] rounded-full" />
+              <span className="text-[10px] font-bold text-[#F88A2B] uppercase tracking-wider">Gestão Enterprise</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Hero Section */}
+        <section>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative bg-gradient-to-br from-[#F7F4F2] to-[#EFEAE5] border border-[#E5E0DA] text-[#111] rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl"
+          >
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#F88A2B]/10 blur-[100px] rounded-full -mr-20 -mt-20 animate-pulse" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-[2rem] bg-black/5 border border-black/10 flex items-center justify-center overflow-hidden">
+                  <UserCircle2 className="w-16 h-16 text-[#BBB]" />
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-[#0B0908] flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                </div>
+              </div>
+
+              <div className="text-center md:text-left space-y-4 flex-1">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <h2 className="text-3xl font-playfair text-[#111]">{employee.name}</h2>
+                    <span className="bg-[#F88A2B]/20 text-[#F88A2B] text-[10px] font-bold px-3 py-1 rounded-full border border-[#F88A2B]/30 uppercase tracking-widest">
+                      {employee.status}
+                    </span>
+                  </div>
+                  <p className="text-orange-50/60 font-medium">{employee.role} • {employee.department}</p>
+                </div>
+
+                <div className="inline-flex items-center gap-2 bg-black/[0.03] backdrop-blur-md px-4 py-1.5 rounded-full border border-black/5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#F88A2B]" />
+                  <span className="text-[11px] font-bold text-orange-50 tracking-[0.15em] uppercase">Privacidade preservada</span>
+                </div>
+                
+                <p className="text-orange-50/40 text-sm leading-relaxed max-w-lg">
+                  O Enterprise separa administração organizacional de qualquer informação emocional individual.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* Informações organizacionais */}
+        <section className="space-y-6">
+          <div className="bg-white border border-[#E5E0DA] rounded-[2.5rem] p-8 shadow-sm space-y-8">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-xl font-playfair font-semibold">Dados organizacionais</h3>
+              <button className="flex items-center gap-2 text-xs font-bold text-[#F88A2B] hover:text-[#0B0908] transition-colors group">
+                <Edit2 className="w-3.5 h-3.5" />
+                <span>Editar dados</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[
+                { label: "Nome completo", value: employee.name, icon: UserCircle2 },
+                { label: "E-mail corporativo", value: employee.email, icon: Mail },
+                { label: "Departamento", value: employee.department, icon: Building2 },
+                { label: "Cargo", value: employee.role, icon: Briefcase },
+                { label: "Gestor responsável", value: employee.manager, icon: UserCircle2 },
+                { label: "Data de ativação", value: employee.activationDate, icon: Calendar },
+                { label: "Status da licença", value: employee.licenseStatus, icon: ShieldCheck }
+              ].map((info, i) => (
+                <div key={i} className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#F7F4F2] flex items-center justify-center text-[#0B0908]/20">
+                    <info.icon className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/30">{info.label}</span>
+                    <p className="text-sm font-semibold text-[#0B0908]">{info.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Status da conta */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Conta", value: "Ativa" },
+            { label: "Convite", value: "Aceito" },
+            { label: "Acesso", value: "Realizado" },
+            { label: "Check-in", value: "Ativo" }
+          ].map((status, i) => (
+            <div key={i} className="bg-white border border-[#E5E0DA] p-5 rounded-3xl flex flex-col gap-2 shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/30">{status.label}</span>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+                <span className="text-sm font-bold">{status.value}</span>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Permissões organizacionais */}
+        <section className="space-y-4">
+          <div className="bg-white/40 backdrop-blur-sm border border-white rounded-[2.5rem] p-8 shadow-sm space-y-6">
+            <h3 className="text-xl font-playfair font-semibold">Nível de acesso</h3>
+            <div className="space-y-3">
+              {[
+                { label: "Colaborador padrão", active: true },
+                { label: "Acesso ao app", active: true },
+                { label: "Acesso ao Cury Digital", active: true },
+                { label: "Notificações habilitadas", active: true },
+                { label: "Visão limitada por área", active: false }
+              ].map((perm, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-white border border-[#E5E0DA]/50 rounded-2xl">
+                  <span className="text-sm font-medium text-[#0B0908]/80">{perm.label}</span>
+                  <div className={`w-10 h-5 rounded-full p-1 transition-colors ${perm.active ? 'bg-[#F88A2B]' : 'bg-[#E5E0DA]'}`}>
+                    <div className={`w-3 h-3 bg-white rounded-full transition-transform ${perm.active ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Histórico administrativo */}
+        <section className="space-y-6">
+          <h3 className="text-xl font-playfair font-semibold px-2">Histórico administrativo</h3>
+          <div className="relative space-y-8 px-4">
+            <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-[#E5E0DA]" />
+            {[
+              { text: "Licença ativada", date: "12/03/2026", icon: ShieldCheck },
+              { text: "Conta criada e acesso realizado", date: "12/03/2026", icon: UserCircle2 },
+              { text: "Convite aceito pelo colaborador", date: "11/03/2026", icon: CheckCircle2 },
+              { text: "Convite enviado para o RH", date: "10/03/2026", icon: Mail }
+            ].map((item, idx) => (
+              <div key={idx} className="relative flex items-center gap-6">
+                <div className="w-5 h-5 rounded-full bg-white border-2 border-[#E5E0DA] flex items-center justify-center relative z-10 shadow-sm">
+                  <div className="w-1.5 h-1.5 bg-[#F88A2B] rounded-full" />
+                </div>
+                <div className="flex-1 flex justify-between items-center bg-black/[0.03]0 p-4 rounded-2xl border border-white/50 shadow-sm">
+                  <span className="text-sm font-semibold">{item.text}</span>
+                  <span className="text-[10px] font-bold text-[#0B0908]/30">{item.date}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Ações administrativas */}
+        <section className="space-y-6">
+          <h3 className="text-xl font-playfair font-semibold px-2">Ações de gestão</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {adminActions.map((action, i) => (
+              <button 
+                key={i}
+                className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all group shadow-sm"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#0B0908]/40 group-hover:text-[#F88A2B] transition-colors">
+                  <action.icon className="w-6 h-6" />
+                </div>
+                <span className="text-sm font-bold text-[#0B0908]/60 group-hover:text-[#0B0908]">{action.title}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Proteção emocional */}
+        <section>
+          <div className="bg-gradient-to-br from-[#F7F4F2] to-[#EFEAE5] border border-[#E5E0DA] text-[#111] rounded-[2.5rem] p-8 md:p-12 text-[#111] space-y-10 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F88A2B]/10 blur-[80px] rounded-full -mr-10 -mt-10" />
+            
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 bg-black/5 px-3 py-1 rounded-full border border-black/5">
+                  <EyeOff className="w-3.5 h-3.5 text-[#F88A2B]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Anonimização ativa</span>
+                </div>
+                <h2 className="text-2xl font-playfair leading-tight">O RH não possui acesso <br/> <span className="text-[#F88A2B]">emocional individual.</span></h2>
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-black/[0.03] border border-black/5 flex items-center justify-center shrink-0">
+                <Lock className="w-8 h-8 text-[#F88A2B]" />
+              </div>
+            </div>
+
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { icon: ShieldAlert, text: "Sem respostas do check-in" },
+                { icon: MessageSquareOff, text: "Sem conversas IA" },
+                { icon: Settings, text: "Sem score emocional" },
+                { icon: History, text: "Sem histórico emocional" },
+                { icon: Briefcase, text: "Sem relatórios pessoais" }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 bg-black/[0.03] p-4 rounded-2xl border border-white/5">
+                  <item.icon className="w-5 h-5 text-[#F88A2B]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#444]">{item.text}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Fluxo elegante */}
+            <div className="relative z-10 pt-8 mt-8 border-t border-black/5">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-4">
+                {[
+                  { text: "Colaborador utiliza app privadamente", step: 1 },
+                  { text: "IA identifica tendências coletivas", step: 2 },
+                  { text: "Empresa recebe sinais agregados", step: 3 }
+                ].map((step, i) => (
+                  <React.Fragment key={i}>
+                    <div className="flex flex-col items-center gap-3 text-center flex-1">
+                      <div className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center text-[#F88A2B] font-bold text-sm">
+                        {step.step}
+                      </div>
+                      <p className="text-[11px] font-medium text-[#777] max-w-[150px]">{step.text}</p>
+                    </div>
+                    {i < 2 && (
+                      <ChevronRight className="w-5 h-5 text-[#CCC] hidden md:block" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Actions */}
+        <section className="space-y-4 pt-4 pb-8">
+          <button 
+            onClick={() => navigate("/enterprise/rh/equipe")}
+            className="w-full bg-[#F88A2B] text-[#111] py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-orange-200 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+          >
+            <span className="font-bold text-lg tracking-tight">Voltar para equipe</span>
+          </button>
+
+          <button 
+            onClick={() => navigate("/enterprise/rh/permissoes")}
+            className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[#0B0908]/40 hover:text-[#0B0908] transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="font-semibold text-sm">Gerenciar permissões</span>
+          </button>
+          
+          <div className="pt-8 text-center">
+            <p className="text-[10px] text-[#0B0908]/30 uppercase tracking-[0.2em] font-bold leading-relaxed max-w-sm mx-auto">
+              O perfil administrativo existe apenas para organização operacional e acesso ao Enterprise.
+            </p>
+          </div>
+        </section>
+      </div>
+    </EnterpriseRHLayout>
+  );
+};
+
+const CheckCircle2 = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
+
+export default EnterpriseEmployeeAdminScreen;
