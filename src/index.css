@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 15% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+
+    --primary: 22 95% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 30% 96%;
+    --secondary-foreground: 220 15% 20%;
+
+    --muted: 30 20% 94%;
+    --muted-foreground: 220 8% 45%;
+
+    --accent: 22 95% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 22 95% 55%;
+
+    --radius: 1rem;
+
+    /* App-specific tokens */
+    --app-bg-start: 33 60% 96%;
+    --app-bg-end: 28 50% 93%;
+    --orange-soft: 22 90% 75%;
+    --signature: 220 18% 22%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-foreground text-foreground;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    background: #1a1a1a;
+  }
+
+  /* Hide scrollbars globally (mobile-first) — keep scroll behavior */
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Montserrat', sans-serif;
+  }
+  .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+  .app-frame-bg {
+    background:
+      radial-gradient(120% 60% at 50% 0%, hsl(var(--app-bg-start)) 0%, hsl(var(--app-bg-end)) 60%, hsl(var(--background)) 100%);
+  }
+  .photo-fade-mask {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============ Dark theme overrides ============ */
+.dark { color-scheme: dark; }
+.dark body { background: #0B0908; }
+
+.dark .bg-\[\#F7F4F2\] { background-color: #15110E !important; }
+.dark .bg-\[\#FBF8F5\]\/95 { background-color: rgba(20,16,14,0.95) !important; }
+.dark .bg-gradient-to-br.from-\[\#FFF1E6\] { background: linear-gradient(135deg, rgba(248,138,43,0.18), rgba(248,138,43,0.05)) !important; }
+
+.dark .bg-white,
+.dark .bg-white\/70,
+.dark .bg-white\/75,
+.dark .bg-white\/80,
+.dark .bg-white\/95 { background-color: rgba(255,255,255,0.05) !important; }
+
+.dark .border-white,
+.dark .border-white\/60,
+.dark .border-white\/70,
+.dark .border-white\/80 { border-color: rgba(255,255,255,0.08) !important; }
+
+.dark .divide-\[\#F0EAE3\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.06) !important; }
+
+.dark .text-\[\#111\] { color: #F2EDE6 !important; }
+.dark .text-\[\#222\] { color: #EDE7DF !important; }
+.dark .text-\[\#444\] { color: #CFC8C0 !important; }
+.dark .text-\[\#666\] { color: #A39A91 !important; }
+.dark .text-\[\#8A8A8A\] { color: #8A8278 !important; }
+.dark .text-\[\#999\] { color: #7A7268 !important; }
+.dark .placeholder\:text-\[\#999\]::placeholder { color: #6E665C !important; }
+
+.dark .ring-black\/5 { --tw-ring-color: rgba(255,255,255,0.06) !important; }
+
+/* Desktop: app occupies full width, layouts handle constraints */
+@media (min-width: 768px) {
+  html, body { 
+    background: #FFFFFF;
+  }
+  #root {
+    max-width: none;
+    margin: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+}
+
+/* Global minimum top padding on phone wrappers (above safe-area) */
+main > div:not([data-fullbleed]) {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 24px) !important;
+}
