@@ -9,7 +9,8 @@ import {
   Zap,
   RefreshCw,
   Sparkles,
-  Dna
+  Dna,
+  Target
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -315,6 +316,31 @@ export default function EnterpriseRHDashboardScreen() {
           </button>
           <p className="text-[10px] text-[#999] italic mt-2 px-1">
             O Conselho Executivo IA responde exclusivamente com indicadores agregados e anonimizados. Nenhuma resposta utiliza dados individuais.
+          </p>
+        </section>
+
+        {/* Planos de Ação Inteligentes — card */}
+        <section>
+          <button
+            onClick={() => navigate('/enterprise/rh/plano-acao')}
+            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
+          >
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
+                <Target className="h-5 w-5 text-[#F88A2B]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Planos de Ação Inteligentes</div>
+                <div className="text-[15px] font-bold text-[#111] mt-1">Abrir planos de ação</div>
+                <div className="text-[11px] text-[#666] mt-1">
+                  Transforme DNA, sinais preditivos e alertas em execução real.
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
+          </button>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            Planos de ação são gerados a partir de dados agregados. Nenhum dado individual é utilizado.
           </p>
         </section>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Dna, Sparkles, RefreshCw, ShieldCheck, TrendingUp, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Dna, Sparkles, RefreshCw, ShieldCheck, TrendingUp, AlertCircle, Target } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,9 +55,11 @@ const ScoreCard = ({ label, value }: { label: string; value: number | null }) =>
 export default function EnterpriseOrganizationalDNAScreen() {
   const { organization } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [report, setReport] = useState<DNAReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [planning, setPlanning] = useState(false);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -88,6 +91,21 @@ export default function EnterpriseOrganizationalDNAScreen() {
     setGenerating(false);
   };
 
+  const generatePlan = async () => {
+    if (!report?.id) return;
+    setPlanning(true);
+    const { data, error } = await supabase.functions.invoke("generate-action-plan", {
+      body: { source_type: "dna", source_id: report.id },
+    });
+    setPlanning(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao gerar plano", description: error?.message ?? String((data as any)?.error), variant: "destructive" });
+    } else {
+      toast({ title: "Plano de ação criado" });
+      navigate("/enterprise/rh/plano-acao");
+    }
+  };
+
   const strengths = toList(report?.strengths);
   const opportunities = toList(report?.opportunities);
   const recommendations = toList(report?.recommendations);
@@ -116,6 +134,16 @@ export default function EnterpriseOrganizationalDNAScreen() {
               <EnterpriseRHButton onClick={generate} icon={generating ? RefreshCw : Sparkles} fullWidth={false}>
                 {generating ? "Gerando…" : report ? "Gerar novo DNA" : "Gerar DNA agora"}
               </EnterpriseRHButton>
+              {report && (
+                <button
+                  onClick={generatePlan}
+                  disabled={planning}
+                  className="mt-2 w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-[#F88A2B]/30 bg-white text-[#F88A2B] px-4 py-2 text-[12px] font-bold hover:bg-[#F88A2B]/5 disabled:opacity-40"
+                >
+                  {planning ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Target className="w-3.5 h-3.5" />}
+                  {planning ? "Gerando plano…" : "Gerar plano de ação"}
+                </button>
+              )}
               {report?.generated_at && (
                 <p className="text-[11px] text-[#999] mt-3 text-center">
                   Última geração: {new Date(report.generated_at).toLocaleString("pt-BR")}
