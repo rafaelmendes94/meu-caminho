@@ -22,6 +22,8 @@ export interface Organization {
   slug: string;
   logo_url: string | null;
   subscription_status: string | null;
+  licenses_total?: number | null;
+  licenses_used?: number | null;
 }
 
 interface AuthContextValue {
@@ -53,7 +55,7 @@ async function loadUserData(userId: string) {
   if (profile?.organization_id) {
     const { data: org } = await supabase
       .from("organizations")
-      .select("id, name, slug, logo_url, subscription_status")
+        .select("id, name, slug, logo_url, subscription_status, licenses_total, licenses_used")
       .eq("id", profile.organization_id)
       .maybeSingle();
     organization = (org as Organization) ?? null;

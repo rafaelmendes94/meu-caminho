@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowLeft, 
   Users, 
@@ -23,6 +25,22 @@ import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 const EnterpriseLicensesScreen = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { organization } = useAuth();
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    supabase
+      .from("enterprise_invites")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organization.id)
+      .is("accepted_at", null)
+      .then(({ count }) => setPendingCount(count ?? 0));
+  }, [organization?.id]);
+
+  const total = organization?.licenses_total ?? 0;
+  const used = organization?.licenses_used ?? 0;
+  const available = Math.max(total - used, 0);
 
   const handleCopyLink = () => {
     toast({
@@ -107,10 +125,10 @@ const EnterpriseLicensesScreen = () => {
         {/* KPIs */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Licenças contratadas", value: "250", icon: Users },
-            { label: "Colaboradores ativos", value: "198", icon: CheckCircle2 },
-            { label: "Convites pendentes", value: "21", icon: Send },
-            { label: "Licenças disponíveis", value: "31", icon: UserPlus }
+            { label: "Licenças contratadas", value: String(total), icon: Users },
+            { label: "Colaboradores ativos", value: String(used), icon: CheckCircle2 },
+            { label: "Convites pendentes", value: pendingCount === null ? "—" : String(pendingCount), icon: Send },
+            { label: "Licenças disponíveis", value: String(available), icon: UserPlus }
           ].map((kpi, i) => (
             <motion.div 
               key={kpi.label}

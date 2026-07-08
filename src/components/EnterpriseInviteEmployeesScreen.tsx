@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowLeft, 
   ChevronRight, 
@@ -36,9 +37,23 @@ import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 const EnterpriseInviteEmployeesScreen = () => {
   const navigate = useNavigate();
   const [tone, setTone] = useState("Acolhedor");
+  const [form, setForm] = useState({ full_name: "", email: "", department: "", job_title: "" });
+  const [sending, setSending] = useState(false);
+  const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
 
-  const handleSendInvites = () => {
-    toast.success("Convites enviados com sucesso.");
+  const handleSendInvites = async () => {
+    if (!form.email.trim()) return toast.error("Informe o e-mail do colaborador");
+    setSending(true);
+    const { data, error } = await supabase.functions.invoke("send-enterprise-invite", {
+      body: { ...form, role: "employee" },
+    });
+    setSending(false);
+    const errMsg = (data as { error?: string } | null)?.error ?? error?.message;
+    if (errMsg) return toast.error(errMsg);
+    const link = (data as { invite_link?: string } | null)?.invite_link ?? null;
+    setLastInviteLink(link);
+    toast.success(link ? "Convite criado. Link de teste disponível abaixo." : "Convite enviado com sucesso.");
+    setForm({ full_name: "", email: "", department: "", job_title: "" });
   };
 
   const departments = [
@@ -110,6 +125,8 @@ const EnterpriseInviteEmployeesScreen = () => {
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Nome completo</label>
                 <Input 
                   placeholder="Ex: Maria Silva" 
+                  value={form.full_name}
+                  onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                   className="rounded-2xl border-black/5 bg-white h-14 focus-visible:ring-[#F88A2B]"
                 />
               </div>
@@ -117,12 +134,15 @@ const EnterpriseInviteEmployeesScreen = () => {
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">E-mail corporativo</label>
                 <Input 
                   placeholder="maria@empresa.com.br" 
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   className="rounded-2xl border-black/5 bg-white h-14 focus-visible:ring-[#F88A2B]"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Departamento</label>
-                <Select>
+                <Select value={form.department} onValueChange={(v) => setForm((f) => ({ ...f, department: v }))}>
                   <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -137,15 +157,23 @@ const EnterpriseInviteEmployeesScreen = () => {
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Cargo (opcional)</label>
                 <Input 
                   placeholder="Ex: Gestor de Operações" 
+                  value={form.job_title}
+                  onChange={(e) => setForm((f) => ({ ...f, job_title: e.target.value }))}
                   className="rounded-2xl border-black/5 bg-white h-14 focus-visible:ring-[#F88A2B]"
                 />
               </div>
             </div>
             
             <div className="pt-2">
-              <Button className="w-full md:w-auto px-10 h-14 bg-gradient-to-br from-[#F7F4F2] to-[#EFEAE5] border border-[#E5E0DA] text-[#111] hover:bg-[#1a1715] text-[#111] rounded-2xl transition-all shadow-lg hover:shadow-xl font-bold tracking-wide">
-                Adicionar à lista
+              <Button onClick={handleSendInvites} disabled={sending} className="w-full md:w-auto px-10 h-14 bg-gradient-to-br from-[#F7F4F2] to-[#EFEAE5] border border-[#E5E0DA] text-[#111] hover:bg-[#1a1715] text-[#111] rounded-2xl transition-all shadow-lg hover:shadow-xl font-bold tracking-wide">
+                {sending ? "Enviando..." : "Enviar convite"}
               </Button>
+              {lastInviteLink && (
+                <div className="mt-4 p-4 bg-[#F7F4F2] rounded-2xl border border-[#E5E0DA] break-all">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/50 mb-1">Link de teste</p>
+                  <a href={lastInviteLink} className="text-sm text-[#F88A2B] underline" target="_blank" rel="noreferrer">{lastInviteLink}</a>
+                </div>
+              )}
             </div>
           </div>
         </section>
