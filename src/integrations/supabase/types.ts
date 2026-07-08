@@ -946,62 +946,77 @@ export type Database = {
       }
       organizations: {
         Row: {
+          archived_at: string | null
           cnpj: string | null
           created_at: string | null
           current_period_end: string | null
+          deleted_at: string | null
           domain: string | null
           id: string
+          internal_notes: string | null
           licenses_total: number | null
           licenses_used: number | null
           logo_url: string | null
           mrr_cents: number | null
           name: string
+          plan: string | null
           slug: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_status:
             | Database["public"]["Enums"]["subscription_status"]
             | null
+          suspended_at: string | null
           trial_ends_at: string | null
           updated_at: string | null
         }
         Insert: {
+          archived_at?: string | null
           cnpj?: string | null
           created_at?: string | null
           current_period_end?: string | null
+          deleted_at?: string | null
           domain?: string | null
           id?: string
+          internal_notes?: string | null
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
           mrr_cents?: number | null
           name: string
+          plan?: string | null
           slug: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
             | null
+          suspended_at?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
         Update: {
+          archived_at?: string | null
           cnpj?: string | null
           created_at?: string | null
           current_period_end?: string | null
+          deleted_at?: string | null
           domain?: string | null
           id?: string
+          internal_notes?: string | null
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
           mrr_cents?: number | null
           name?: string
+          plan?: string | null
           slug?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
             | null
+          suspended_at?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -1736,21 +1751,37 @@ export type Database = {
         Returns: Json
       }
       get_platform_dashboard_summary: { Args: never; Returns: Json }
+      get_platform_organization_details: {
+        Args: { _id: string }
+        Returns: Json
+      }
       get_platform_organizations: {
-        Args: never
+        Args: {
+          _include_archived?: boolean
+          _limit?: number
+          _offset?: number
+          _search?: string
+          _sort?: string
+          _status?: string
+        }
         Returns: {
           active_users_30d: number
           ai_messages_30d: number
+          archived_at: string
           created_at: string
           health_status: string
           id: string
+          last_activity_at: string
           last_dna_generated_at: string
           last_score: number
           licenses_total: number
           licenses_used: number
           name: string
+          plan: string
           slug: string
           subscription_status: string
+          suspended_at: string
+          total_count: number
         }[]
       }
       get_platform_overview: { Args: never; Returns: Json }
@@ -1836,6 +1867,7 @@ export type Database = {
         | "past_due"
         | "canceled"
         | "grace_period"
+        | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1977,6 +2009,7 @@ export const Constants = {
         "past_due",
         "canceled",
         "grace_period",
+        "suspended",
       ],
     },
   },
