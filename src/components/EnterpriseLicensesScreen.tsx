@@ -125,10 +125,10 @@ const EnterpriseLicensesScreen = () => {
         {/* KPIs */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Licenças contratadas", value: "250", icon: Users },
-            { label: "Colaboradores ativos", value: "198", icon: CheckCircle2 },
-            { label: "Convites pendentes", value: "21", icon: Send },
-            { label: "Licenças disponíveis", value: "31", icon: UserPlus }
+            { label: "Licenças contratadas", value: String(total), icon: Users },
+            { label: "Colaboradores ativos", value: String(used), icon: CheckCircle2 },
+            { label: "Convites pendentes", value: pendingCount === null ? "—" : String(pendingCount), icon: Send },
+            { label: "Licenças disponíveis", value: String(available), icon: UserPlus }
           ].map((kpi, i) => (
             <motion.div 
               key={kpi.label}
