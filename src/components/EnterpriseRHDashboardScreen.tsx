@@ -111,6 +111,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [recomputing, setRecomputing] = useState(false);
   const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
   const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
+  const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
 
   const load = async () => {
     if (!organization?.id) return;
@@ -148,6 +149,16 @@ export default function EnterpriseRHDashboardScreen() {
     } else {
       setDna(null);
     }
+    const { data: wi } = await (supabase as any)
+      .from("weekly_ai_insights")
+      .select("title, severity, week_of, generated_at")
+      .eq("organization_id", organization.id)
+      .order("generated_at", { ascending: false })
+      .limit(10);
+    const wiList = (wi as { title: string; severity: string | null; week_of: string }[]) ?? [];
+    const currentWeek = wiList[0]?.week_of;
+    const weekItems = currentWeek ? wiList.filter((w) => w.week_of === currentWeek) : [];
+    setWeeklyInsights({ count: weekItems.length, top: weekItems[0] ?? null });
     setLoading(false);
   };
 
@@ -341,6 +352,38 @@ export default function EnterpriseRHDashboardScreen() {
           </button>
           <p className="text-[10px] text-[#999] italic mt-2 px-1">
             Planos de ação são gerados a partir de dados agregados. Nenhum dado individual é utilizado.
+          </p>
+        </section>
+
+        {/* Insights Semanais IA — card */}
+        <section>
+          <button
+            onClick={() => navigate('/enterprise/rh/insights-semanais')}
+            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
+          >
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Insights desta semana</div>
+                <div className="text-[15px] font-bold text-[#111] mt-1 truncate">
+                  {weeklyInsights.count > 0
+                    ? `${weeklyInsights.count} insight${weeklyInsights.count > 1 ? "s" : ""} disponíveis`
+                    : "Nenhum insight desta semana"}
+                </div>
+                <div className="text-[11px] text-[#666] mt-1 truncate">
+                  {weeklyInsights.top?.title ?? "Gere o briefing executivo semanal com IA."}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-bold text-[#F88A2B] uppercase tracking-widest hidden sm:inline">Visualizar</span>
+              <ArrowRight className="h-5 w-5 text-[#666]" />
+            </div>
+          </button>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            Insights Semanais utilizam exclusivamente dados organizacionais agregados e anonimizados.
           </p>
         </section>
 
