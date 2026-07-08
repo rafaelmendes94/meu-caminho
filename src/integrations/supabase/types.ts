@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      enterprise_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          department: string | null
+          email: string
+          expires_at: string
+          full_name: string | null
+          id: string
+          invited_by: string | null
+          job_title: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          department?: string | null
+          email: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          job_title?: string | null
+          organization_id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          department?: string | null
+          email?: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          job_title?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           cnpj: string | null
