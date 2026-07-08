@@ -317,6 +317,82 @@ export type Database = {
           },
         ]
       }
+      executive_ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_ai_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_ai_messages: {
+        Row: {
+          content: string
+          context_snapshot: Json
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          tokens_in: number | null
+          tokens_out: number | null
+        }
+        Insert: {
+          content: string
+          context_snapshot?: Json
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+        }
+        Update: {
+          content?: string
+          context_snapshot?: Json
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "executive_ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_interviews: {
         Row: {
           completed_at: string | null
@@ -1020,6 +1096,10 @@ export type Database = {
           participants_count: number
           week_of: string
         }[]
+      }
+      get_executive_context: {
+        Args: { _organization_id: string }
+        Returns: Json
       }
       get_predictive_context: {
         Args: { _days?: number; _organization_id: string }
