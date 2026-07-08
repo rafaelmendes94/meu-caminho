@@ -54,6 +54,9 @@ Deno.serve(async (req) => {
       full_name: full_name ?? invite.full_name ?? null,
       job_title: invite.job_title ?? null,
       department: invite.department ?? null,
+      department_id: invite.department_id ?? null,
+      unit_id: invite.unit_id ?? null,
+      manager_id: invite.manager_id ?? null,
     });
 
     await admin.from("user_roles").delete().eq("user_id", userId).eq("role", "b2c_user");

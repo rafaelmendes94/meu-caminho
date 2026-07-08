@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -25,15 +28,75 @@ import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 const EnterpriseEmployeeAdminScreen = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { organization } = useAuth();
+  const { toast } = useToast();
+
+  const [form, setForm] = useState({
+    full_name: "",
+    job_title: "",
+    department_id: "",
+    unit_id: "",
+    manager_id: "",
+    status: "active",
+    hired_at: "",
+  });
+  const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([]);
+  const [units, setUnits] = useState<Array<{ id: string; name: string }>>([]);
+  const [managers, setManagers] = useState<Array<{ id: string; full_name: string | null }>>([]);
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!id || !organization?.id) return;
+    (async () => {
+      const [p, d, u, m] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+        supabase.from("departments").select("id,name").eq("organization_id", organization.id).order("name"),
+        supabase.from("units").select("id,name").eq("organization_id", organization.id).order("name"),
+        supabase.from("profiles").select("id, full_name").eq("organization_id", organization.id).order("full_name"),
+      ]);
+      // deno-lint-ignore no-explicit-any
+      const prof: any = p.data;
+      if (prof) setForm({
+        full_name: prof.full_name ?? "",
+        job_title: prof.job_title ?? "",
+        department_id: prof.department_id ?? "",
+        unit_id: prof.unit_id ?? "",
+        manager_id: prof.manager_id ?? "",
+        status: prof.status ?? "active",
+        hired_at: prof.hired_at ?? "",
+      });
+      setDepartments((d.data as typeof departments) ?? []);
+      setUnits((u.data as typeof units) ?? []);
+      setManagers(((m.data as typeof managers) ?? []).filter((x) => x.id !== id));
+    })();
+  }, [id, organization?.id]);
+
+  const save = async () => {
+    if (!id) return;
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update({
+      full_name: form.full_name || null,
+      job_title: form.job_title || null,
+      department_id: form.department_id || null,
+      unit_id: form.unit_id || null,
+      manager_id: form.manager_id || null,
+      status: form.status,
+      hired_at: form.hired_at || null,
+    }).eq("id", id);
+    setSaving(false);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else { toast({ title: "Perfil atualizado" }); setEditing(false); }
+  };
 
   // Mock data for the employee
   const employee = {
-    name: "Ana Costa",
-    email: "ana.costa@empresa.com",
-    department: "Operações",
-    role: "Coordenação",
-    manager: "Sérgio Mendes",
-    activationDate: "12/03/2026",
+    name: form.full_name || "—",
+    email: "—",
+    department: departments.find((d) => d.id === form.department_id)?.name ?? "—",
+    role: form.job_title || "—",
+    manager: managers.find((m) => m.id === form.manager_id)?.full_name ?? "—",
+    activationDate: form.hired_at || "—",
     status: "Ativo",
     licenseStatus: "Premium Enterprise"
   };
@@ -113,12 +176,13 @@ const EnterpriseEmployeeAdminScreen = () => {
           <div className="bg-white border border-[#E5E0DA] rounded-[2.5rem] p-8 shadow-sm space-y-8">
             <div className="flex items-center justify-between px-2">
               <h3 className="text-xl font-playfair font-semibold">Dados organizacionais</h3>
-              <button className="flex items-center gap-2 text-xs font-bold text-[#F88A2B] hover:text-[#0B0908] transition-colors group">
+              <button onClick={() => setEditing((e) => !e)} className="flex items-center gap-2 text-xs font-bold text-[#F88A2B] hover:text-[#0B0908] transition-colors group">
                 <Edit2 className="w-3.5 h-3.5" />
-                <span>Editar dados</span>
+                <span>{editing ? "Cancelar" : "Editar dados"}</span>
               </button>
             </div>
 
+            {!editing ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 { label: "Nome completo", value: employee.name, icon: UserCircle2 },
@@ -140,6 +204,49 @@ const EnterpriseEmployeeAdminScreen = () => {
                 </div>
               ))}
             </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Nome completo">
+                  <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="admin-input" />
+                </Field>
+                <Field label="Cargo">
+                  <input value={form.job_title} onChange={(e) => setForm({ ...form, job_title: e.target.value })} className="admin-input" />
+                </Field>
+                <Field label="Departamento">
+                  <select value={form.department_id} onChange={(e) => setForm({ ...form, department_id: e.target.value })} className="admin-input">
+                    <option value="">—</option>
+                    {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Unidade">
+                  <select value={form.unit_id} onChange={(e) => setForm({ ...form, unit_id: e.target.value })} className="admin-input">
+                    <option value="">—</option>
+                    {units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Gestor">
+                  <select value={form.manager_id} onChange={(e) => setForm({ ...form, manager_id: e.target.value })} className="admin-input">
+                    <option value="">—</option>
+                    {managers.map((m) => <option key={m.id} value={m.id}>{m.full_name ?? m.id}</option>)}
+                  </select>
+                </Field>
+                <Field label="Status">
+                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="admin-input">
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                    <option value="suspended">Suspenso</option>
+                  </select>
+                </Field>
+                <Field label="Data de contratação">
+                  <input type="date" value={form.hired_at} onChange={(e) => setForm({ ...form, hired_at: e.target.value })} className="admin-input" />
+                </Field>
+                <div className="md:col-span-2 pt-4">
+                  <button onClick={save} disabled={saving} className="px-6 py-3 rounded-2xl bg-[#F88A2B] text-white font-bold text-sm uppercase tracking-widest disabled:opacity-50">
+                    {saving ? "Salvando..." : "Salvar alterações"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -331,3 +438,13 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
 );
 
 export default EnterpriseEmployeeAdminScreen;
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <span className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">{label}</span>
+      <div>{children}</div>
+      <style>{`.admin-input{width:100%;padding:0.75rem 1rem;border-radius:1rem;border:1px solid rgba(0,0,0,0.05);background:#fff;font-size:0.875rem}`}</style>
+    </div>
+  );
+}

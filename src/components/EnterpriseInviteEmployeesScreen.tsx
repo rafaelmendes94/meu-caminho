@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ArrowLeft, 
   ChevronRight, 
@@ -36,16 +37,42 @@ import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 
 const EnterpriseInviteEmployeesScreen = () => {
   const navigate = useNavigate();
+  const { organization } = useAuth();
   const [tone, setTone] = useState("Acolhedor");
-  const [form, setForm] = useState({ full_name: "", email: "", department: "", job_title: "" });
+  const [form, setForm] = useState<{ full_name: string; email: string; department: string; job_title: string; department_id: string; unit_id: string }>({
+    full_name: "", email: "", department: "", job_title: "", department_id: "", unit_id: "",
+  });
+  const [depts, setDepts] = useState<Array<{ id: string; name: string }>>([]);
+  const [units, setUnits] = useState<Array<{ id: string; name: string }>>([]);
   const [sending, setSending] = useState(false);
   const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      const [d, u] = await Promise.all([
+        supabase.from("departments").select("id,name").eq("organization_id", organization.id).order("name"),
+        supabase.from("units").select("id,name").eq("organization_id", organization.id).order("name"),
+      ]);
+      setDepts((d.data as typeof depts) ?? []);
+      setUnits((u.data as typeof units) ?? []);
+    })();
+  }, [organization?.id]);
 
   const handleSendInvites = async () => {
     if (!form.email.trim()) return toast.error("Informe o e-mail do colaborador");
     setSending(true);
+    const dept = depts.find((d) => d.id === form.department_id);
     const { data, error } = await supabase.functions.invoke("send-enterprise-invite", {
-      body: { ...form, role: "employee" },
+      body: {
+        full_name: form.full_name,
+        email: form.email,
+        job_title: form.job_title,
+        department: dept?.name ?? form.department,
+        department_id: form.department_id || null,
+        unit_id: form.unit_id || null,
+        role: "employee",
+      },
     });
     setSending(false);
     const errMsg = (data as { error?: string } | null)?.error ?? error?.message;
@@ -53,16 +80,8 @@ const EnterpriseInviteEmployeesScreen = () => {
     const link = (data as { invite_link?: string } | null)?.invite_link ?? null;
     setLastInviteLink(link);
     toast.success(link ? "Convite criado. Link de teste disponível abaixo." : "Convite enviado com sucesso.");
-    setForm({ full_name: "", email: "", department: "", job_title: "" });
+    setForm({ full_name: "", email: "", department: "", job_title: "", department_id: "", unit_id: "" });
   };
-
-  const departments = [
-    "Comercial",
-    "Operações",
-    "Produto",
-    "Atendimento",
-    "Tecnologia"
-  ];
 
   const inviteList = [
     { id: 1, name: "Ana Costa", dept: "Operações", status: "Pendente", initials: "AC" },
@@ -142,13 +161,28 @@ const EnterpriseInviteEmployeesScreen = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Departamento</label>
-                <Select value={form.department} onValueChange={(v) => setForm((f) => ({ ...f, department: v }))}>
+                <Select value={form.department_id} onValueChange={(v) => setForm((f) => ({ ...f, department_id: v }))}>
                   <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-black/5">
-                    {departments.map(dept => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                    {depts.length === 0 && <SelectItem value="__none" disabled>Cadastre em Departamentos</SelectItem>}
+                    {depts.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Unidade (opcional)</label>
+                <Select value={form.unit_id} onValueChange={(v) => setForm((f) => ({ ...f, unit_id: v }))}>
+                  <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-black/5">
+                    {units.length === 0 && <SelectItem value="__none" disabled>Cadastre em Unidades</SelectItem>}
+                    {units.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

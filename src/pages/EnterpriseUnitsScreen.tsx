@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -26,59 +28,49 @@ import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 
 const EnterpriseUnitsScreen = () => {
   const navigate = useNavigate();
+  const { organization } = useAuth();
   const [showToast, setShowToast] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    region: "",
-    country: "",
-    type: "filial",
-    leader: "",
-    employees: ""
-  });
+  const [formData, setFormData] = useState({ name: "", address: "" });
+  const [units, setUnits] = useState<Array<{ id: string; name: string; type: string; employees: number; status: string; indicator: string; statusColor: string }>>([]);
 
-  const units = [
-    {
-      id: 1,
-      name: "São Paulo — Matriz",
-      type: "Sede principal",
-      employees: 312,
-      status: "Ativa",
-      indicator: "Equilíbrio organizacional estável",
-      statusColor: "bg-emerald-500"
-    },
-    {
-      id: 2,
-      name: "Curitiba — Operações",
-      type: "Centro operacional",
-      employees: 148,
-      status: "Ativa",
-      indicator: "Aceleração mental crescente",
-      statusColor: "bg-emerald-500"
-    },
-    {
-      id: 3,
-      name: "Recife — Atendimento",
-      type: "Hub regional",
-      employees: 97,
-      status: "Ativa",
-      indicator: "Boa recuperação emocional coletiva",
-      statusColor: "bg-emerald-500"
-    },
-    {
-      id: 4,
-      name: "Lisboa — Expansão",
-      type: "Nova unidade internacional",
-      employees: 28,
-      status: "Onboarding",
-      indicator: "Implantação em andamento",
-      statusColor: "bg-amber-500"
-    }
-  ];
+  const load = async () => {
+    if (!organization?.id) return;
+    const [unitsRes, profilesRes] = await Promise.all([
+      supabase.from("units").select("id,name,address").eq("organization_id", organization.id).order("name"),
+      supabase.from("profiles").select("unit_id").eq("organization_id", organization.id),
+    ]);
+    const counts = new Map<string, number>();
+    (profilesRes.data ?? []).forEach((p: { unit_id: string | null }) => {
+      if (p.unit_id) counts.set(p.unit_id, (counts.get(p.unit_id) ?? 0) + 1);
+    });
+    setUnits(
+      (unitsRes.data ?? []).map((u: { id: string; name: string; address: string | null }) => ({
+        id: u.id,
+        name: u.name,
+        type: u.address ?? "Unidade",
+        employees: counts.get(u.id) ?? 0,
+        status: "Ativa",
+        indicator: "Sinais coletivos em construção",
+        statusColor: "bg-emerald-500",
+      })),
+    );
+  };
 
-  const handleAddUnit = (e: React.FormEvent) => {
+  useEffect(() => { void load(); }, [organization?.id]);
+
+  const handleAddUnit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!organization?.id || !formData.name.trim()) return;
+    const { error } = await supabase.from("units").insert({
+      organization_id: organization.id,
+      name: formData.name,
+      address: formData.address || null,
+    });
+    if (error) return;
+    setFormData({ name: "", address: "" });
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+    load();
   };
 
   return (
@@ -230,7 +222,7 @@ const EnterpriseUnitsScreen = () => {
                         Acessar
                       </button>
                       <button className="py-2.5 px-4 bg-[#F7F4F2] text-[#0B0908] text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-white border border-black/5 transition-colors">
-                        {unit.id === 4 ? 'Configurar' : 'Insights'}
+                        Insights
                       </button>
                     </div>
                   </div>
@@ -329,6 +321,8 @@ const EnterpriseUnitsScreen = () => {
                   <input 
                     type="text" 
                     placeholder="Ex: São Paulo - Hub"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 transition-all text-sm"
                     required
                   />
@@ -342,8 +336,9 @@ const EnterpriseUnitsScreen = () => {
                     <input 
                       type="text" 
                       placeholder="Cidade"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 transition-all text-sm"
-                      required
                     />
                   </div>
                   <div>

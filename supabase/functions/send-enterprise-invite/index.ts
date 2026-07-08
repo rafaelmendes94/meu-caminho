@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const { email, full_name, job_title, department, role } = body ?? {};
+    const { email, full_name, job_title, department, role, department_id, unit_id, manager_id } = body ?? {};
     if (!email) return json({ error: "email required" }, 400);
     const finalRole = VALID_ROLES.has(role) ? role : "employee";
 
@@ -61,6 +61,9 @@ Deno.serve(async (req) => {
         full_name: full_name ?? null,
         job_title: job_title ?? null,
         department: department ?? null,
+        department_id: department_id ?? null,
+        unit_id: unit_id ?? null,
+        manager_id: manager_id ?? null,
         role: finalRole,
         token_hash,
         invited_by: userId,
