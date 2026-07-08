@@ -111,6 +111,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [recomputing, setRecomputing] = useState(false);
   const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
   const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
+  const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
 
   const load = async () => {
     if (!organization?.id) return;
@@ -148,6 +149,16 @@ export default function EnterpriseRHDashboardScreen() {
     } else {
       setDna(null);
     }
+    const { data: wi } = await (supabase as any)
+      .from("weekly_ai_insights")
+      .select("title, severity, week_of, generated_at")
+      .eq("organization_id", organization.id)
+      .order("generated_at", { ascending: false })
+      .limit(10);
+    const wiList = (wi as { title: string; severity: string | null; week_of: string }[]) ?? [];
+    const currentWeek = wiList[0]?.week_of;
+    const weekItems = currentWeek ? wiList.filter((w) => w.week_of === currentWeek) : [];
+    setWeeklyInsights({ count: weekItems.length, top: weekItems[0] ?? null });
     setLoading(false);
   };
 
