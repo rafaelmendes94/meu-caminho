@@ -441,6 +441,95 @@ export type Database = {
           },
         ]
       }
+      organizational_dna_reports: {
+        Row: {
+          collaboration_score: number | null
+          communication_score: number | null
+          created_at: string
+          culture_score: number | null
+          energy_score: number | null
+          engagement_score: number | null
+          evidence: Json
+          generated_at: string
+          generated_by: string | null
+          id: string
+          leadership_score: number | null
+          opportunities: Json
+          organization_id: string
+          overall_score: number | null
+          period_end: string | null
+          period_start: string | null
+          psychological_safety_score: number | null
+          recommendations: Json
+          recovery_score: number | null
+          status: string
+          strengths: Json
+          summary: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          collaboration_score?: number | null
+          communication_score?: number | null
+          created_at?: string
+          culture_score?: number | null
+          energy_score?: number | null
+          engagement_score?: number | null
+          evidence?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          leadership_score?: number | null
+          opportunities?: Json
+          organization_id: string
+          overall_score?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          psychological_safety_score?: number | null
+          recommendations?: Json
+          recovery_score?: number | null
+          status?: string
+          strengths?: Json
+          summary?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          collaboration_score?: number | null
+          communication_score?: number | null
+          created_at?: string
+          culture_score?: number | null
+          energy_score?: number | null
+          engagement_score?: number | null
+          evidence?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          leadership_score?: number | null
+          opportunities?: Json
+          organization_id?: string
+          overall_score?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          psychological_safety_score?: number | null
+          recommendations?: Json
+          recovery_score?: number | null
+          status?: string
+          strengths?: Json
+          summary?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizational_dna_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           cnpj: string | null
@@ -916,6 +1005,10 @@ export type Database = {
           participants_count: number
           response_count: number
         }[]
+      }
+      get_dna_context: {
+        Args: { _days?: number; _organization_id: string }
+        Returns: Json
       }
       get_emotional_map: {
         Args: { _organization_id: string; _weeks?: number }
