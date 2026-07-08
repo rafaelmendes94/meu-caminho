@@ -147,7 +147,7 @@ const PlatformSupportScreen = () => {
       .insert({ ticket_id: selected.id, author_id: user.id, body: newComment.trim(), is_internal: internal })
       .select()
       .single();
-    if (data) setComments((prev) => [...prev, data as Comment]);
+    if (data) setComments((prev) => [...prev, data as unknown as Comment]);
     setNewComment("");
     setSaving(false);
   };
