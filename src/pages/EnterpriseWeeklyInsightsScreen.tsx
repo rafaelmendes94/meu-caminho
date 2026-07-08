@@ -112,6 +112,16 @@ export default function EnterpriseWeeklyInsightsScreen() {
     }
   };
 
+  const measureImpact = async (id: string) => {
+    setMeasuringId(id);
+    const { error } = await supabase.functions.invoke("measure-impact", {
+      body: { source_type: "weekly_insight", source_id: id },
+    });
+    setMeasuringId(null);
+    if (error) toast({ title: "Erro ao medir impacto", description: error.message, variant: "destructive" });
+    else { toast({ title: "Impacto medido" }); await load(); }
+  };
+
   const currentWeek = insights[0]?.week_of;
   const weekInsights = insights.filter((i) => i.week_of === currentWeek);
 
@@ -198,6 +208,11 @@ export default function EnterpriseWeeklyInsightsScreen() {
                             Confiança {Math.round((i.confidence ?? 0) * 100)}%
                           </span>
                         )}
+                        {impactBySource[i.id] != null && (
+                          <span className={`text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${Number(impactBySource[i.id]) >= 0 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
+                            <Activity className="w-3 h-3" /> Impacto {Number(impactBySource[i.id]) >= 0 ? "+" : ""}{Number(impactBySource[i.id]).toFixed(1)}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-[18px] font-bold text-[#111] leading-snug">{i.title}</h3>
                     </div>
@@ -248,6 +263,14 @@ export default function EnterpriseWeeklyInsightsScreen() {
                   >
                     {ritualId === i.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                     {ritualId === i.id ? "Sugerindo ritual…" : "Sugerir ritual"}
+                  </button>
+                  <button
+                    onClick={() => measureImpact(i.id)}
+                    disabled={measuringId === i.id}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-[#E5E0DA] bg-white text-[#111] px-4 py-2 text-[12px] font-bold hover:bg-[#F7F4F2] disabled:opacity-40"
+                  >
+                    {measuringId === i.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
+                    {measuringId === i.id ? "Medindo impacto…" : "Medir impacto"}
                   </button>
                 </article>
               );
