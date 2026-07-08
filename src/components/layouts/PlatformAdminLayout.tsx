@@ -5,6 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 const items = [
   { to: "/admin/dashboard", label: "Dashboard" },
   { to: "/admin/organizations", label: "Organizações" },
+  { to: "/admin/subscriptions", label: "Assinaturas" },
+  { to: "/admin/ai-usage", label: "Inteligência Artificial" },
+  { to: "/admin/support", label: "Suporte" },
+  { to: "/admin/audit", label: "Auditoria" },
 ];
 
 export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
