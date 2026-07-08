@@ -3,7 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
-export type AppRole = "owner" | "rh_admin" | "leader" | "employee" | "b2c_user";
+export type AppRole = "owner" | "rh_admin" | "leader" | "employee" | "b2c_user" | "platform_admin";
 
 export interface Profile {
   id: string;
