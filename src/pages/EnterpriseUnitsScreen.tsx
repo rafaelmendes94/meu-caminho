@@ -321,6 +321,8 @@ const EnterpriseUnitsScreen = () => {
                   <input 
                     type="text" 
                     placeholder="Ex: São Paulo - Hub"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 transition-all text-sm"
                     required
                   />
@@ -334,8 +336,9 @@ const EnterpriseUnitsScreen = () => {
                     <input 
                       type="text" 
                       placeholder="Cidade"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 transition-all text-sm"
-                      required
                     />
                   </div>
                   <div>
