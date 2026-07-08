@@ -1054,6 +1054,27 @@ export type Database = {
           },
         ]
       }
+      platform_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       platform_usage_daily: {
         Row: {
           action_plans_count: number | null
@@ -1714,6 +1735,7 @@ export type Database = {
         Args: { _organization_id: string }
         Returns: Json
       }
+      get_platform_dashboard_summary: { Args: never; Returns: Json }
       get_platform_organizations: {
         Args: never
         Returns: {
