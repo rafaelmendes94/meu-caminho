@@ -23,7 +23,8 @@ import {
   LogOut,
   User,
   ChevronDown,
-  MoreHorizontal
+  MoreHorizontal,
+  Network
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.png";
 import {
@@ -236,6 +237,7 @@ export const EnterpriseRHLayout = ({ children, title }: { children: React.ReactN
 
           <SidebarSection title="Governança">
             <SidebarItem to="/enterprise/rh/equipe" icon={Users} label="Equipe" />
+            <SidebarItem to="/enterprise/rh/organograma" icon={Network} label="Organograma Vivo" />
             <SidebarItem to="/enterprise/rh/alertas" icon={AlertTriangle} label="Alertas" />
             <SidebarItem to="/enterprise/rh/privacidade" icon={Lock} label="Privacidade" />
             <SidebarItem to="/enterprise/rh/compliance" icon={ShieldCheck} label="Compliance" />
