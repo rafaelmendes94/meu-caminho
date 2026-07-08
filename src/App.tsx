@@ -139,6 +139,7 @@ import EnterpriseDataRetentionScreen from "./pages/EnterpriseDataRetentionScreen
 import EnterpriseComplianceScreen from "./pages/EnterpriseComplianceScreen.tsx";
 import EnterprisePoliciesScreen from "./pages/EnterprisePoliciesScreen.tsx";
 import EnterpriseUnitsScreen from "./pages/EnterpriseUnitsScreen.tsx";
+import EnterpriseOrgChartScreen from "./pages/EnterpriseOrgChartScreen.tsx";
 import EnterpriseMultiAdminsScreen from "./pages/EnterpriseMultiAdminsScreen.tsx";
 import EnterpriseGuidedRitualsScreen from "./pages/EnterpriseGuidedRitualsScreen.tsx";
 import EnterpriseAdminCenterScreen from "./pages/EnterpriseAdminCenterScreen.tsx";
@@ -348,6 +349,7 @@ const App = () => (
           <Route path="/enterprise/rh/equipe/importar" element={<RH><EnterpriseImportEmployeesScreen /></RH>} />
           <Route path="/enterprise/rh/equipe/licencas" element={<RH><EnterpriseLicensesScreen /></RH>} />
           <Route path="/enterprise/rh/equipe/:id" element={<RH><EnterpriseEmployeeAdminScreen /></RH>} />
+          <Route path="/enterprise/rh/organograma" element={<RH><EnterpriseOrgChartScreen /></RH>} />
           <Route path="/enterprise/rh/configuracoes" element={<RH><EnterpriseCompanySettingsScreen /></RH>} />
           <Route path="/enterprise/rh/dominio" element={<RH><EnterpriseDomainAccessScreen /></RH>} />
           <Route path="/enterprise/rh/departamento/:id" element={<RH><EnterpriseDepartmentDetailScreen /></RH>} />
