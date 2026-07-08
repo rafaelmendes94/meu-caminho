@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ArrowLeft, 
   ChevronRight, 
@@ -76,8 +79,10 @@ const questions: Question[] = [
 
 export default function EnterpriseCheckinScreen() {
   const navigate = useNavigate();
+  const { user, organization } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [saving, setSaving] = useState(false);
   
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
@@ -87,12 +92,30 @@ export default function EnterpriseCheckinScreen() {
     setAnswers({ ...answers, [currentQuestion.id]: index });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
-    } else {
-      navigate('/enterprise/checkin/resultado');
+      return;
     }
+    if (!user) return toast.error("Sessão não encontrada.");
+    setSaving(true);
+    // Map 6 UI questions to (mood, energy, stress) 1..5
+    const a = answers;
+    const stress_raw = ((a[1] ?? 2) + (a[2] ?? 2)) / 2; // 0..4, higher = more stress
+    const mood_raw = ((a[3] ?? 2) + (a[4] ?? 2)) / 2;   // 0..4, lower = clearer
+    const energy_raw = ((a[5] ?? 2) + (a[6] ?? 2)) / 2; // 0..4, lower = more energy
+    const clamp = (n: number) => Math.min(5, Math.max(1, Math.round(n)));
+    const stress_score = clamp(stress_raw + 1);
+    const mood_score = clamp(5 - mood_raw);
+    const energy_score = clamp(5 - energy_raw);
+    const { error } = await supabase.from("emotional_checkins").insert({
+      user_id: user.id,
+      organization_id: organization?.id ?? null,
+      mood_score, energy_score, stress_score,
+    });
+    setSaving(false);
+    if (error) return toast.error(error.message || "Não foi possível salvar o check-in.");
+    navigate('/enterprise/checkin/resultado');
   };
 
   const handleBack = () => {
@@ -227,13 +250,13 @@ export default function EnterpriseCheckinScreen() {
                 <div className="space-y-4">
                   <button
                     onClick={handleNext}
-                    disabled={!isSelected}
+                    disabled={!isSelected || saving}
                     className="w-full h-14 rounded-full flex items-center justify-center gap-3 text-[#111] font-bold text-[15px] transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#F88A2B]/20"
                     style={{ 
                       background: "linear-gradient(180deg, #FF9D4D 0%, #F88A2B 100%)",
                     }}
                   >
-                    <span>{isLast ? "Finalizar Check-in" : "Próxima Pergunta"}</span>
+                    <span>{saving ? "Salvando..." : isLast ? "Finalizar Check-in" : "Próxima Pergunta"}</span>
                     <ChevronRight className="h-4 w-4" />
                   </button>
 

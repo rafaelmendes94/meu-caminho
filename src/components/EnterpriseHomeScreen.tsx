@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import PulseWidget from "./PulseWidget";
 import { 
   Building2, 
   ArrowRight, 
@@ -71,7 +75,31 @@ const JourneyCard = ({
 
 export default function EnterpriseHomeScreen() {
   const navigate = useNavigate();
-  const userName = "Rafael"; // Mock user name
+  const { user, profile } = useAuth();
+  const userName = profile?.display_name || profile?.full_name || "colaborador";
+  const [lastCheckin, setLastCheckin] = useState<{ mood_score: number; energy_score: number; stress_score: number; created_at: string } | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("emotional_checkins")
+        .select("mood_score,energy_score,stress_score,created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setLastCheckin(data as any);
+    })();
+  }, [user]);
+
+  const daysSince = lastCheckin
+    ? Math.floor((Date.now() - new Date(lastCheckin.created_at).getTime()) / 86_400_000)
+    : null;
+  const needsCheckin = daysSince === null || daysSince > 3;
+  const balance = lastCheckin
+    ? (lastCheckin.mood_score * 0.4 + lastCheckin.energy_score * 0.3 + (6 - lastCheckin.stress_score) * 0.3).toFixed(1)
+    : null;
 
   return (
     <EnterpriseUserLayout>
@@ -143,9 +171,11 @@ export default function EnterpriseHomeScreen() {
                   <Zap className="h-6 w-6 text-[#F88A2B]" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F88A2B] mb-0.5">Check-in Semanal</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F88A2B] mb-0.5">
+                    {balance ? `Seu equilíbrio: ${balance}/5` : "Check-in Semanal"}
+                  </p>
                   <h1 className="text-[20px] lg:text-[22px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    Como sua mente tem caminhado?
+                    {needsCheckin ? "Como sua mente tem caminhado?" : "Você está em dia com o seu equilíbrio."}
                   </h1>
                 </div>
               </div>
@@ -155,12 +185,14 @@ export default function EnterpriseHomeScreen() {
                 className="w-full lg:w-fit lg:px-6 h-11 rounded-full flex items-center justify-center gap-3 text-[#111] font-bold text-[14px] transition-all active:scale-[0.95] hover:opacity-90"
                 style={{ background: "#F88A2B" }}
               >
-                <span>Responder agora</span>
+                <span>{needsCheckin ? "Responder agora" : "Novo check-in"}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
         </section>
+
+        <PulseWidget />
 
         {/* Weekly Moment - Compact Grid */}
         <section className="lg:max-w-3xl">
