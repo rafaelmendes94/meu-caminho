@@ -510,6 +510,100 @@ export type Database = {
           },
         ]
       }
+      impact_measurements: {
+        Row: {
+          baseline_score: number | null
+          confidence: number | null
+          current_score: number | null
+          evidence: Json
+          id: string
+          impact_score: number | null
+          measured_at: string
+          organization_id: string
+          source_id: string
+          source_type: string
+          summary: string | null
+        }
+        Insert: {
+          baseline_score?: number | null
+          confidence?: number | null
+          current_score?: number | null
+          evidence?: Json
+          id?: string
+          impact_score?: number | null
+          measured_at?: string
+          organization_id: string
+          source_id: string
+          source_type: string
+          summary?: string | null
+        }
+        Update: {
+          baseline_score?: number | null
+          confidence?: number | null
+          current_score?: number | null
+          evidence?: Json
+          id?: string
+          impact_score?: number | null
+          measured_at?: string
+          organization_id?: string
+          source_id?: string
+          source_type?: string
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impact_measurements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      impact_timelines: {
+        Row: {
+          created_at: string
+          delta: number | null
+          event_date: string
+          event_id: string | null
+          event_type: string
+          id: string
+          organization_id: string
+          score_after: number | null
+          score_before: number | null
+        }
+        Insert: {
+          created_at?: string
+          delta?: number | null
+          event_date?: string
+          event_id?: string | null
+          event_type: string
+          id?: string
+          organization_id: string
+          score_after?: number | null
+          score_before?: number | null
+        }
+        Update: {
+          created_at?: string
+          delta?: number | null
+          event_date?: string
+          event_id?: string | null
+          event_type?: string
+          id?: string
+          organization_id?: string
+          score_after?: number | null
+          score_before?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impact_timelines_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intelligent_rituals: {
         Row: {
           audience: string
@@ -1490,6 +1584,14 @@ export type Database = {
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
+      }
+      measure_impact: {
+        Args: {
+          _organization_id: string
+          _source_id: string
+          _source_type: string
+        }
+        Returns: Json
       }
       org_node_indicators: {
         Args: { _days?: number; _organization_id: string; _profile_id: string }
