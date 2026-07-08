@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -34,47 +36,69 @@ interface Department {
   code: string;
   responsible: string;
   count: number;
+  parent_id: string | null;
 }
 
 const EnterpriseDepartmentsScreen = () => {
   const navigate = useNavigate();
+  const { organization } = useAuth();
   
-  const [departments, setDepartments] = useState<Department[]>([
-    { id: "1", name: "Comercial", code: "COM", responsible: "Marina Costa", count: 42 },
-    { id: "2", name: "Operações", code: "OPS", responsible: "Carlos Mendes", count: 31 },
-    { id: "3", name: "Produto", code: "PROD", responsible: "Fernanda Lima", count: 18 },
-    { id: "4", name: "Atendimento", code: "ATT", responsible: "Não definido", count: 6 },
-  ]);
+  const [departments, setDepartments] = useState<Department[]>([]);
 
   const [form, setForm] = useState({
     name: "",
     code: "",
     responsible: "",
-    count: ""
+    count: "",
+    parent_id: "",
   });
 
-  const handleAddDepartment = () => {
+  const load = async () => {
+    if (!organization?.id) return;
+    const [depsRes, countsRes] = await Promise.all([
+      supabase.from("departments").select("id,name,parent_id,leader_id").eq("organization_id", organization.id).order("name"),
+      supabase.from("profiles").select("department_id").eq("organization_id", organization.id),
+    ]);
+    const counts = new Map<string, number>();
+    (countsRes.data ?? []).forEach((p: { department_id: string | null }) => {
+      if (p.department_id) counts.set(p.department_id, (counts.get(p.department_id) ?? 0) + 1);
+    });
+    setDepartments(
+      (depsRes.data ?? []).map((d) => ({
+        id: d.id,
+        name: d.name,
+        code: d.name.substring(0, 3).toUpperCase(),
+        responsible: "—",
+        count: counts.get(d.id) ?? 0,
+        parent_id: d.parent_id,
+      })),
+    );
+  };
+
+  useEffect(() => { void load(); }, [organization?.id]);
+
+  const handleAddDepartment = async () => {
     if (!form.name) {
       toast.error("O nome do departamento é obrigatório.");
       return;
     }
-
-    const newDept: Department = {
-      id: Math.random().toString(36).substr(2, 9),
+    if (!organization?.id) return;
+    const { error } = await supabase.from("departments").insert({
+      organization_id: organization.id,
       name: form.name,
-      code: form.code || form.name.substring(0, 3).toUpperCase(),
-      responsible: form.responsible || "Não definido",
-      count: parseInt(form.count) || 0
-    };
-
-    setDepartments([newDept, ...departments]);
-    setForm({ name: "", code: "", responsible: "", count: "" });
+      parent_id: form.parent_id || null,
+    });
+    if (error) return toast.error(error.message);
+    setForm({ name: "", code: "", responsible: "", count: "", parent_id: "" });
     toast.success("Departamento adicionado.");
+    load();
   };
 
-  const handleRemove = (id: string) => {
-    setDepartments(departments.filter(d => d.id !== id));
+  const handleRemove = async (id: string) => {
+    const { error } = await supabase.from("departments").delete().eq("id", id);
+    if (error) return toast.error(error.message);
     toast.success("Departamento removido.");
+    load();
   };
 
   const minVolume = 8;
