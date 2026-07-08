@@ -141,6 +141,7 @@ import EnterprisePoliciesScreen from "./pages/EnterprisePoliciesScreen.tsx";
 import EnterpriseUnitsScreen from "./pages/EnterpriseUnitsScreen.tsx";
 import EnterpriseOrgChartScreen from "./pages/EnterpriseOrgChartScreen.tsx";
 import EnterpriseOrganizationalDNAScreen from "./pages/EnterpriseOrganizationalDNAScreen.tsx";
+import EnterpriseExecutiveCouncilScreen from "./pages/EnterpriseExecutiveCouncilScreen.tsx";
 import EnterpriseMultiAdminsScreen from "./pages/EnterpriseMultiAdminsScreen.tsx";
 import EnterpriseGuidedRitualsScreen from "./pages/EnterpriseGuidedRitualsScreen.tsx";
 import EnterpriseAdminCenterScreen from "./pages/EnterpriseAdminCenterScreen.tsx";
