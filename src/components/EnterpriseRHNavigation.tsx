@@ -25,7 +25,8 @@ import {
   ChevronDown,
   MoreHorizontal,
   Network,
-  Dna
+  Dna,
+  Sparkle
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.png";
 import {
