@@ -10,7 +10,8 @@ import {
   RefreshCw,
   Sparkles,
   Dna,
-  Target
+  Target,
+  Gauge
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -112,6 +113,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
   const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
   const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
+  const [orgScore, setOrgScore] = useState<{ overall: number | null; previous: number | null; confidence: number | null } | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -159,6 +161,22 @@ export default function EnterpriseRHDashboardScreen() {
     const currentWeek = wiList[0]?.week_of;
     const weekItems = currentWeek ? wiList.filter((w) => w.week_of === currentWeek) : [];
     setWeeklyInsights({ count: weekItems.length, top: weekItems[0] ?? null });
+    const { data: scoresRows } = await (supabase as any)
+      .from("organizational_scores")
+      .select("overall_score, confidence, score_date")
+      .eq("organization_id", organization.id)
+      .order("score_date", { ascending: false })
+      .limit(2);
+    const sr = (scoresRows ?? []) as { overall_score: number | null; confidence: number | null }[];
+    if (sr.length > 0) {
+      setOrgScore({
+        overall: sr[0].overall_score,
+        previous: sr[1]?.overall_score ?? null,
+        confidence: sr[0].confidence,
+      });
+    } else {
+      setOrgScore(null);
+    }
     setLoading(false);
   };
 
@@ -209,6 +227,35 @@ export default function EnterpriseRHDashboardScreen() {
 
         {/* KPIs Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <button
+            onClick={() => navigate('/enterprise/rh/score-organizacional')}
+            className="col-span-2 lg:col-span-4 text-left rounded-3xl p-6 bg-gradient-to-br from-[#0B0908] to-[#1a1614] text-white border border-[#F88A2B]/30 shadow-[0_8px_30px_rgb(0,0,0,0.15)] flex items-center justify-between gap-4 hover:border-[#F88A2B]/60 transition"
+          >
+            <div className="flex items-center gap-5">
+              <div className="h-14 w-14 rounded-full bg-[#F88A2B]/20 flex items-center justify-center">
+                <Gauge className="h-7 w-7 text-[#F88A2B]" />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Score Organizacional™</div>
+                <div className="flex items-end gap-2 mt-1">
+                  <div className="text-[42px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {orgScore?.overall != null ? Math.round(Number(orgScore.overall)) : "•••"}
+                  </div>
+                  <div className="text-[12px] text-white/60 pb-1 font-bold">/100</div>
+                  {orgScore?.overall != null && orgScore?.previous != null && (
+                    <div className={`ml-3 pb-1 text-[11px] font-bold ${Number(orgScore.overall) - Number(orgScore.previous) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {Number(orgScore.overall) - Number(orgScore.previous) >= 0 ? '+' : ''}
+                      {Math.round(Number(orgScore.overall) - Number(orgScore.previous))} vs anterior
+                    </div>
+                  )}
+                </div>
+                <div className="text-[11px] text-white/60 mt-1">
+                  Confiança: {orgScore?.confidence != null ? `${Math.round(Number(orgScore.confidence) * 100)}%` : '•••'}
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-white/60" />
+          </button>
           <KPICard
             value={summary?.checkin_participants_30d != null ? String(summary.checkin_participants_30d) : "•••"}
             label="Participantes 30d"

@@ -26,7 +26,8 @@ import {
   MoreHorizontal,
   Network,
   Dna,
-  Sparkle
+  Sparkle,
+  Gauge
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.png";
 import {
@@ -241,6 +242,7 @@ export const EnterpriseRHLayout = ({ children, title }: { children: React.ReactN
             <SidebarItem to="/enterprise/rh/equipe" icon={Users} label="Equipe" />
             <SidebarItem to="/enterprise/rh/organograma" icon={Network} label="Organograma Vivo" />
             <SidebarItem to="/enterprise/rh/dna-organizacional" icon={Dna} label="DNA Organizacional" />
+            <SidebarItem to="/enterprise/rh/score-organizacional" icon={Gauge} label="Score Organizacional" />
             <SidebarItem to="/enterprise/rh/conselho-executivo" icon={Sparkle} label="Conselho Executivo IA" />
             <SidebarItem to="/enterprise/rh/insights-semanais" icon={Sparkles} label="Insights Semanais IA" />
             <SidebarItem to="/enterprise/rh/alertas" icon={AlertTriangle} label="Alertas" />

@@ -791,6 +791,65 @@ export type Database = {
           },
         ]
       }
+      organizational_scores: {
+        Row: {
+          communication_score: number | null
+          confidence: number
+          created_at: string
+          energy_score: number | null
+          engagement_score: number | null
+          equilibrium_score: number | null
+          evidence: Json
+          id: string
+          organization_id: string
+          overall_score: number | null
+          participation_score: number | null
+          recovery_score: number | null
+          risk_penalty: number
+          score_date: string
+        }
+        Insert: {
+          communication_score?: number | null
+          confidence?: number
+          created_at?: string
+          energy_score?: number | null
+          engagement_score?: number | null
+          equilibrium_score?: number | null
+          evidence?: Json
+          id?: string
+          organization_id: string
+          overall_score?: number | null
+          participation_score?: number | null
+          recovery_score?: number | null
+          risk_penalty?: number
+          score_date?: string
+        }
+        Update: {
+          communication_score?: number | null
+          confidence?: number
+          created_at?: string
+          energy_score?: number | null
+          engagement_score?: number | null
+          equilibrium_score?: number | null
+          evidence?: Json
+          id?: string
+          organization_id?: string
+          overall_score?: number | null
+          participation_score?: number | null
+          recovery_score?: number | null
+          risk_penalty?: number
+          score_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizational_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           cnpj: string | null
@@ -1360,6 +1419,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_organizational_score: {
+        Args: { _organization_id: string }
+        Returns: Json
+      }
       current_organization_id: { Args: never; Returns: string }
       get_capacity_pulse: {
         Args: { _days?: number; _organization_id: string }
