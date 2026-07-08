@@ -1147,6 +1147,65 @@ export type Database = {
           },
         ]
       }
+      weekly_ai_insights: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          evidence: Json
+          generated_at: string
+          id: string
+          insight_type: string | null
+          organization_id: string
+          recommended_actions: Json
+          severity: string | null
+          summary: string | null
+          title: string
+          updated_at: string
+          version: number
+          week_of: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          evidence?: Json
+          generated_at?: string
+          id?: string
+          insight_type?: string | null
+          organization_id: string
+          recommended_actions?: Json
+          severity?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+          week_of?: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          evidence?: Json
+          generated_at?: string
+          id?: string
+          insight_type?: string | null
+          organization_id?: string
+          recommended_actions?: Json
+          severity?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+          week_of?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_ai_insights_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       employee_profiles_rh_view: {
@@ -1232,6 +1291,10 @@ export type Database = {
         }[]
       }
       get_rh_dashboard_summary: {
+        Args: { _organization_id: string }
+        Returns: Json
+      }
+      get_weekly_ai_context: {
         Args: { _organization_id: string }
         Returns: Json
       }
