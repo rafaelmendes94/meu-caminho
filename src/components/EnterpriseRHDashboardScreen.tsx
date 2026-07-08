@@ -227,6 +227,35 @@ export default function EnterpriseRHDashboardScreen() {
 
         {/* KPIs Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <button
+            onClick={() => navigate('/enterprise/rh/score-organizacional')}
+            className="col-span-2 lg:col-span-4 text-left rounded-3xl p-6 bg-gradient-to-br from-[#0B0908] to-[#1a1614] text-white border border-[#F88A2B]/30 shadow-[0_8px_30px_rgb(0,0,0,0.15)] flex items-center justify-between gap-4 hover:border-[#F88A2B]/60 transition"
+          >
+            <div className="flex items-center gap-5">
+              <div className="h-14 w-14 rounded-full bg-[#F88A2B]/20 flex items-center justify-center">
+                <Gauge className="h-7 w-7 text-[#F88A2B]" />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Score Organizacional™</div>
+                <div className="flex items-end gap-2 mt-1">
+                  <div className="text-[42px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {orgScore?.overall != null ? Math.round(Number(orgScore.overall)) : "•••"}
+                  </div>
+                  <div className="text-[12px] text-white/60 pb-1 font-bold">/100</div>
+                  {orgScore?.overall != null && orgScore?.previous != null && (
+                    <div className={`ml-3 pb-1 text-[11px] font-bold ${Number(orgScore.overall) - Number(orgScore.previous) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {Number(orgScore.overall) - Number(orgScore.previous) >= 0 ? '+' : ''}
+                      {Math.round(Number(orgScore.overall) - Number(orgScore.previous))} vs anterior
+                    </div>
+                  )}
+                </div>
+                <div className="text-[11px] text-white/60 mt-1">
+                  Confiança: {orgScore?.confidence != null ? `${Math.round(Number(orgScore.confidence) * 100)}%` : '•••'}
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-white/60" />
+          </button>
           <KPICard
             value={summary?.checkin_participants_30d != null ? String(summary.checkin_participants_30d) : "•••"}
             label="Participantes 30d"
