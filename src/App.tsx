@@ -171,6 +171,7 @@ import PlatformSystemHealthScreen from "./pages/PlatformSystemHealthScreen.tsx";
 import PlatformBillingScreen from "./pages/PlatformBillingScreen.tsx";
 import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
 import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
+import PlatformSettingsScreen from "./pages/PlatformSettingsScreen.tsx";
 
 
 
@@ -420,6 +421,7 @@ const App = () => (
           <Route path="/admin/system" element={<PlatformAdmin><PlatformSystemHealthScreen /></PlatformAdmin>} />
           <Route path="/admin/support" element={<PlatformAdmin><PlatformSupportScreen /></PlatformAdmin>} />
           <Route path="/admin/audit" element={<PlatformAdmin><PlatformAuditScreen /></PlatformAdmin>} />
+          <Route path="/admin/settings" element={<PlatformAdmin><PlatformSettingsScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
