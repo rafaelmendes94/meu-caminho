@@ -80,6 +80,12 @@ const EnterpriseAdminCenterScreen = () => {
       desc: "Visão executiva do comportamento coletivo da organização baseada em Inteligência Artificial e dados agregados.",
       path: "/enterprise/rh/dna-organizacional",
       icon: Dna
+    },
+    {
+      title: "Conselho Executivo IA™",
+      desc: "Converse com a IA utilizando somente dados organizacionais autorizados e agregados.",
+      path: "/enterprise/rh/conselho-executivo",
+      icon: Sparkles
     }
   ];
 
