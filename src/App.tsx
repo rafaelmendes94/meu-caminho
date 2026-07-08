@@ -3,6 +3,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import type { ReactNode } from "react";
 import EnterpriseCuryDigitalScreen from "./components/EnterpriseCuryDigitalScreen.tsx";
 import CanalDiretoRHScreen from "./components/CanalDiretoRHScreen.tsx";
 import CanalDiretoMensagemScreen from "./components/CanalDiretoMensagemScreen.tsx";
@@ -156,20 +159,31 @@ import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.t
 
 const queryClient = new QueryClient();
 
+const RH = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute requiredRoles={["owner", "rh_admin"]}>{children}</ProtectedRoute>
+);
+const Ent = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute requiredRoles={["owner", "rh_admin", "leader", "employee"]}>{children}</ProtectedRoute>
+);
+const Auth = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AuthProvider>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/home" element={<HomeScreen />} />
+          <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
           <Route path="/login" element={<Index />} />
           <Route path="/preloader" element={<PreloaderRoute />} />
-          <Route path="/welcome" element={<WelcomeScreen />} />
-          <Route path="/chat" element={<ChatAIScreen />} />
-          <Route path="/perfil" element={<ProfileScreen />} />
+          <Route path="/welcome" element={<Auth><WelcomeScreen /></Auth>} />
+          <Route path="/chat" element={<Auth><ChatAIScreen /></Auth>} />
+          <Route path="/perfil" element={<Auth><ProfileScreen /></Auth>} />
           <Route path="/menu" element={<MenuScreen />} />
           <Route path="/configuracoes" element={<SettingsScreen />} />
           <Route path="/configuracoes/senha" element={<ChangePasswordScreen />} />
@@ -206,7 +220,7 @@ const App = () => (
           <Route path="/conteudo/leitura" element={<BlogReadingScreen />} />
           <Route path="/feed/leitura" element={<BlogReadingScreen />} />
           <Route path="/explorar" element={<ExploreScreen />} />
-          <Route path="/biblioteca" element={<LibraryScreen />} />
+          <Route path="/biblioteca" element={<Auth><LibraryScreen /></Auth>} />
           <Route path="/biblioteca/desbloqueado" element={<BookUnlockedScreen />} />
           <Route path="/biblioteca/bloqueado" element={<BookLockedScreen />} />
           <Route path="/biblioteca/leitor" element={<BookReaderScreen />} />
@@ -217,9 +231,9 @@ const App = () => (
           <Route path="/biblioteca/minha-leitura" element={<MyReadingScreen />} />
           <Route path="/biblioteca/progresso-leitura" element={<ReadingProgressScreen />} />
           <Route path="/biblioteca/capitulos" element={<BookChaptersScreen />} />
-          <Route path="/trilha" element={<TrilhaScreen />} />
+          <Route path="/trilha" element={<Auth><TrilhaScreen /></Auth>} />
           <Route path="/jornada" element={<JourneyOverviewScreen />} />
-          <Route path="/diagnostico" element={<DiagnosticoScreen />} />
+          <Route path="/diagnostico" element={<Auth><DiagnosticoScreen /></Auth>} />
           <Route path="/curso" element={<CursoScreen />} />
           <Route path="/curso/1" element={<CursoScreen />} />
           <Route path="/modulos" element={<ModulosScreen />} />
