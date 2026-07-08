@@ -510,6 +510,74 @@ export type Database = {
           },
         ]
       }
+      intelligent_rituals: {
+        Row: {
+          audience: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          expected_outcome: string | null
+          generated_by_ai: boolean
+          id: string
+          instructions: Json
+          organization_id: string
+          ritual_type: string
+          scheduled_at: string | null
+          source_id: string | null
+          source_type: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          expected_outcome?: string | null
+          generated_by_ai?: boolean
+          id?: string
+          instructions?: Json
+          organization_id: string
+          ritual_type?: string
+          scheduled_at?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          expected_outcome?: string | null
+          generated_by_ai?: boolean
+          id?: string
+          instructions?: Json
+          organization_id?: string
+          ritual_type?: string
+          scheduled_at?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intelligent_rituals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_interviews: {
         Row: {
           completed_at: string | null
@@ -1076,6 +1144,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      ritual_participations: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          feedback_score: number | null
+          feedback_text: string | null
+          id: string
+          joined_at: string
+          ritual_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          feedback_score?: number | null
+          feedback_text?: string | null
+          id?: string
+          joined_at?: string
+          ritual_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          feedback_score?: number | null
+          feedback_text?: string | null
+          id?: string
+          joined_at?: string
+          ritual_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ritual_participations_ritual_id_fkey"
+            columns: ["ritual_id"]
+            isOneToOne: false
+            referencedRelation: "intelligent_rituals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       units: {
         Row: {
