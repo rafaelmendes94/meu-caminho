@@ -67,6 +67,12 @@ const EnterpriseAdminCenterScreen = () => {
       desc: "Controle acessos organizacionais.",
       path: "/enterprise/rh/permissoes",
       icon: Lock
+    },
+    {
+      title: "Inteligência Preditiva",
+      desc: "Antecipe riscos organizacionais com base em sinais agregados de energia, engajamento, comunicação e recuperação.",
+      path: "/enterprise/rh/alertas",
+      icon: Sparkles
     }
   ];
 

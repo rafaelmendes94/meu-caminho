@@ -492,6 +492,74 @@ export type Database = {
         }
         Relationships: []
       }
+      predictive_signals: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          confidence: number
+          created_at: string
+          detected_at: string
+          evidence: Json
+          expires_at: string | null
+          id: string
+          narrative: string
+          organization_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          signal_type: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          confidence?: number
+          created_at?: string
+          detected_at?: string
+          evidence?: Json
+          expires_at?: string | null
+          id?: string
+          narrative: string
+          organization_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          signal_type: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          confidence?: number
+          created_at?: string
+          detected_at?: string
+          evidence?: Json
+          expires_at?: string | null
+          id?: string
+          narrative?: string
+          organization_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          signal_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictive_signals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       privacy_consents: {
         Row: {
           accepted_at: string | null
@@ -859,6 +927,10 @@ export type Database = {
           participants_count: number
           week_of: string
         }[]
+      }
+      get_predictive_context: {
+        Args: { _days?: number; _organization_id: string }
+        Returns: Json
       }
       get_pulse_aggregate: {
         Args: { _days?: number; _organization_id: string }

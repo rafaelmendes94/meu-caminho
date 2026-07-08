@@ -10,7 +10,9 @@ import {
   LayoutDashboard,
   FileText,
   CheckCircle2,
-  Check
+  Check,
+  Sparkles,
+  RefreshCw
 } from "lucide-react";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +27,18 @@ type Alert = {
   message: string;
   status: "open" | "acknowledged" | "resolved";
   created_at: string;
+  evidence: Record<string, unknown> | null;
+};
+
+type PredictiveSignal = {
+  id: string;
+  signal_type: string;
+  severity: "info" | "warning" | "critical";
+  confidence: number;
+  title: string;
+  narrative: string;
+  status: "open" | "acknowledged" | "resolved";
+  detected_at: string;
   evidence: Record<string, unknown> | null;
 };
 
@@ -141,6 +155,9 @@ export default function EnterpriseAlertsScreen() {
   const { organization, user } = useAuth();
   const { toast } = useToast();
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [signals, setSignals] = useState<PredictiveSignal[]>([]);
+  const [tab, setTab] = useState<"alerts" | "predictive">("alerts");
+  const [analyzing, setAnalyzing] = useState(false);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -150,6 +167,12 @@ export default function EnterpriseAlertsScreen() {
       .eq("organization_id", organization.id)
       .order("created_at", { ascending: false });
     setAlerts((data as unknown as Alert[]) ?? []);
+    const { data: sig } = await (supabase as any)
+      .from("predictive_signals")
+      .select("*")
+      .eq("organization_id", organization.id)
+      .order("detected_at", { ascending: false });
+    setSignals((sig as PredictiveSignal[]) ?? []);
   };
 
   useEffect(() => { void load(); }, [organization?.id]);
@@ -169,6 +192,32 @@ export default function EnterpriseAlertsScreen() {
       .eq("id", id);
     if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
     else load();
+  };
+
+  const ackSignal = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from("predictive_signals")
+      .update({ status: "acknowledged", acknowledged_at: new Date().toISOString(), acknowledged_by: user?.id })
+      .eq("id", id);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else load();
+  };
+  const resolveSignal = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from("predictive_signals")
+      .update({ status: "resolved", resolved_at: new Date().toISOString(), resolved_by: user?.id })
+      .eq("id", id);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else load();
+  };
+
+  const analyze = async () => {
+    setAnalyzing(true);
+    const { error } = await supabase.functions.invoke("detect-predictive-signals");
+    if (error) toast({ title: "Erro ao analisar tendências", description: error.message, variant: "destructive" });
+    else toast({ title: "Sinais preditivos atualizados" });
+    await load();
+    setAnalyzing(false);
   };
 
   return (
@@ -205,6 +254,83 @@ export default function EnterpriseAlertsScreen() {
           </div>
         </section>
 
+        {/* Tabs */}
+        <div className="flex items-center gap-2 border-b border-[#EFEAE5]">
+          <button
+            onClick={() => setTab("alerts")}
+            className={`px-4 py-3 text-[12px] font-bold uppercase tracking-widest transition ${tab === "alerts" ? "text-[#111] border-b-2 border-[#F88A2B]" : "text-[#999]"}`}
+          >Alertas ({alerts.filter(a => a.status !== "resolved").length})</button>
+          <button
+            onClick={() => setTab("predictive")}
+            className={`px-4 py-3 text-[12px] font-bold uppercase tracking-widest transition inline-flex items-center gap-2 ${tab === "predictive" ? "text-[#111] border-b-2 border-[#F88A2B]" : "text-[#999]"}`}
+          ><Sparkles className="h-3 w-3" /> Sinais Preditivos ({signals.filter(s => s.status !== "resolved").length})</button>
+          <div className="ml-auto">
+            {tab === "predictive" && (
+              <button
+                onClick={analyze}
+                disabled={analyzing}
+                className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111] disabled:opacity-40 px-3 py-2"
+              >
+                <RefreshCw className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`} /> Analisar tendências
+              </button>
+            )}
+          </div>
+        </div>
+
+        {tab === "predictive" ? (
+          <section className="space-y-6">
+            <p className="text-[11px] text-[#999] italic px-1">
+              A Inteligência Preditiva utiliza apenas dados agregados e anonimizados. Nenhuma pessoa é identificada.
+            </p>
+            {signals.length === 0 ? (
+              <div className="rounded-[32px] bg-white p-10 border border-white/60 shadow-sm text-center">
+                <p className="text-[14px] text-[#666]">Nenhum sinal preditivo ativo no momento.</p>
+                <button onClick={analyze} disabled={analyzing} className="mt-4 inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80 disabled:opacity-40">
+                  <Sparkles className="h-3 w-3" /> Analisar tendências agora
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {signals.map((s) => {
+                  const style = SEVERITY_STYLE[s.severity];
+                  return (
+                    <div key={s.id} className="rounded-[32px] bg-white p-7 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5 animate-fade-in">
+                      <div className="flex justify-between items-start gap-3">
+                        <h4 className="text-[18px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>{s.title}</h4>
+                        <div className={`px-3 py-1 rounded-full border ${style.badge}`}>
+                          <span className="text-[10px] font-bold uppercase tracking-wider">{style.label}</span>
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-[#444] font-medium leading-relaxed">{s.narrative}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-[#999] uppercase tracking-widest">
+                        <Sparkles className="h-3 w-3" />
+                        Confiança {Math.round((s.confidence ?? 0) * 100)}%
+                      </div>
+                      <div className="flex items-center justify-between pt-4 border-t border-[#F7F4F2]">
+                        <span className="text-[10px] text-[#999] uppercase tracking-widest">{new Date(s.detected_at).toLocaleDateString()}</span>
+                        <div className="flex gap-2">
+                          {s.status === "open" && (
+                            <button onClick={() => ackSignal(s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111]">
+                              <Check className="h-3 w-3" /> Reconhecer
+                            </button>
+                          )}
+                          {s.status !== "resolved" && (
+                            <button onClick={() => resolveSignal(s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-700">
+                              <CheckCircle2 className="h-3 w-3" /> Resolver
+                            </button>
+                          )}
+                          {s.status === "acknowledged" && (<span className="text-[10px] text-[#999] uppercase">Reconhecido</span>)}
+                          {s.status === "resolved" && (<span className="text-[10px] text-emerald-600 uppercase">Resolvido</span>)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        ) : (
+        <>
         {/* Áreas prioritárias */}
         <section className="space-y-6">
           <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] font-montserrat px-1">Alertas ativos</h3>
@@ -308,7 +434,8 @@ export default function EnterpriseAlertsScreen() {
         <p className="text-center text-[11px] text-[#999] font-bold font-montserrat pb-8 leading-relaxed max-w-md mx-auto opacity-60">
           O objetivo dos alertas é apoiar prevenção emocional coletiva, nunca monitoramento individual.
         </p>
-
+        </>
+        )}
       </div>
     </EnterpriseRHLayout>
   );

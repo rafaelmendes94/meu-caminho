@@ -7,7 +7,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,6 +107,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(false);
   const [recomputing, setRecomputing] = useState(false);
+  const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
 
   const load = async () => {
     if (!organization?.id) return;
@@ -114,6 +116,18 @@ export default function EnterpriseRHDashboardScreen() {
       _organization_id: organization.id,
     });
     if (!error && data) setSummary(data as unknown as Summary);
+    const { data: sig } = await (supabase as any)
+      .from("predictive_signals")
+      .select("title, severity, status")
+      .eq("organization_id", organization.id)
+      .neq("status", "resolved")
+      .order("detected_at", { ascending: false });
+    const list = (sig as { title: string; severity: string; status: string }[]) ?? [];
+    setPredictive({
+      open: list.length,
+      critical: list.filter((s) => s.severity === "critical").length,
+      top: list[0] ?? null,
+    });
     setLoading(false);
   };
 
@@ -195,6 +209,35 @@ export default function EnterpriseRHDashboardScreen() {
             Atualizar alertas
           </button>
         </div>
+
+        {/* Inteligência Preditiva — card discreto */}
+        <section>
+          <button
+            onClick={() => navigate('/enterprise/rh/alertas')}
+            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Inteligência Preditiva</div>
+                <div className="text-[15px] font-bold text-[#111] mt-1">
+                  {predictive.open === 0
+                    ? "Nenhum sinal preditivo ativo no momento."
+                    : predictive.top?.title ?? "Sinais preditivos ativos"}
+                </div>
+                <div className="text-[11px] text-[#666] mt-1">
+                  {predictive.open} aberto(s) · {predictive.critical} crítico(s)
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-[#666]" />
+          </button>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            A Inteligência Preditiva utiliza apenas dados agregados e anonimizados. Nenhuma pessoa é identificada.
+          </p>
+        </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Temperamento do Time Chart */}
