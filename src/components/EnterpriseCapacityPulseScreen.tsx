@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { 
   BarChart3, 
   LayoutDashboard, 
@@ -6,16 +7,40 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+type PulseRow = { dimension: string; avg_value: number | null; participants_count: number; response_count: number };
+
+const DIMENSIONS: { key: string; label: string; status: string }[] = [
+  { key: "energy", label: "Energia", status: "coletivo" },
+  { key: "engagement", label: "Engajamento", status: "coletivo" },
+  { key: "communication", label: "Comunicação", status: "coletivo" },
+  { key: "equilibrium", label: "Equilíbrio", status: "coletivo" },
+  { key: "recovery", label: "Recuperação", status: "coletivo" },
+];
 
 const EnterpriseCapacityPulseScreen = () => {
   const navigate = useNavigate();
+  const { organization } = useAuth();
+  const [rows, setRows] = useState<PulseRow[]>([]);
 
-  const metrics = [
-    { label: "Capacidade Geral", value: "78%", status: "saudável" },
-    { label: "Risco de Burnout", value: "12%", status: "baixo" },
-    { label: "Energia do Time", value: "Alta", status: "positivo" },
-    { label: "Foco Coletivo", value: "82%", status: "positivo" },
-  ];
+  useEffect(() => {
+    if (!organization?.id) return;
+    void supabase
+      .rpc("get_capacity_pulse", { _organization_id: organization.id, _days: 30 })
+      .then(({ data }) => setRows((data as PulseRow[]) ?? []));
+  }, [organization?.id]);
+
+  const byDim = new Map(rows.map((r) => [r.dimension, r]));
+  const metrics = DIMENSIONS.map((d) => {
+    const r = byDim.get(d.key);
+    return {
+      label: d.label,
+      value: r?.avg_value != null ? Number(r.avg_value).toFixed(2) : "•••",
+      status: r?.avg_value != null ? d.status : "amostra insuficiente",
+    };
+  });
 
   return (
     <EnterpriseRHLayout title="Pulso de Capacidade">
@@ -38,7 +63,7 @@ const EnterpriseCapacityPulseScreen = () => {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="grid grid-cols-2 lg:grid-cols-5 gap-6">
           {metrics.map((m, i) => (
             <div key={i} className="bg-white p-6 rounded-3xl border border-black/5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
               <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 mb-2">{m.label}</p>
@@ -50,6 +75,10 @@ const EnterpriseCapacityPulseScreen = () => {
             </div>
           ))}
         </section>
+
+        <p className="text-[11px] text-[#999] italic px-1">
+          Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.
+        </p>
 
         <section className="bg-white rounded-[40px] p-10 border border-white/60 shadow-sm">
           <h3 className="text-xl font-playfair italic mb-8">Fluxo de energia semanal</h3>
