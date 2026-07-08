@@ -7,7 +7,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,6 +107,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(false);
   const [recomputing, setRecomputing] = useState(false);
+  const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
 
   const load = async () => {
     if (!organization?.id) return;
@@ -114,6 +116,18 @@ export default function EnterpriseRHDashboardScreen() {
       _organization_id: organization.id,
     });
     if (!error && data) setSummary(data as unknown as Summary);
+    const { data: sig } = await (supabase as any)
+      .from("predictive_signals")
+      .select("title, severity, status")
+      .eq("organization_id", organization.id)
+      .neq("status", "resolved")
+      .order("detected_at", { ascending: false });
+    const list = (sig as { title: string; severity: string; status: string }[]) ?? [];
+    setPredictive({
+      open: list.length,
+      critical: list.filter((s) => s.severity === "critical").length,
+      top: list[0] ?? null,
+    });
     setLoading(false);
   };
 
