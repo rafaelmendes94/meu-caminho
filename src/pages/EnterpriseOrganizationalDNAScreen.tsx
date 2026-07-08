@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dna, Sparkles, RefreshCw, ShieldCheck, TrendingUp, AlertCircle, Target } from "lucide-react";
+import { Dna, Sparkles, RefreshCw, ShieldCheck, TrendingUp, AlertCircle, Target, Gauge } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,6 +61,7 @@ export default function EnterpriseOrganizationalDNAScreen() {
   const [generating, setGenerating] = useState(false);
   const [planning, setPlanning] = useState(false);
   const [suggestingRitual, setSuggestingRitual] = useState(false);
+  const [orgScore, setOrgScore] = useState<{ overall: number | null; confidence: number | null } | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -73,6 +74,14 @@ export default function EnterpriseOrganizationalDNAScreen() {
       .limit(1)
       .maybeSingle();
     setReport((data as DNAReport) ?? null);
+    const { data: sc } = await (supabase as any)
+      .from("organizational_scores")
+      .select("overall_score, confidence")
+      .eq("organization_id", organization.id)
+      .order("score_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setOrgScore(sc ? { overall: (sc as any).overall_score, confidence: (sc as any).confidence } : null);
     setLoading(false);
   };
 
@@ -147,6 +156,15 @@ export default function EnterpriseOrganizationalDNAScreen() {
               </p>
             </div>
             <div className="shrink-0">
+              {orgScore && (
+                <button
+                  onClick={() => navigate('/enterprise/rh/score-organizacional')}
+                  className="mb-3 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0B0908] text-white px-4 py-2 text-[12px] font-bold hover:opacity-90"
+                >
+                  <Gauge className="w-3.5 h-3.5 text-[#F88A2B]" />
+                  Score Organizacional {orgScore.overall != null ? `${Math.round(Number(orgScore.overall))}/100` : "•••"}
+                </button>
+              )}
               <EnterpriseRHButton onClick={generate} icon={generating ? RefreshCw : Sparkles} fullWidth={false}>
                 {generating ? "Gerando…" : report ? "Gerar novo DNA" : "Gerar DNA agora"}
               </EnterpriseRHButton>
