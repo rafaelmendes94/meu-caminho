@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      emotional_checkins: {
+        Row: {
+          created_at: string
+          energy_score: number
+          id: string
+          mood_score: number
+          notes: string | null
+          organization_id: string | null
+          stress_score: number
+          tags: string[] | null
+          user_id: string
+          week_of: string | null
+        }
+        Insert: {
+          created_at?: string
+          energy_score: number
+          id?: string
+          mood_score: number
+          notes?: string | null
+          organization_id?: string | null
+          stress_score: number
+          tags?: string[] | null
+          user_id: string
+          week_of?: string | null
+        }
+        Update: {
+          created_at?: string
+          energy_score?: number
+          id?: string
+          mood_score?: number
+          notes?: string | null
+          organization_id?: string | null
+          stress_score?: number
+          tags?: string[] | null
+          user_id?: string
+          week_of?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emotional_checkins_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_profiles: {
         Row: {
           confidence: string
@@ -366,6 +413,117 @@ export type Database = {
           },
         ]
       }
+      pulse_prompts: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          dimension: string
+          id: string
+          question: string
+          response_type: string
+          rotation_weight: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          dimension: string
+          id?: string
+          question: string
+          response_type?: string
+          rotation_weight?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          dimension?: string
+          id?: string
+          question?: string
+          response_type?: string
+          rotation_weight?: number
+        }
+        Relationships: []
+      }
+      pulse_responses: {
+        Row: {
+          context: string | null
+          id: string
+          organization_id: string | null
+          prompt_id: string
+          responded_at: string
+          user_id: string
+          value_num: number | null
+          value_text: string | null
+          week_of: string | null
+        }
+        Insert: {
+          context?: string | null
+          id?: string
+          organization_id?: string | null
+          prompt_id: string
+          responded_at?: string
+          user_id: string
+          value_num?: number | null
+          value_text?: string | null
+          week_of?: string | null
+        }
+        Update: {
+          context?: string | null
+          id?: string
+          organization_id?: string | null
+          prompt_id?: string
+          responded_at?: string
+          user_id?: string
+          value_num?: number | null
+          value_text?: string | null
+          week_of?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pulse_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pulse_responses_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "pulse_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pulse_schedules: {
+        Row: {
+          opted_out: boolean
+          preferred_days: number[]
+          preferred_hour: number
+          snooze_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          opted_out?: boolean
+          preferred_days?: number[]
+          preferred_hour?: number
+          snooze_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          opted_out?: boolean
+          preferred_days?: number[]
+          preferred_hour?: number
+          snooze_until?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -441,6 +599,25 @@ export type Database = {
     }
     Functions: {
       current_organization_id: { Args: never; Returns: string }
+      get_pulse_aggregate: {
+        Args: { _days?: number; _organization_id: string }
+        Returns: {
+          avg_value: number
+          dimension: string
+          participants_count: number
+          response_count: number
+        }[]
+      }
+      get_weekly_checkin_aggregate: {
+        Args: { _organization_id: string }
+        Returns: {
+          avg_energy: number
+          avg_mood: number
+          avg_stress: number
+          participants_count: number
+          week_of: string
+        }[]
+      }
       has_any_role: {
         Args: { _roles: Database["public"]["Enums"]["app_role"][] }
         Returns: boolean
