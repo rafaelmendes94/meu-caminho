@@ -10,7 +10,8 @@ import {
   RefreshCw,
   Sparkles,
   Dna,
-  Target
+  Target,
+  Gauge
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -112,6 +113,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [predictive, setPredictive] = useState<{ open: number; critical: number; top?: { title: string; severity: string } | null }>({ open: 0, critical: 0, top: null });
   const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
   const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
+  const [orgScore, setOrgScore] = useState<{ overall: number | null; previous: number | null; confidence: number | null } | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -159,6 +161,22 @@ export default function EnterpriseRHDashboardScreen() {
     const currentWeek = wiList[0]?.week_of;
     const weekItems = currentWeek ? wiList.filter((w) => w.week_of === currentWeek) : [];
     setWeeklyInsights({ count: weekItems.length, top: weekItems[0] ?? null });
+    const { data: scoresRows } = await (supabase as any)
+      .from("organizational_scores")
+      .select("overall_score, confidence, score_date")
+      .eq("organization_id", organization.id)
+      .order("score_date", { ascending: false })
+      .limit(2);
+    const sr = (scoresRows ?? []) as { overall_score: number | null; confidence: number | null }[];
+    if (sr.length > 0) {
+      setOrgScore({
+        overall: sr[0].overall_score,
+        previous: sr[1]?.overall_score ?? null,
+        confidence: sr[0].confidence,
+      });
+    } else {
+      setOrgScore(null);
+    }
     setLoading(false);
   };
 
