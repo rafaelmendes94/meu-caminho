@@ -3,6 +3,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import type { ReactNode } from "react";
 import EnterpriseCuryDigitalScreen from "./components/EnterpriseCuryDigitalScreen.tsx";
 import CanalDiretoRHScreen from "./components/CanalDiretoRHScreen.tsx";
 import CanalDiretoMensagemScreen from "./components/CanalDiretoMensagemScreen.tsx";
@@ -156,92 +159,103 @@ import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.t
 
 const queryClient = new QueryClient();
 
+const RH = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute requiredRoles={["owner", "rh_admin"]}>{children}</ProtectedRoute>
+);
+const Ent = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute requiredRoles={["owner", "rh_admin", "leader", "employee"]}>{children}</ProtectedRoute>
+);
+const Auth = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AuthProvider>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/home" element={<HomeScreen />} />
+          <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
           <Route path="/login" element={<Index />} />
           <Route path="/preloader" element={<PreloaderRoute />} />
-          <Route path="/welcome" element={<WelcomeScreen />} />
-          <Route path="/chat" element={<ChatAIScreen />} />
-          <Route path="/perfil" element={<ProfileScreen />} />
-          <Route path="/menu" element={<MenuScreen />} />
-          <Route path="/configuracoes" element={<SettingsScreen />} />
-          <Route path="/configuracoes/senha" element={<ChangePasswordScreen />} />
-          <Route path="/configuracoes/email" element={<ChangeEmailScreen />} />
-          <Route path="/configuracoes/idioma" element={<LanguageScreen />} />
-          <Route path="/configuracoes/leitura" element={<ReadingSettingsScreen />} />
-          <Route path="/configuracoes/qualidade" element={<VideoQualityScreen />} />
-          <Route path="/configuracoes/privacidade" element={<PrivacyScreen />} />
-          <Route path="/configuracoes/termos" element={<TermsScreen />} />
-          <Route path="/configuracoes/politica" element={<PolicyScreen />} />
-          <Route path="/ajuda" element={<HelpCenterScreen />} />
-          <Route path="/fale-conosco" element={<ContactUsScreen />} />
-          <Route path="/notificacoes" element={<NotificationsScreen />} />
-          <Route path="/historico" element={<HistoryScreen />} />
-          <Route path="/downloads" element={<DownloadsScreen />} />
-          <Route path="/favoritos" element={<FavoritesScreen />} />
-          <Route path="/assinatura" element={<SubscriptionScreen />} />
+          <Route path="/welcome" element={<Auth><WelcomeScreen /></Auth>} />
+          <Route path="/chat" element={<Auth><ChatAIScreen /></Auth>} />
+          <Route path="/perfil" element={<Auth><ProfileScreen /></Auth>} />
+          <Route path="/menu" element={<Auth><MenuScreen /></Auth>} />
+          <Route path="/configuracoes" element={<Auth><SettingsScreen /></Auth>} />
+          <Route path="/configuracoes/senha" element={<Auth><ChangePasswordScreen /></Auth>} />
+          <Route path="/configuracoes/email" element={<Auth><ChangeEmailScreen /></Auth>} />
+          <Route path="/configuracoes/idioma" element={<Auth><LanguageScreen /></Auth>} />
+          <Route path="/configuracoes/leitura" element={<Auth><ReadingSettingsScreen /></Auth>} />
+          <Route path="/configuracoes/qualidade" element={<Auth><VideoQualityScreen /></Auth>} />
+          <Route path="/configuracoes/privacidade" element={<Auth><PrivacyScreen /></Auth>} />
+          <Route path="/configuracoes/termos" element={<Auth><TermsScreen /></Auth>} />
+          <Route path="/configuracoes/politica" element={<Auth><PolicyScreen /></Auth>} />
+          <Route path="/ajuda" element={<Auth><HelpCenterScreen /></Auth>} />
+          <Route path="/fale-conosco" element={<Auth><ContactUsScreen /></Auth>} />
+          <Route path="/notificacoes" element={<Auth><NotificationsScreen /></Auth>} />
+          <Route path="/historico" element={<Auth><HistoryScreen /></Auth>} />
+          <Route path="/downloads" element={<Auth><DownloadsScreen /></Auth>} />
+          <Route path="/favoritos" element={<Auth><FavoritesScreen /></Auth>} />
+          <Route path="/assinatura" element={<Auth><SubscriptionScreen /></Auth>} />
           <Route path="/sobre-expert" element={<AboutExpertScreen />} />
-          <Route path="/conteudo/video" element={<VideoContentScreen />} />
-          <Route path="/feed/video" element={<VideoContentScreen />} />
-          <Route path="/conteudo/audio" element={<AudioReadingScreen />} />
-          <Route path="/player/audio" element={<AudioPlayerScreen />} />
-          <Route path="/conteudo/detalhe" element={<ContentDetailScreen />} />
-          <Route path="/player/podcast" element={<PodcastPlayerScreen />} />
-          <Route path="/player/video" element={<VideoShortsScreen />} />
-          <Route path="/feed/cortes" element={<VideoShortsScreen />} />
-          <Route path="/player/audiolivro" element={<AudiobookScreen />} />
-          <Route path="/feed/categorias" element={<FeedCategoriesScreen />} />
-          <Route path="/biblioteca/salvos" element={<SavedContentScreen />} />
-          <Route path="/biblioteca/continuar" element={<ContinueWatchingScreen />} />
-          <Route path="/campanhas" element={<CampaignsScreen />} />
-          <Route path="/convidado" element={<GuestProfileScreen />} />
-          <Route path="/convidado/:slug" element={<GuestProfileScreen />} />
-          <Route path="/conteudo/leitura" element={<BlogReadingScreen />} />
-          <Route path="/feed/leitura" element={<BlogReadingScreen />} />
-          <Route path="/explorar" element={<ExploreScreen />} />
-          <Route path="/biblioteca" element={<LibraryScreen />} />
-          <Route path="/biblioteca/desbloqueado" element={<BookUnlockedScreen />} />
-          <Route path="/biblioteca/bloqueado" element={<BookLockedScreen />} />
-          <Route path="/biblioteca/leitor" element={<BookReaderScreen />} />
-          <Route path="/biblioteca/temas" element={<ThemedLibraryScreen />} />
-          <Route path="/biblioteca/detalhe" element={<BookDetailScreen />} />
-          <Route path="/biblioteca/nova-liberacao" element={<NewReleaseScreen />} />
-          <Route path="/biblioteca/liberados-mes" element={<MonthlyBooksScreen />} />
-          <Route path="/biblioteca/minha-leitura" element={<MyReadingScreen />} />
-          <Route path="/biblioteca/progresso-leitura" element={<ReadingProgressScreen />} />
-          <Route path="/biblioteca/capitulos" element={<BookChaptersScreen />} />
-          <Route path="/trilha" element={<TrilhaScreen />} />
-          <Route path="/jornada" element={<JourneyOverviewScreen />} />
-          <Route path="/diagnostico" element={<DiagnosticoScreen />} />
-          <Route path="/curso" element={<CursoScreen />} />
-          <Route path="/curso/1" element={<CursoScreen />} />
-          <Route path="/modulos" element={<ModulosScreen />} />
-          <Route path="/aula" element={<AulaPlayerScreen />} />
-          <Route path="/materiais" element={<MateriaisScreen />} />
-          <Route path="/progresso" element={<ProgressoScreen />} />
-          <Route path="/prova-final" element={<ProvaFinalScreen />} />
-          <Route path="/prova-final/resultado" element={<ResultadoProvaScreen />} />
-          <Route path="/curso-desbloqueado" element={<CursoDesbloqueadoScreen />} />
-          <Route path="/diagnostico-final" element={<DiagnosticoFinalScreen />} />
-          <Route path="/evolucao-pessoal" element={<EvolucaoPessoalScreen />} />
-          <Route path="/proxima-trilha" element={<ProximaTrilhaScreen />} />
-          <Route path="/mudanca-jornada" element={<MudancaJornadaScreen />} />
-          <Route path="/mudar-trilha/confirmar" element={<MudarTrilhaConfirmScreen />} />
-          <Route path="/conquista" element={<ConquistaScreen />} />
-          <Route path="/cury-digital" element={<CuryDigitalHomeScreen />} />
-          <Route path="/cury-digital/chat" element={<CuryDigitalChatScreen />} />
-          <Route path="/cury-digital/historico" element={<HistoricoIAScreen />} />
-          <Route path="/cury-digital/sugestao" element={<SugestaoTrilhaScreen />} />
-          <Route path="/cury-digital/critico" element={<RespostaCriticaScreen />} />
-          <Route path="/cury-digital/insights" element={<InsightsIAScreen />} />
-          <Route path="/feed" element={<FeedScreen />} />
+          <Route path="/conteudo/video" element={<Auth><VideoContentScreen /></Auth>} />
+          <Route path="/feed/video" element={<Auth><VideoContentScreen /></Auth>} />
+          <Route path="/conteudo/audio" element={<Auth><AudioReadingScreen /></Auth>} />
+          <Route path="/player/audio" element={<Auth><AudioPlayerScreen /></Auth>} />
+          <Route path="/conteudo/detalhe" element={<Auth><ContentDetailScreen /></Auth>} />
+          <Route path="/player/podcast" element={<Auth><PodcastPlayerScreen /></Auth>} />
+          <Route path="/player/video" element={<Auth><VideoShortsScreen /></Auth>} />
+          <Route path="/feed/cortes" element={<Auth><VideoShortsScreen /></Auth>} />
+          <Route path="/player/audiolivro" element={<Auth><AudiobookScreen /></Auth>} />
+          <Route path="/feed/categorias" element={<Auth><FeedCategoriesScreen /></Auth>} />
+          <Route path="/biblioteca/salvos" element={<Auth><SavedContentScreen /></Auth>} />
+          <Route path="/biblioteca/continuar" element={<Auth><ContinueWatchingScreen /></Auth>} />
+          <Route path="/campanhas" element={<Auth><CampaignsScreen /></Auth>} />
+          <Route path="/convidado" element={<Auth><GuestProfileScreen /></Auth>} />
+          <Route path="/convidado/:slug" element={<Auth><GuestProfileScreen /></Auth>} />
+          <Route path="/conteudo/leitura" element={<Auth><BlogReadingScreen /></Auth>} />
+          <Route path="/feed/leitura" element={<Auth><BlogReadingScreen /></Auth>} />
+          <Route path="/explorar" element={<Auth><ExploreScreen /></Auth>} />
+          <Route path="/biblioteca" element={<Auth><LibraryScreen /></Auth>} />
+          <Route path="/biblioteca/desbloqueado" element={<Auth><BookUnlockedScreen /></Auth>} />
+          <Route path="/biblioteca/bloqueado" element={<Auth><BookLockedScreen /></Auth>} />
+          <Route path="/biblioteca/leitor" element={<Auth><BookReaderScreen /></Auth>} />
+          <Route path="/biblioteca/temas" element={<Auth><ThemedLibraryScreen /></Auth>} />
+          <Route path="/biblioteca/detalhe" element={<Auth><BookDetailScreen /></Auth>} />
+          <Route path="/biblioteca/nova-liberacao" element={<Auth><NewReleaseScreen /></Auth>} />
+          <Route path="/biblioteca/liberados-mes" element={<Auth><MonthlyBooksScreen /></Auth>} />
+          <Route path="/biblioteca/minha-leitura" element={<Auth><MyReadingScreen /></Auth>} />
+          <Route path="/biblioteca/progresso-leitura" element={<Auth><ReadingProgressScreen /></Auth>} />
+          <Route path="/biblioteca/capitulos" element={<Auth><BookChaptersScreen /></Auth>} />
+          <Route path="/trilha" element={<Auth><TrilhaScreen /></Auth>} />
+          <Route path="/jornada" element={<Auth><JourneyOverviewScreen /></Auth>} />
+          <Route path="/diagnostico" element={<Auth><DiagnosticoScreen /></Auth>} />
+          <Route path="/curso" element={<Auth><CursoScreen /></Auth>} />
+          <Route path="/curso/1" element={<Auth><CursoScreen /></Auth>} />
+          <Route path="/modulos" element={<Auth><ModulosScreen /></Auth>} />
+          <Route path="/aula" element={<Auth><AulaPlayerScreen /></Auth>} />
+          <Route path="/materiais" element={<Auth><MateriaisScreen /></Auth>} />
+          <Route path="/progresso" element={<Auth><ProgressoScreen /></Auth>} />
+          <Route path="/prova-final" element={<Auth><ProvaFinalScreen /></Auth>} />
+          <Route path="/prova-final/resultado" element={<Auth><ResultadoProvaScreen /></Auth>} />
+          <Route path="/curso-desbloqueado" element={<Auth><CursoDesbloqueadoScreen /></Auth>} />
+          <Route path="/diagnostico-final" element={<Auth><DiagnosticoFinalScreen /></Auth>} />
+          <Route path="/evolucao-pessoal" element={<Auth><EvolucaoPessoalScreen /></Auth>} />
+          <Route path="/proxima-trilha" element={<Auth><ProximaTrilhaScreen /></Auth>} />
+          <Route path="/mudanca-jornada" element={<Auth><MudancaJornadaScreen /></Auth>} />
+          <Route path="/mudar-trilha/confirmar" element={<Auth><MudarTrilhaConfirmScreen /></Auth>} />
+          <Route path="/conquista" element={<Auth><ConquistaScreen /></Auth>} />
+          <Route path="/cury-digital" element={<Auth><CuryDigitalHomeScreen /></Auth>} />
+          <Route path="/cury-digital/chat" element={<Auth><CuryDigitalChatScreen /></Auth>} />
+          <Route path="/cury-digital/historico" element={<Auth><HistoricoIAScreen /></Auth>} />
+          <Route path="/cury-digital/sugestao" element={<Auth><SugestaoTrilhaScreen /></Auth>} />
+          <Route path="/cury-digital/critico" element={<Auth><RespostaCriticaScreen /></Auth>} />
+          <Route path="/cury-digital/insights" element={<Auth><InsightsIAScreen /></Auth>} />
+          <Route path="/feed" element={<Auth><FeedScreen /></Auth>} />
           <Route path="/enterprise/welcome" element={<EnterpriseWelcomeScreen />} />
           <Route path="/enterprise/privacidade" element={<PrivacyEnterpriseScreen />} />
           <Route path="/enterprise/privacy" element={<PrivacyEnterpriseScreen />} />
@@ -249,116 +263,117 @@ const App = () => (
           <Route path="/enterprise/aceite-privacidade" element={<EnterprisePrivacyConsentScreen />} />
           <Route path="/enterprise/cadastro" element={<EnterpriseEmployeeRegisterScreen />} />
           <Route path="/enterprise/boas-vindas" element={<EnterpriseWelcomeJourneyScreen />} />
-          <Route path="/enterprise" element={<EnterpriseHomeScreen />} />
-          <Route path="/enterprise/cury-digital" element={<EnterpriseCuryDigitalScreen />} />
-          <Route path="/enterprise/cury-digital/chat" element={<CuryDigitalChatScreen />} />
-          <Route path="/enterprise/cury-digital/historico" element={<HistoricoIAScreen />} />
-          <Route path="/enterprise/cury-digital/sugestao" element={<SugestaoTrilhaScreen />} />
-          <Route path="/enterprise/cury-digital/critico" element={<RespostaCriticaScreen />} />
-          <Route path="/enterprise/cury-digital/insights" element={<InsightsIAScreen />} />
-          <Route path="/enterprise/checkin/intro" element={<EnterpriseCheckinIntroScreen />} />
-          <Route path="/enterprise/checkin" element={<EnterpriseCheckinScreen />} />
-          <Route path="/enterprise/checkin/resultado" element={<EnterpriseCheckinResultScreen />} />
-          <Route path="/enterprise/sos-rh" element={<CanalDiretoRHScreen />} />
-          <Route path="/enterprise/fale-conosco" element={<ContactUsScreen />} />
-          <Route path="/enterprise/materiais" element={<MateriaisScreen />} />
-          <Route path="/enterprise/prova-final" element={<ProvaFinalScreen />} />
-          <Route path="/enterprise/prova-final/resultado" element={<ResultadoProvaScreen />} />
-          <Route path="/enterprise/progresso" element={<ProgressoScreen />} />
-          <Route path="/enterprise/sos-rh/mensagem" element={<CanalDiretoMensagemScreen />} />
-          <Route path="/enterprise/sos-rh/confirmado" element={<CanalDiretoConfirmacaoScreen />} />
-          <Route path="/enterprise/biblioteca" element={<LibraryScreen />} />
-          <Route path="/enterprise/trilha" element={<TrilhaScreen />} />
-          <Route path="/enterprise/mudanca-jornada" element={<MudancaJornadaScreen />} />
-          <Route path="/enterprise/conteudo/leitura" element={<BlogReadingScreen />} />
-          <Route path="/enterprise/biblioteca" element={<LibraryScreen />} />
-          <Route path="/enterprise/biblioteca/leitor" element={<BookReaderScreen />} />
-          <Route path="/enterprise/feed" element={<FeedScreen />} />
-          <Route path="/enterprise/feed/leitura" element={<BlogReadingScreen />} />
-          <Route path="/enterprise/cury-digital/sugestao" element={<SugestaoTrilhaScreen />} />
-          <Route path="/enterprise/conteudo/detalhe" element={<ContentDetailScreen />} />
-          <Route path="/enterprise/player/video" element={<VideoShortsScreen />} />
-          <Route path="/enterprise/feed/cortes" element={<VideoShortsScreen />} />
-          <Route path="/enterprise/feed/video" element={<VideoContentScreen />} />
-          <Route path="/enterprise/conteudo/audio" element={<AudioReadingScreen />} />
-          <Route path="/enterprise/menu" element={<MenuScreen />} />
-          <Route path="/enterprise/jornada" element={<JourneyOverviewScreen />} />
-          <Route path="/enterprise/curso" element={<CursoScreen />} />
-          <Route path="/enterprise/modulos" element={<ModulosScreen />} />
-          <Route path="/enterprise/aula" element={<AulaPlayerScreen />} />
+          <Route path="/enterprise" element={<Ent><EnterpriseHomeScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital" element={<Ent><EnterpriseCuryDigitalScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital/chat" element={<Ent><CuryDigitalChatScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital/historico" element={<Ent><HistoricoIAScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital/sugestao" element={<Ent><SugestaoTrilhaScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital/critico" element={<Ent><RespostaCriticaScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital/insights" element={<Ent><InsightsIAScreen /></Ent>} />
+          <Route path="/enterprise/checkin/intro" element={<Ent><EnterpriseCheckinIntroScreen /></Ent>} />
+          <Route path="/enterprise/checkin" element={<Ent><EnterpriseCheckinScreen /></Ent>} />
+          <Route path="/enterprise/checkin/resultado" element={<Ent><EnterpriseCheckinResultScreen /></Ent>} />
+          <Route path="/enterprise/sos-rh" element={<Ent><CanalDiretoRHScreen /></Ent>} />
+          <Route path="/enterprise/fale-conosco" element={<Ent><ContactUsScreen /></Ent>} />
+          <Route path="/enterprise/materiais" element={<Ent><MateriaisScreen /></Ent>} />
+          <Route path="/enterprise/prova-final" element={<Ent><ProvaFinalScreen /></Ent>} />
+          <Route path="/enterprise/prova-final/resultado" element={<Ent><ResultadoProvaScreen /></Ent>} />
+          <Route path="/enterprise/progresso" element={<Ent><ProgressoScreen /></Ent>} />
+          <Route path="/enterprise/sos-rh/mensagem" element={<Ent><CanalDiretoMensagemScreen /></Ent>} />
+          <Route path="/enterprise/sos-rh/confirmado" element={<Ent><CanalDiretoConfirmacaoScreen /></Ent>} />
+          <Route path="/enterprise/biblioteca" element={<Ent><LibraryScreen /></Ent>} />
+          <Route path="/enterprise/trilha" element={<Ent><TrilhaScreen /></Ent>} />
+          <Route path="/enterprise/mudanca-jornada" element={<Ent><MudancaJornadaScreen /></Ent>} />
+          <Route path="/enterprise/conteudo/leitura" element={<Ent><BlogReadingScreen /></Ent>} />
+          <Route path="/enterprise/biblioteca" element={<Ent><LibraryScreen /></Ent>} />
+          <Route path="/enterprise/biblioteca/leitor" element={<Ent><BookReaderScreen /></Ent>} />
+          <Route path="/enterprise/feed" element={<Ent><FeedScreen /></Ent>} />
+          <Route path="/enterprise/feed/leitura" element={<Ent><BlogReadingScreen /></Ent>} />
+          <Route path="/enterprise/cury-digital/sugestao" element={<Ent><SugestaoTrilhaScreen /></Ent>} />
+          <Route path="/enterprise/conteudo/detalhe" element={<Ent><ContentDetailScreen /></Ent>} />
+          <Route path="/enterprise/player/video" element={<Ent><VideoShortsScreen /></Ent>} />
+          <Route path="/enterprise/feed/cortes" element={<Ent><VideoShortsScreen /></Ent>} />
+          <Route path="/enterprise/feed/video" element={<Ent><VideoContentScreen /></Ent>} />
+          <Route path="/enterprise/conteudo/audio" element={<Ent><AudioReadingScreen /></Ent>} />
+          <Route path="/enterprise/menu" element={<Ent><MenuScreen /></Ent>} />
+          <Route path="/enterprise/jornada" element={<Ent><JourneyOverviewScreen /></Ent>} />
+          <Route path="/enterprise/curso" element={<Ent><CursoScreen /></Ent>} />
+          <Route path="/enterprise/modulos" element={<Ent><ModulosScreen /></Ent>} />
+          <Route path="/enterprise/aula" element={<Ent><AulaPlayerScreen /></Ent>} />
           <Route path="/enterprise/checkout/plano" element={<EnterpriseCheckoutPlanScreen />} />
           <Route path="/enterprise/checkout/dados" element={<EnterpriseCheckoutCompanyDataScreen />} />
           <Route path="/enterprise/checkout/pagamento" element={<EnterpriseCheckoutPaymentScreen />} />
           <Route path="/enterprise/checkout/sucesso" element={<EnterpriseCheckoutSuccessScreen />} />
           <Route path="/enterprise/rh/login" element={<EnterpriseRHLoginScreen />} />
-          <Route path="/enterprise/rh/welcome" element={<EnterpriseRHWelcomeScreen />} />
-          <Route path="/enterprise/assinatura" element={<SubscriptionScreen />} />
-          <Route path="/enterprise/progresso" element={<ProgressoScreen />} />
-          <Route path="/enterprise/historico" element={<HistoryScreen />} />
-          <Route path="/enterprise/favoritos" element={<FavoritesScreen />} />
-          <Route path="/enterprise/downloads" element={<DownloadsScreen />} />
-          <Route path="/enterprise/perfil" element={<ProfileScreen />} />
-          <Route path="/enterprise/notificacoes" element={<NotificationsScreen />} />
-          <Route path="/enterprise/configuracoes" element={<SettingsScreen />} />
-          <Route path="/enterprise/configuracoes/leitura" element={<ReadingSettingsScreen />} />
-          <Route path="/enterprise/ajuda" element={<HelpCenterScreen />} />
-          <Route path="/enterprise/explorar" element={<ExploreScreen />} />
-          <Route path="/enterprise/rh/retencao-dados" element={<EnterpriseDataRetentionScreen />} />
-          <Route path="/enterprise/rh/compliance" element={<EnterpriseComplianceScreen />} />
-          <Route path="/enterprise/rh/politicas" element={<EnterprisePoliciesScreen />} />
-          <Route path="/enterprise/rh/unidades" element={<EnterpriseUnitsScreen />} />
-          <Route path="/enterprise/rh/multiplos-admins" element={<EnterpriseMultiAdminsScreen />} />
-          <Route path="/enterprise/rh/rituais/guiados" element={<EnterpriseGuidedRitualsScreen />} />
-          <Route path="/enterprise/rh/central-admin" element={<EnterpriseAdminCenterScreen />} />
-          <Route path="/enterprise/rh/billing" element={<EnterpriseBillingScreen />} />
+          <Route path="/enterprise/rh/welcome" element={<RH><EnterpriseRHWelcomeScreen /></RH>} />
+          <Route path="/enterprise/assinatura" element={<Ent><SubscriptionScreen /></Ent>} />
+          <Route path="/enterprise/progresso" element={<Ent><ProgressoScreen /></Ent>} />
+          <Route path="/enterprise/historico" element={<Ent><HistoryScreen /></Ent>} />
+          <Route path="/enterprise/favoritos" element={<Ent><FavoritesScreen /></Ent>} />
+          <Route path="/enterprise/downloads" element={<Ent><DownloadsScreen /></Ent>} />
+          <Route path="/enterprise/perfil" element={<Ent><ProfileScreen /></Ent>} />
+          <Route path="/enterprise/notificacoes" element={<Ent><NotificationsScreen /></Ent>} />
+          <Route path="/enterprise/configuracoes" element={<Ent><SettingsScreen /></Ent>} />
+          <Route path="/enterprise/configuracoes/leitura" element={<Ent><ReadingSettingsScreen /></Ent>} />
+          <Route path="/enterprise/ajuda" element={<Ent><HelpCenterScreen /></Ent>} />
+          <Route path="/enterprise/explorar" element={<Ent><ExploreScreen /></Ent>} />
+          <Route path="/enterprise/rh/retencao-dados" element={<RH><EnterpriseDataRetentionScreen /></RH>} />
+          <Route path="/enterprise/rh/compliance" element={<RH><EnterpriseComplianceScreen /></RH>} />
+          <Route path="/enterprise/rh/politicas" element={<RH><EnterprisePoliciesScreen /></RH>} />
+          <Route path="/enterprise/rh/unidades" element={<RH><EnterpriseUnitsScreen /></RH>} />
+          <Route path="/enterprise/rh/multiplos-admins" element={<RH><EnterpriseMultiAdminsScreen /></RH>} />
+          <Route path="/enterprise/rh/rituais/guiados" element={<RH><EnterpriseGuidedRitualsScreen /></RH>} />
+          <Route path="/enterprise/rh/central-admin" element={<RH><EnterpriseAdminCenterScreen /></RH>} />
+          <Route path="/enterprise/rh/billing" element={<RH><EnterpriseBillingScreen /></RH>} />
 
 
-          <Route path="/enterprise/rh" element={<EnterpriseRHAccessScreen />} />
-          <Route path="/enterprise/rh/dashboard" element={<EnterpriseRHDashboardScreen />} />
-          <Route path="/enterprise/rh/alertas" element={<EnterpriseAlertsScreen />} />
-          <Route path="/enterprise/rh/capacidade" element={<EnterpriseCapacityPulseScreen />} />
-          <Route path="/enterprise/rh/relatorio" element={<EnterpriseReportScreen />} />
-          <Route path="/enterprise/rh/equipe" element={<EnterpriseTeamManagementScreen />} />
-          <Route path="/enterprise/rh/departamentos" element={<EnterpriseDepartmentsScreen />} />
-          <Route path="/enterprise/rh/equipe/convidar" element={<EnterpriseInviteEmployeesScreen />} />
-          <Route path="/enterprise/rh/equipe/importar" element={<EnterpriseImportEmployeesScreen />} />
-          <Route path="/enterprise/rh/equipe/licencas" element={<EnterpriseLicensesScreen />} />
-          <Route path="/enterprise/rh/equipe/:id" element={<EnterpriseEmployeeAdminScreen />} />
-          <Route path="/enterprise/rh/configuracoes" element={<EnterpriseCompanySettingsScreen />} />
-          <Route path="/enterprise/rh/dominio" element={<EnterpriseDomainAccessScreen />} />
-          <Route path="/enterprise/rh/departamento/:id" element={<EnterpriseDepartmentDetailScreen />} />
-          <Route path="/enterprise/rh/plano-acao" element={<EnterpriseActionPlanScreen />} />
-          <Route path="/enterprise/rh/integracao" element={<EnterpriseAdminIntegrationScreen />} />
-          <Route path="/enterprise/rh/benchmark" element={<EnterpriseBenchmarkScreen />} />
-          <Route path="/enterprise/rh/lideranca" element={<EnterpriseLeadershipOverviewScreen />} />
-          <Route path="/enterprise/rh/impacto" element={<EnterpriseImpactScreen />} />
-          <Route path="/enterprise/rh/mapa-emocional" element={<EnterpriseEmotionalMapScreen />} />
-          <Route path="/enterprise/rh/comunicados" element={<EnterpriseLeadershipMessageScreen />} />
-          <Route path="/enterprise/rh/insights-ia" element={<EnterpriseAIInsightsScreen />} />
-          <Route path="/enterprise/rh/denuncias" element={<EnterpriseRHReportsScreen />} />
-          <Route path="/enterprise/rh/denuncias/:id" element={<EnterpriseRHReportDetailScreen />} />
-          <Route path="/enterprise/rh/sos" element={<EnterpriseRHReportsScreen />} />
-          <Route path="/enterprise/rh/evolucao" element={<EnterpriseJourneyEvolutionScreen />} />
-          <Route path="/enterprise/rh/status" element={<EnterpriseStatusHealthScreen />} />
-          <Route path="/enterprise/rh/rituais" element={<EnterpriseRitualsScreen />} />
-          <Route path="/enterprise/rh/saude-lideranca" element={<EnterpriseLeadershipHealthScreen />} />
-          <Route path="/enterprise/rh/navigation" element={<EnterpriseNavigationSystemScreen />} />
-          <Route path="/enterprise/rh/desktop" element={<EnterpriseDesktopResponsiveScreen />} />
-          <Route path="/enterprise/rh/permissoes" element={<EnterprisePermissionsScreen />} />
-          <Route path="/enterprise/rh/auditoria" element={<EnterpriseAuditLogsScreen />} />
-          <Route path="/enterprise/rh/integracoes" element={<EnterpriseIntegrationsScreen />} />
-          <Route path="/enterprise/rh/empty-states" element={<EnterpriseEmptyStatesScreen />} />
-          <Route path="/enterprise/rh/loading-states" element={<EnterpriseLoadingStatesScreen />} />
-          <Route path="/enterprise/rh/notificacoes" element={<EnterpriseNotificationsScreen />} />
-          <Route path="/enterprise/rh/onboarding" element={<EnterpriseOnboardingScreen />} />
-          <Route path="/enterprise/rh/exportacoes" element={<EnterpriseExportsScreen />} />
-          <Route path="/enterprise/rh/privacidade" element={<EnterprisePrivacyCenterScreen />} />
-          <Route path="/enterprise/rh/suporte" element={<EnterpriseSupportScreen />} />
-          <Route path="/enterprise/rh/roadmap" element={<EnterpriseRoadmapScreen />} />
-          <Route path="/enterprise/rh/comunicacao-lancamento" element={<EnterpriseLaunchCommunicationScreen />} />
+          <Route path="/enterprise/rh" element={<RH><EnterpriseRHAccessScreen /></RH>} />
+          <Route path="/enterprise/rh/dashboard" element={<RH><EnterpriseRHDashboardScreen /></RH>} />
+          <Route path="/enterprise/rh/alertas" element={<RH><EnterpriseAlertsScreen /></RH>} />
+          <Route path="/enterprise/rh/capacidade" element={<RH><EnterpriseCapacityPulseScreen /></RH>} />
+          <Route path="/enterprise/rh/relatorio" element={<RH><EnterpriseReportScreen /></RH>} />
+          <Route path="/enterprise/rh/equipe" element={<RH><EnterpriseTeamManagementScreen /></RH>} />
+          <Route path="/enterprise/rh/departamentos" element={<RH><EnterpriseDepartmentsScreen /></RH>} />
+          <Route path="/enterprise/rh/equipe/convidar" element={<RH><EnterpriseInviteEmployeesScreen /></RH>} />
+          <Route path="/enterprise/rh/equipe/importar" element={<RH><EnterpriseImportEmployeesScreen /></RH>} />
+          <Route path="/enterprise/rh/equipe/licencas" element={<RH><EnterpriseLicensesScreen /></RH>} />
+          <Route path="/enterprise/rh/equipe/:id" element={<RH><EnterpriseEmployeeAdminScreen /></RH>} />
+          <Route path="/enterprise/rh/configuracoes" element={<RH><EnterpriseCompanySettingsScreen /></RH>} />
+          <Route path="/enterprise/rh/dominio" element={<RH><EnterpriseDomainAccessScreen /></RH>} />
+          <Route path="/enterprise/rh/departamento/:id" element={<RH><EnterpriseDepartmentDetailScreen /></RH>} />
+          <Route path="/enterprise/rh/plano-acao" element={<RH><EnterpriseActionPlanScreen /></RH>} />
+          <Route path="/enterprise/rh/integracao" element={<RH><EnterpriseAdminIntegrationScreen /></RH>} />
+          <Route path="/enterprise/rh/benchmark" element={<RH><EnterpriseBenchmarkScreen /></RH>} />
+          <Route path="/enterprise/rh/lideranca" element={<RH><EnterpriseLeadershipOverviewScreen /></RH>} />
+          <Route path="/enterprise/rh/impacto" element={<RH><EnterpriseImpactScreen /></RH>} />
+          <Route path="/enterprise/rh/mapa-emocional" element={<RH><EnterpriseEmotionalMapScreen /></RH>} />
+          <Route path="/enterprise/rh/comunicados" element={<RH><EnterpriseLeadershipMessageScreen /></RH>} />
+          <Route path="/enterprise/rh/insights-ia" element={<RH><EnterpriseAIInsightsScreen /></RH>} />
+          <Route path="/enterprise/rh/denuncias" element={<RH><EnterpriseRHReportsScreen /></RH>} />
+          <Route path="/enterprise/rh/denuncias/:id" element={<RH><EnterpriseRHReportDetailScreen /></RH>} />
+          <Route path="/enterprise/rh/sos" element={<RH><EnterpriseRHReportsScreen /></RH>} />
+          <Route path="/enterprise/rh/evolucao" element={<RH><EnterpriseJourneyEvolutionScreen /></RH>} />
+          <Route path="/enterprise/rh/status" element={<RH><EnterpriseStatusHealthScreen /></RH>} />
+          <Route path="/enterprise/rh/rituais" element={<RH><EnterpriseRitualsScreen /></RH>} />
+          <Route path="/enterprise/rh/saude-lideranca" element={<RH><EnterpriseLeadershipHealthScreen /></RH>} />
+          <Route path="/enterprise/rh/navigation" element={<RH><EnterpriseNavigationSystemScreen /></RH>} />
+          <Route path="/enterprise/rh/desktop" element={<RH><EnterpriseDesktopResponsiveScreen /></RH>} />
+          <Route path="/enterprise/rh/permissoes" element={<RH><EnterprisePermissionsScreen /></RH>} />
+          <Route path="/enterprise/rh/auditoria" element={<RH><EnterpriseAuditLogsScreen /></RH>} />
+          <Route path="/enterprise/rh/integracoes" element={<RH><EnterpriseIntegrationsScreen /></RH>} />
+          <Route path="/enterprise/rh/empty-states" element={<RH><EnterpriseEmptyStatesScreen /></RH>} />
+          <Route path="/enterprise/rh/loading-states" element={<RH><EnterpriseLoadingStatesScreen /></RH>} />
+          <Route path="/enterprise/rh/notificacoes" element={<RH><EnterpriseNotificationsScreen /></RH>} />
+          <Route path="/enterprise/rh/onboarding" element={<RH><EnterpriseOnboardingScreen /></RH>} />
+          <Route path="/enterprise/rh/exportacoes" element={<RH><EnterpriseExportsScreen /></RH>} />
+          <Route path="/enterprise/rh/privacidade" element={<RH><EnterprisePrivacyCenterScreen /></RH>} />
+          <Route path="/enterprise/rh/suporte" element={<RH><EnterpriseSupportScreen /></RH>} />
+          <Route path="/enterprise/rh/roadmap" element={<RH><EnterpriseRoadmapScreen /></RH>} />
+          <Route path="/enterprise/rh/comunicacao-lancamento" element={<RH><EnterpriseLaunchCommunicationScreen /></RH>} />
 
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import abstractArt from "@/assets/login-abstract.png";
 import { useIsDesktop } from "@/hooks/use-desktop";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const GoogleIcon = () => (
   <svg width="24" height="24" viewBox="0 0 48 48" aria-hidden="true">
@@ -50,26 +53,44 @@ const SparkDivider = () => (
 const Index = () => {
   const navigate = useNavigate();
   const isDesktop = useIsDesktop();
-  
-  const fakeAuth = (provider: string) => {
-    console.log(`[mock] login with ${provider}`);
-    try { localStorage.setItem("mc_authed", "1"); } catch {}
-    
-    if (provider === "Google") {
-      navigate("/welcome");
-    } else if (provider === "Apple") {
-      navigate("/enterprise/welcome");
-    } else if (provider === "E-mail") {
-      navigate("/enterprise/rh");
-    } else {
-      navigate("/preloader");
+  const { isAuthenticated, signInWithGoogle, signInWithPassword, signUp, hasAnyRole, loading } = useAuth();
+  const [mode, setMode] = useState<"choose" | "email" | "signup">("choose");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      if (hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh", { replace: true });
+      else if (hasAnyRole(["employee", "leader"])) navigate("/enterprise", { replace: true });
+      else navigate("/home", { replace: true });
     }
+  }, [isAuthenticated, loading, hasAnyRole, navigate]);
+
+  const handleGoogle = async () => {
+    const { error } = await signInWithGoogle();
+    if (error) toast.error(error.message || "Falha ao entrar com Google");
   };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return toast.error("Preencha e-mail e senha.");
+    setSubmitting(true);
+    const { error } = mode === "signup"
+      ? await signUp(email, password)
+      : await signInWithPassword(email, password);
+    setSubmitting(false);
+    if (error) toast.error(error.message);
+    else if (mode === "signup") toast.success("Conta criada. Verifique seu e-mail se necessário.");
+  };
+
+  const goEmail = () => setMode("email");
+  const goSignup = () => setMode("signup");
 
   const LoginButtons = () => (
     <div className="mt-5 w-full flex flex-col gap-3">
       <button
-        onClick={() => fakeAuth("Google")}
+        onClick={handleGoogle}
         className="relative h-[58px] w-full rounded-full bg-white border border-[#EFEAE5] flex items-center justify-center text-[15.5px] font-semibold text-[#111] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)] transition-all duration-300 hover:shadow-[0_12px_28px_-12px_rgba(0,0,0,0.16)] active:scale-[0.98]"
       >
         <span className="absolute left-6 flex items-center"><GoogleIcon /></span>
@@ -78,7 +99,7 @@ const Index = () => {
       </button>
 
       <button
-        onClick={() => fakeAuth("Apple")}
+        onClick={() => toast.info("Login Apple em breve.")}
         className="relative h-[58px] w-full rounded-full bg-white border border-[#EFEAE5] flex items-center justify-center text-[15.5px] font-semibold text-[#111] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)] transition-all duration-300 hover:shadow-[0_12px_28px_-12px_rgba(0,0,0,0.16)] active:scale-[0.98]"
       >
         <span className="absolute left-6 flex items-center"><AppleIcon /></span>
@@ -92,18 +113,48 @@ const Index = () => {
         <div className="h-px flex-1 bg-[#1a1a1a]/10" />
       </div>
 
-      <button
-        onClick={() => fakeAuth("E-mail")}
-        className="relative h-[60px] w-full rounded-full flex items-center justify-center text-[16px] font-semibold text-white transition-all duration-300 active:scale-[0.98]"
-        style={{
-          background: "linear-gradient(180deg, #FF9D4D 0%, #F88A2B 100%)",
-          boxShadow: "0 1px 0 rgba(255,255,255,0.35) inset, 0 -1px 0 rgba(0,0,0,0.08) inset, 0 14px 30px -12px rgba(248,138,43,0.55), 0 6px 14px -2px rgba(248,138,43,0.30)",
-        }}
-      >
-        <span className="absolute left-6 flex items-center"><MailIcon /></span>
-        Entrar com e-mail
-        <span className="absolute right-6 flex items-center"><ChevronRight color="rgba(255,255,255,0.9)" /></span>
-      </button>
+      {mode === "choose" ? (
+        <button
+          onClick={goEmail}
+          className="relative h-[60px] w-full rounded-full flex items-center justify-center text-[16px] font-semibold text-white transition-all duration-300 active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(180deg, #FF9D4D 0%, #F88A2B 100%)",
+            boxShadow: "0 1px 0 rgba(255,255,255,0.35) inset, 0 -1px 0 rgba(0,0,0,0.08) inset, 0 14px 30px -12px rgba(248,138,43,0.55), 0 6px 14px -2px rgba(248,138,43,0.30)",
+          }}
+        >
+          <span className="absolute left-6 flex items-center"><MailIcon /></span>
+          Entrar com e-mail
+          <span className="absolute right-6 flex items-center"><ChevronRight color="rgba(255,255,255,0.9)" /></span>
+        </button>
+      ) : (
+        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="E-mail"
+            className="h-[52px] px-5 rounded-full bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B]"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Senha"
+            className="h-[52px] px-5 rounded-full bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B]"
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="relative h-[56px] w-full rounded-full flex items-center justify-center text-[15px] font-semibold text-white transition-all duration-300 active:scale-[0.98] disabled:opacity-60"
+            style={{
+              background: "linear-gradient(180deg, #FF9D4D 0%, #F88A2B 100%)",
+              boxShadow: "0 14px 30px -12px rgba(248,138,43,0.55)",
+            }}
+          >
+            {submitting ? "Entrando..." : mode === "signup" ? "Criar conta" : "Entrar"}
+          </button>
+        </form>
+      )}
     </div>
   );
 
@@ -179,13 +230,13 @@ const Index = () => {
 
             <div className="mt-12 text-center">
               <p className="text-[15px] text-[#666]">
-                Ainda não tem uma conta?
+                {mode === "signup" ? "Já tem uma conta?" : "Ainda não tem uma conta?"}
               </p>
-              <button 
-                onClick={() => fakeAuth("Criar conta")} 
+              <button
+                onClick={() => setMode(mode === "signup" ? "email" : "signup")}
                 className="mt-2 text-[#F88A2B] font-bold text-lg hover:underline inline-flex items-center gap-1"
               >
-                Criar conta <ChevronRight color="#F88A2B" />
+                {mode === "signup" ? "Entrar" : "Criar conta"} <ChevronRight color="#F88A2B" />
               </button>
             </div>
           </div>
@@ -250,10 +301,10 @@ const Index = () => {
 
           <div className="mt-auto pt-4 pb-6 text-center">
             <p className="text-[14px] text-[#666]">
-              Ainda não tem uma conta?
+              {mode === "signup" ? "Já tem uma conta?" : "Ainda não tem uma conta?"}
             </p>
-            <button onClick={() => fakeAuth("Criar conta")} className="mt-1 text-[#F88A2B] font-semibold inline-flex items-center gap-0.5">
-              Criar conta <ChevronRight color="#F88A2B" />
+            <button onClick={() => setMode(mode === "signup" ? "email" : "signup")} className="mt-1 text-[#F88A2B] font-semibold inline-flex items-center gap-0.5">
+              {mode === "signup" ? "Entrar" : "Criar conta"} <ChevronRight color="#F88A2B" />
             </button>
           </div>
         </div>

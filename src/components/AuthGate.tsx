@@ -1,10 +1,10 @@
-import { Navigate } from "react-router-dom";
 import HomeScreen from "./HomeScreen";
+import ProtectedRoute from "./ProtectedRoute";
 
-const AuthGate = () => {
-  const authed = typeof window !== "undefined" && localStorage.getItem("mc_authed") === "1";
-  if (!authed) return <Navigate to="/login" replace />;
-  return <HomeScreen />;
-};
+const AuthGate = () => (
+  <ProtectedRoute>
+    <HomeScreen />
+  </ProtectedRoute>
+);
 
 export default AuthGate;

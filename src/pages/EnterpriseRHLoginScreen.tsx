@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Building2, 
@@ -15,21 +15,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 
 const EnterpriseRHLoginScreen = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { signInWithPassword, isAuthenticated, hasAnyRole, loading } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!loading && isAuthenticated && hasAnyRole(["owner", "rh_admin"])) {
+      navigate("/enterprise/rh/welcome", { replace: true });
+    }
+  }, [isAuthenticated, loading, hasAnyRole, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Por favor, preencha todos os campos.");
       return;
     }
-    // Mock login success
-    navigate("/enterprise/rh/welcome");
+    setSubmitting(true);
+    const { error } = await signInWithPassword(email, password);
+    setSubmitting(false);
+    if (error) toast.error(error.message);
   };
 
   const handleForgotPassword = () => {
@@ -125,9 +136,10 @@ const EnterpriseRHLoginScreen = () => {
 
                 <Button 
                   type="submit"
+                  disabled={submitting}
                   className="w-full h-14 bg-[#0B0908] text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest shadow-xl transition-all flex items-center justify-center gap-3 group hover:bg-[#0B0908]/90"
                 >
-                  <span>Entrar no Enterprise RH</span>
+                  <span>{submitting ? "Entrando..." : "Entrar no Enterprise RH"}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>
