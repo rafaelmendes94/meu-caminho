@@ -239,6 +239,18 @@ export default function EnterpriseAlertsScreen() {
     }
   };
 
+  const suggestRitual = async (sourceType: "predictive_signal", sourceId: string) => {
+    const { data, error } = await supabase.functions.invoke("generate-intelligent-ritual", {
+      body: { source_type: sourceType, source_id: sourceId },
+    });
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao sugerir ritual", description: error?.message ?? String((data as any)?.error), variant: "destructive" });
+    } else {
+      toast({ title: "Ritual sugerido" });
+      navigate("/enterprise/rh/rituais-inteligentes");
+    }
+  };
+
   return (
     <EnterpriseRHLayout title="Áreas em alerta">
       <div className="space-y-8 animate-fade-in">
@@ -364,7 +376,7 @@ export default function EnterpriseAlertsScreen() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {alerts.map((a) => (
-                <RealAlertCard key={a.id} alert={a} onAck={() => ack(a.id)} onResolve={() => resolve(a.id)} onPlan={() => generatePlan("alert", a.id)} />
+                <RealAlertCard key={a.id} alert={a} onAck={() => ack(a.id)} onResolve={() => resolve(a.id)} onPlan={() => generatePlan("alert", a.id)} onRitual={() => suggestRitual("predictive_signal", a.id)} />
               ))}
             </div>
           )}
