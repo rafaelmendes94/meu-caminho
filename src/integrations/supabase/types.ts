@@ -1860,6 +1860,7 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
+      health_check: { Args: never; Returns: Json }
       is_platform_admin: { Args: never; Returns: boolean }
       measure_impact: {
         Args: {
