@@ -9,6 +9,7 @@ const items = [
   { to: "/admin/billing", label: "Financeiro" },
   { to: "/admin/ai-usage", label: "Inteligência Artificial" },
   { to: "/admin/analytics", label: "Analytics" },
+  { to: "/admin/system", label: "System Health" },
   { to: "/admin/support", label: "Suporte" },
   { to: "/admin/audit", label: "Auditoria" },
 ];
