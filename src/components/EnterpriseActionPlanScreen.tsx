@@ -287,6 +287,14 @@ export default function EnterpriseActionPlanScreen() {
               <option value="critical">Crítica</option>
             </select>
             <button
+              onClick={() => measurePlan(plan.id)}
+              disabled={measuringId === plan.id}
+              className="ml-auto text-[11px] font-bold uppercase tracking-wider text-[#111] hover:text-[#F88A2B] inline-flex items-center gap-1 disabled:opacity-40"
+            >
+              {measuringId === plan.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Activity className="w-3 h-3" />}
+              Medir impacto
+            </button>
+            <button
               onClick={() => setExpanded(isOpen ? null : plan.id)}
               className="ml-auto text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80"
             >
