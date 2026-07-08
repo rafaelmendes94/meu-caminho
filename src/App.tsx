@@ -353,6 +353,7 @@ const App = () => (
           <Route path="/enterprise/rh/equipe/:id" element={<RH><EnterpriseEmployeeAdminScreen /></RH>} />
           <Route path="/enterprise/rh/organograma" element={<RH><EnterpriseOrgChartScreen /></RH>} />
           <Route path="/enterprise/rh/dna-organizacional" element={<RH><EnterpriseOrganizationalDNAScreen /></RH>} />
+          <Route path="/enterprise/rh/conselho-executivo" element={<RH><EnterpriseExecutiveCouncilScreen /></RH>} />
           <Route path="/enterprise/rh/configuracoes" element={<RH><EnterpriseCompanySettingsScreen /></RH>} />
           <Route path="/enterprise/rh/dominio" element={<RH><EnterpriseDomainAccessScreen /></RH>} />
           <Route path="/enterprise/rh/departamento/:id" element={<RH><EnterpriseDepartmentDetailScreen /></RH>} />
