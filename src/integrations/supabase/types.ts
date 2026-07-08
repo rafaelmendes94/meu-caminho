@@ -1717,6 +1717,24 @@ export type Database = {
       }
     }
     Functions: {
+      billing_organizations: {
+        Args: never
+        Returns: {
+          current_period_end: string
+          days_remaining: number
+          id: string
+          licenses_total: number
+          licenses_used: number
+          mrr_cents: number
+          name: string
+          plan: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          subscription_status: string
+          trial_ends_at: string
+        }[]
+      }
+      billing_overview: { Args: never; Returns: Json }
       calculate_organizational_score: {
         Args: { _organization_id: string }
         Returns: Json
