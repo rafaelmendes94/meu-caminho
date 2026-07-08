@@ -147,6 +147,7 @@ import EnterpriseMultiAdminsScreen from "./pages/EnterpriseMultiAdminsScreen.tsx
 import EnterpriseGuidedRitualsScreen from "./pages/EnterpriseGuidedRitualsScreen.tsx";
 import EnterpriseIntelligentRitualsScreen from "./pages/EnterpriseIntelligentRitualsScreen.tsx";
 import EnterpriseOrganizationalScoreScreen from "./pages/EnterpriseOrganizationalScoreScreen.tsx";
+import EnterpriseImpactEngineScreen from "./pages/EnterpriseImpactEngineScreen.tsx";
 import EnterpriseAdminCenterScreen from "./pages/EnterpriseAdminCenterScreen.tsx";
 import EnterpriseBillingScreen from "./pages/EnterpriseBillingScreen.tsx";
 import EnterpriseCheckoutPlanScreen from "./pages/EnterpriseCheckoutPlanScreen.tsx";
@@ -365,7 +366,7 @@ const App = () => (
           <Route path="/enterprise/rh/integracao" element={<RH><EnterpriseAdminIntegrationScreen /></RH>} />
           <Route path="/enterprise/rh/benchmark" element={<RH><EnterpriseBenchmarkScreen /></RH>} />
           <Route path="/enterprise/rh/lideranca" element={<RH><EnterpriseLeadershipOverviewScreen /></RH>} />
-          <Route path="/enterprise/rh/impacto" element={<RH><EnterpriseImpactScreen /></RH>} />
+          <Route path="/enterprise/rh/impacto" element={<RH><EnterpriseImpactEngineScreen /></RH>} />
           <Route path="/enterprise/rh/mapa-emocional" element={<RH><EnterpriseEmotionalMapScreen /></RH>} />
           <Route path="/enterprise/rh/comunicados" element={<RH><EnterpriseLeadershipMessageScreen /></RH>} />
           <Route path="/enterprise/rh/insights-ia" element={<RH><EnterpriseAIInsightsScreen /></RH>} />

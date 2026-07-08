@@ -11,7 +11,8 @@ import {
   Sparkles,
   Dna,
   Target,
-  Gauge
+  Gauge,
+  Activity
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,6 +115,7 @@ export default function EnterpriseRHDashboardScreen() {
   const [dna, setDna] = useState<{ overall: number | null; generated_at: string | null; strengths: string[] } | null>(null);
   const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
   const [orgScore, setOrgScore] = useState<{ overall: number | null; previous: number | null; confidence: number | null } | null>(null);
+  const [impactSummary, setImpactSummary] = useState<{ count: number; avg: number | null; top: { source_type: string; impact: number } | null }>({ count: 0, avg: null, top: null });
 
   const load = async () => {
     if (!organization?.id) return;
@@ -176,6 +178,20 @@ export default function EnterpriseRHDashboardScreen() {
       });
     } else {
       setOrgScore(null);
+    }
+    const { data: impRows } = await (supabase as any)
+      .from("impact_measurements")
+      .select("source_type, impact_score, measured_at")
+      .eq("organization_id", organization.id)
+      .order("measured_at", { ascending: false })
+      .limit(50);
+    const impList = ((impRows ?? []) as { source_type: string; impact_score: number | null }[]).filter((r) => r.impact_score != null);
+    if (impList.length) {
+      const avg = impList.reduce((s, r) => s + Number(r.impact_score), 0) / impList.length;
+      const top = [...impList].sort((a, b) => Number(b.impact_score) - Number(a.impact_score))[0];
+      setImpactSummary({ count: impList.length, avg, top: { source_type: top.source_type, impact: Number(top.impact_score) } });
+    } else {
+      setImpactSummary({ count: 0, avg: null, top: null });
     }
     setLoading(false);
   };
@@ -431,6 +447,37 @@ export default function EnterpriseRHDashboardScreen() {
           </button>
           <p className="text-[10px] text-[#999] italic mt-2 px-1">
             Insights Semanais utilizam exclusivamente dados organizacionais agregados e anonimizados.
+          </p>
+        </section>
+
+        {/* Motor de Impacto — card */}
+        <section>
+          <button
+            onClick={() => navigate('/enterprise/rh/impacto')}
+            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
+          >
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
+                <Activity className="h-5 w-5 text-[#F88A2B]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Motor de Impacto™</div>
+                <div className="text-[15px] font-bold text-[#111] mt-1 truncate">
+                  {impactSummary.count > 0
+                    ? `${impactSummary.count} iniciativas avaliadas · impacto médio ${impactSummary.avg != null ? (impactSummary.avg >= 0 ? "+" : "") + impactSummary.avg.toFixed(1) : "•••"}`
+                    : "Nenhuma iniciativa medida ainda"}
+                </div>
+                {impactSummary.top && (
+                  <div className="text-[11px] text-[#666] mt-1 truncate">
+                    Melhor: {impactSummary.top.source_type === "action_plan" ? "Plano" : impactSummary.top.source_type === "ritual" ? "Ritual" : "Insight"} ({impactSummary.top.impact >= 0 ? "+" : ""}{impactSummary.top.impact.toFixed(1)})
+                  </div>
+                )}
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
+          </button>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            O Motor de Impacto™ utiliza exclusivamente indicadores organizacionais agregados.
           </p>
         </section>
 
