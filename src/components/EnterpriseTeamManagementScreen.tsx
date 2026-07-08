@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowLeft, 
   Users, 
@@ -63,6 +65,24 @@ const PendingInviteItem = ({ name, area }: { name: string; area: string }) => (
 export default function EnterpriseTeamManagementScreen() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { organization } = useAuth();
+  const [stats, setStats] = useState<{ invited: number; active: number; pending: number } | null>(null);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      const [invitesRes, profilesRes, pendingRes] = await Promise.all([
+        supabase.from("enterprise_invites").select("id", { count: "exact", head: true }).eq("organization_id", organization.id),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("organization_id", organization.id),
+        supabase.from("enterprise_invites").select("id", { count: "exact", head: true }).eq("organization_id", organization.id).is("accepted_at", null),
+      ]);
+      setStats({
+        invited: invitesRes.count ?? 0,
+        active: profilesRes.count ?? 0,
+        pending: pendingRes.count ?? 0,
+      });
+    })();
+  }, [organization?.id]);
 
   return (
     <EnterpriseRHLayout title="Equipe Enterprise">
