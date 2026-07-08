@@ -149,6 +149,8 @@ import EnterpriseCheckoutPaymentScreen from "./pages/EnterpriseCheckoutPaymentSc
 import EnterpriseCheckoutSuccessScreen from "./pages/EnterpriseCheckoutSuccessScreen.tsx";
 import EnterpriseRHLoginScreen from "./pages/EnterpriseRHLoginScreen.tsx";
 import EnterpriseRHWelcomeScreen from "./pages/EnterpriseRHWelcomeScreen.tsx";
+import EnterpriseSetupScreen from "./pages/EnterpriseSetupScreen.tsx";
+import EnterpriseAcceptInvitePage from "./pages/EnterpriseAcceptInvitePage.tsx";
 
 
 
@@ -259,7 +261,9 @@ const App = () => (
           <Route path="/enterprise/welcome" element={<EnterpriseWelcomeScreen />} />
           <Route path="/enterprise/privacidade" element={<PrivacyEnterpriseScreen />} />
           <Route path="/enterprise/privacy" element={<PrivacyEnterpriseScreen />} />
-          <Route path="/enterprise/convite/:token" element={<EnterpriseInviteAcceptanceScreen />} />
+          <Route path="/enterprise/convite/:token" element={<EnterpriseAcceptInvitePage />} />
+          <Route path="/enterprise/convite" element={<EnterpriseInviteAcceptanceScreen />} />
+          <Route path="/enterprise/setup" element={<Auth><EnterpriseSetupScreen /></Auth>} />
           <Route path="/enterprise/aceite-privacidade" element={<EnterprisePrivacyConsentScreen />} />
           <Route path="/enterprise/cadastro" element={<EnterpriseEmployeeRegisterScreen />} />
           <Route path="/enterprise/boas-vindas" element={<EnterpriseWelcomeJourneyScreen />} />
