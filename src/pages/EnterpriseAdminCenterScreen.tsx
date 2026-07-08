@@ -28,7 +28,8 @@ import {
   Zap,
   CheckCircle2,
   TrendingUp,
-  LayoutDashboard
+  LayoutDashboard,
+  Dna
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
@@ -73,6 +74,12 @@ const EnterpriseAdminCenterScreen = () => {
       desc: "Antecipe riscos organizacionais com base em sinais agregados de energia, engajamento, comunicação e recuperação.",
       path: "/enterprise/rh/alertas",
       icon: Sparkles
+    },
+    {
+      title: "DNA Organizacional™",
+      desc: "Visão executiva do comportamento coletivo da organização baseada em Inteligência Artificial e dados agregados.",
+      path: "/enterprise/rh/dna-organizacional",
+      icon: Dna
     }
   ];
 
