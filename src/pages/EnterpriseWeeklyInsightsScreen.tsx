@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, RefreshCw, ShieldCheck, Target, AlertCircle, Zap } from "lucide-react";
+import { Sparkles, RefreshCw, ShieldCheck, Target, AlertCircle, Zap, Activity } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +41,8 @@ export default function EnterpriseWeeklyInsightsScreen() {
   const [generating, setGenerating] = useState(false);
   const [planningId, setPlanningId] = useState<string | null>(null);
   const [ritualId, setRitualId] = useState<string | null>(null);
+  const [impactBySource, setImpactBySource] = useState<Record<string, number>>({});
+  const [measuringId, setMeasuringId] = useState<string | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -52,6 +54,19 @@ export default function EnterpriseWeeklyInsightsScreen() {
       .order("generated_at", { ascending: false })
       .limit(20);
     setInsights((data ?? []) as Insight[]);
+    const ids = (data ?? []).map((r: any) => r.id);
+    if (ids.length) {
+      const { data: imp } = await (supabase as any)
+        .from("impact_measurements")
+        .select("source_id, impact_score, measured_at")
+        .eq("organization_id", organization.id)
+        .eq("source_type", "weekly_insight")
+        .in("source_id", ids)
+        .order("measured_at", { ascending: false });
+      const map: Record<string, number> = {};
+      ((imp ?? []) as any[]).forEach((r) => { if (!(r.source_id in map) && r.impact_score != null) map[r.source_id] = r.impact_score; });
+      setImpactBySource(map);
+    } else setImpactBySource({});
     setLoading(false);
   };
 
