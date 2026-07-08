@@ -355,6 +355,38 @@ export default function EnterpriseRHDashboardScreen() {
           </p>
         </section>
 
+        {/* Insights Semanais IA — card */}
+        <section>
+          <button
+            onClick={() => navigate('/enterprise/rh/insights-semanais')}
+            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
+          >
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Insights desta semana</div>
+                <div className="text-[15px] font-bold text-[#111] mt-1 truncate">
+                  {weeklyInsights.count > 0
+                    ? `${weeklyInsights.count} insight${weeklyInsights.count > 1 ? "s" : ""} disponíveis`
+                    : "Nenhum insight desta semana"}
+                </div>
+                <div className="text-[11px] text-[#666] mt-1 truncate">
+                  {weeklyInsights.top?.title ?? "Gere o briefing executivo semanal com IA."}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-bold text-[#F88A2B] uppercase tracking-widest hidden sm:inline">Visualizar</span>
+              <ArrowRight className="h-5 w-5 text-[#666]" />
+            </div>
+          </button>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            Insights Semanais utilizam exclusivamente dados organizacionais agregados e anonimizados.
+          </p>
+        </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Temperamento do Time Chart */}
           <section>
