@@ -167,6 +167,7 @@ import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetail
 import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
 import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
 import PlatformAnalyticsScreen from "./pages/PlatformAnalyticsScreen.tsx";
+import PlatformSystemHealthScreen from "./pages/PlatformSystemHealthScreen.tsx";
 import PlatformBillingScreen from "./pages/PlatformBillingScreen.tsx";
 import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
 import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
@@ -416,6 +417,7 @@ const App = () => (
           <Route path="/admin/billing" element={<PlatformAdmin><PlatformBillingScreen /></PlatformAdmin>} />
           <Route path="/admin/ai-usage" element={<PlatformAdmin><PlatformAIUsageScreen /></PlatformAdmin>} />
           <Route path="/admin/analytics" element={<PlatformAdmin><PlatformAnalyticsScreen /></PlatformAdmin>} />
+          <Route path="/admin/system" element={<PlatformAdmin><PlatformSystemHealthScreen /></PlatformAdmin>} />
           <Route path="/admin/support" element={<PlatformAdmin><PlatformSupportScreen /></PlatformAdmin>} />
           <Route path="/admin/audit" element={<PlatformAdmin><PlatformAuditScreen /></PlatformAdmin>} />
 
