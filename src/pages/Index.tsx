@@ -53,7 +53,7 @@ const SparkDivider = () => (
 const Index = () => {
   const navigate = useNavigate();
   const isDesktop = useIsDesktop();
-  const { isAuthenticated, signInWithGoogle, signInWithPassword, signUp, hasAnyRole, loading } = useAuth();
+  const { isAuthenticated, signInWithGoogle, signInWithPassword, signUp, hasAnyRole, hasEmployeeProfile, loading } = useAuth();
   const [mode, setMode] = useState<"choose" | "email" | "signup">("choose");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,11 +61,13 @@ const Index = () => {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      if (hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh", { replace: true });
-      else if (hasAnyRole(["employee", "leader"])) navigate("/enterprise", { replace: true });
-      else navigate("/home", { replace: true });
+      if (hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh/central-admin", { replace: true });
+      else if (hasAnyRole(["employee", "leader"])) {
+        if (!hasEmployeeProfile) navigate("/onboarding", { replace: true });
+        else navigate("/enterprise", { replace: true });
+      } else navigate("/home", { replace: true });
     }
-  }, [isAuthenticated, loading, hasAnyRole, navigate]);
+  }, [isAuthenticated, loading, hasAnyRole, hasEmployeeProfile, navigate]);
 
   const handleGoogle = async () => {
     const { error } = await signInWithGoogle();
