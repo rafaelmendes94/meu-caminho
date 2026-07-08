@@ -948,13 +948,17 @@ export type Database = {
         Row: {
           cnpj: string | null
           created_at: string | null
+          current_period_end: string | null
           domain: string | null
           id: string
           licenses_total: number | null
           licenses_used: number | null
           logo_url: string | null
+          mrr_cents: number | null
           name: string
           slug: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_status:
             | Database["public"]["Enums"]["subscription_status"]
             | null
@@ -964,13 +968,17 @@ export type Database = {
         Insert: {
           cnpj?: string | null
           created_at?: string | null
+          current_period_end?: string | null
           domain?: string | null
           id?: string
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
+          mrr_cents?: number | null
           name: string
           slug: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
             | null
@@ -980,13 +988,17 @@ export type Database = {
         Update: {
           cnpj?: string | null
           created_at?: string | null
+          current_period_end?: string | null
           domain?: string | null
           id?: string
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
+          mrr_cents?: number | null
           name?: string
           slug?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
             | null
@@ -994,6 +1006,115 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      platform_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip: unknown
+          metadata: Json | null
+          organization_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip?: unknown
+          metadata?: Json | null
+          organization_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip?: unknown
+          metadata?: Json | null
+          organization_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_audit_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_usage_daily: {
+        Row: {
+          action_plans_count: number | null
+          active_users: number | null
+          ai_messages_count: number | null
+          checkins_count: number | null
+          created_at: string | null
+          dna_reports_count: number | null
+          estimated_ai_cost_cents: number | null
+          executive_ai_messages_count: number | null
+          id: string
+          organization_id: string
+          pulses_count: number | null
+          rituals_count: number | null
+          tokens_in: number | null
+          tokens_out: number | null
+          usage_date: string
+        }
+        Insert: {
+          action_plans_count?: number | null
+          active_users?: number | null
+          ai_messages_count?: number | null
+          checkins_count?: number | null
+          created_at?: string | null
+          dna_reports_count?: number | null
+          estimated_ai_cost_cents?: number | null
+          executive_ai_messages_count?: number | null
+          id?: string
+          organization_id: string
+          pulses_count?: number | null
+          rituals_count?: number | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          usage_date?: string
+        }
+        Update: {
+          action_plans_count?: number | null
+          active_users?: number | null
+          ai_messages_count?: number | null
+          checkins_count?: number | null
+          created_at?: string | null
+          dna_reports_count?: number | null
+          estimated_ai_cost_cents?: number | null
+          executive_ai_messages_count?: number | null
+          id?: string
+          organization_id?: string
+          pulses_count?: number | null
+          rituals_count?: number | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_usage_daily_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       predictive_signals: {
         Row: {
@@ -1342,6 +1463,53 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          opened_by: string | null
+          organization_id: string | null
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          opened_by?: string | null
+          organization_id?: string | null
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          opened_by?: string | null
+          organization_id?: string | null
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       units: {
         Row: {
           address: string | null
@@ -1546,6 +1714,24 @@ export type Database = {
         Args: { _organization_id: string }
         Returns: Json
       }
+      get_platform_organizations: {
+        Args: never
+        Returns: {
+          active_users_30d: number
+          ai_messages_30d: number
+          created_at: string
+          health_status: string
+          id: string
+          last_dna_generated_at: string
+          last_score: number
+          licenses_total: number
+          licenses_used: number
+          name: string
+          slug: string
+          subscription_status: string
+        }[]
+      }
+      get_platform_overview: { Args: never; Returns: Json }
       get_predictive_context: {
         Args: { _days?: number; _organization_id: string }
         Returns: Json
@@ -1585,6 +1771,7 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
+      is_platform_admin: { Args: never; Returns: boolean }
       measure_impact: {
         Args: {
           _organization_id: string
@@ -1614,7 +1801,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "owner" | "rh_admin" | "leader" | "employee" | "b2c_user"
+      app_role:
+        | "owner"
+        | "rh_admin"
+        | "leader"
+        | "employee"
+        | "b2c_user"
+        | "platform_admin"
       subscription_status:
         | "trialing"
         | "active"
@@ -1748,7 +1941,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "rh_admin", "leader", "employee", "b2c_user"],
+      app_role: [
+        "owner",
+        "rh_admin",
+        "leader",
+        "employee",
+        "b2c_user",
+        "platform_admin",
+      ],
       subscription_status: [
         "trialing",
         "active",

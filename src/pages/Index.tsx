@@ -61,7 +61,8 @@ const Index = () => {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      if (hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh/central-admin", { replace: true });
+      if (hasAnyRole(["platform_admin"])) navigate("/admin/dashboard", { replace: true });
+      else if (hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh/central-admin", { replace: true });
       else if (hasAnyRole(["employee", "leader"])) {
         if (!hasEmployeeProfile) navigate("/onboarding", { replace: true });
         else navigate("/enterprise", { replace: true });
