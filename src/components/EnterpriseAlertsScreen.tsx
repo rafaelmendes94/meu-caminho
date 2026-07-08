@@ -49,7 +49,7 @@ const SEVERITY_STYLE: Record<Alert["severity"], { badge: string; label: string }
   critical: { badge: "bg-red-500/10 text-red-600 border-red-500/20", label: "Crítico" },
 };
 
-const RealAlertCard = ({ alert, onAck, onResolve, onPlan }: { alert: Alert; onAck: () => void; onResolve: () => void; onPlan: () => void }) => {
+const RealAlertCard = ({ alert, onAck, onResolve, onPlan, onRitual }: { alert: Alert; onAck: () => void; onResolve: () => void; onPlan: () => void; onRitual: () => void }) => {
   const s = SEVERITY_STYLE[alert.severity];
   return (
     <div className="rounded-[32px] bg-white p-7 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5 animate-fade-in">
@@ -72,6 +72,9 @@ const RealAlertCard = ({ alert, onAck, onResolve, onPlan }: { alert: Alert; onAc
         <div className="flex gap-2 flex-wrap justify-end">
           <button onClick={onPlan} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
             <Target className="h-3 w-3" /> Gerar plano
+          </button>
+          <button onClick={onRitual} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
+            <Sparkles className="h-3 w-3" /> Sugerir ritual
           </button>
           {alert.status === "open" && (
             <button onClick={onAck} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111]">
@@ -236,6 +239,19 @@ export default function EnterpriseAlertsScreen() {
     }
   };
 
+  const suggestRitual = async (sourceType: "predictive_signal" | "manual", sourceId: string, prompt?: string) => {
+    const body: Record<string, unknown> = { source_type: sourceType };
+    if (sourceType === "predictive_signal") body.source_id = sourceId;
+    if (prompt) body.prompt = prompt;
+    const { data, error } = await supabase.functions.invoke("generate-intelligent-ritual", { body });
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao sugerir ritual", description: error?.message ?? String((data as any)?.error), variant: "destructive" });
+    } else {
+      toast({ title: "Ritual sugerido" });
+      navigate("/enterprise/rh/rituais-inteligentes");
+    }
+  };
+
   return (
     <EnterpriseRHLayout title="Áreas em alerta">
       <div className="space-y-8 animate-fade-in">
@@ -328,6 +344,9 @@ export default function EnterpriseAlertsScreen() {
                           <button onClick={() => generatePlan("predictive_signal", s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
                             <Target className="h-3 w-3" /> Gerar plano
                           </button>
+                          <button onClick={() => suggestRitual("predictive_signal", s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
+                            <Sparkles className="h-3 w-3" /> Sugerir ritual
+                          </button>
                           {s.status === "open" && (
                             <button onClick={() => ackSignal(s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111]">
                               <Check className="h-3 w-3" /> Reconhecer
@@ -361,7 +380,7 @@ export default function EnterpriseAlertsScreen() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {alerts.map((a) => (
-                <RealAlertCard key={a.id} alert={a} onAck={() => ack(a.id)} onResolve={() => resolve(a.id)} onPlan={() => generatePlan("alert", a.id)} />
+                <RealAlertCard key={a.id} alert={a} onAck={() => ack(a.id)} onResolve={() => resolve(a.id)} onPlan={() => generatePlan("alert", a.id)} onRitual={() => suggestRitual("manual", a.id, `Alerta: ${a.title}. ${a.message}`)} />
               ))}
             </div>
           )}

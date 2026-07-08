@@ -40,6 +40,7 @@ export default function EnterpriseWeeklyInsightsScreen() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [planningId, setPlanningId] = useState<string | null>(null);
+  const [ritualId, setRitualId] = useState<string | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -79,6 +80,20 @@ export default function EnterpriseWeeklyInsightsScreen() {
     } else {
       toast({ title: "Plano de ação criado" });
       navigate("/enterprise/rh/plano-acao");
+    }
+  };
+
+  const suggestRitual = async (insight: Insight) => {
+    setRitualId(insight.id);
+    const { data, error } = await supabase.functions.invoke("generate-intelligent-ritual", {
+      body: { source_type: "weekly_insight", source_id: insight.id },
+    });
+    setRitualId(null);
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao sugerir ritual", description: error?.message ?? String((data as any)?.error), variant: "destructive" });
+    } else {
+      toast({ title: "Ritual sugerido" });
+      navigate("/enterprise/rh/rituais-inteligentes");
     }
   };
 
@@ -210,6 +225,14 @@ export default function EnterpriseWeeklyInsightsScreen() {
                   >
                     {planningId === i.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Target className="w-3.5 h-3.5" />}
                     {planningId === i.id ? "Gerando plano…" : "Criar Plano de Ação"}
+                  </button>
+                  <button
+                    onClick={() => suggestRitual(i)}
+                    disabled={ritualId === i.id}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-[#F88A2B]/30 bg-white text-[#F88A2B] px-4 py-2 text-[12px] font-bold hover:bg-[#F88A2B]/5 disabled:opacity-40"
+                  >
+                    {ritualId === i.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                    {ritualId === i.id ? "Sugerindo ritual…" : "Sugerir ritual"}
                   </button>
                 </article>
               );

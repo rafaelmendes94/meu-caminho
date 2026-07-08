@@ -251,6 +251,7 @@ export const EnterpriseRHLayout = ({ children, title }: { children: React.ReactN
           <SidebarSection title="Cultura">
              <SidebarItem to="/enterprise/rh/denuncias" icon={ShieldAlert} label="Canal Direto" />
              <SidebarItem to="/enterprise/rh/rituais" icon={Zap} label="Rituais" />
+             <SidebarItem to="/enterprise/rh/rituais-inteligentes" icon={Sparkles} label="Rituais Inteligentes" />
              <SidebarItem to="/enterprise/rh/lideranca" icon={HeartPulse} label="Liderança" />
           </SidebarSection>
           

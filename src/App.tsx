@@ -145,6 +145,7 @@ import EnterpriseWeeklyInsightsScreen from "./pages/EnterpriseWeeklyInsightsScre
 import EnterpriseExecutiveCouncilScreen from "./pages/EnterpriseExecutiveCouncilScreen.tsx";
 import EnterpriseMultiAdminsScreen from "./pages/EnterpriseMultiAdminsScreen.tsx";
 import EnterpriseGuidedRitualsScreen from "./pages/EnterpriseGuidedRitualsScreen.tsx";
+import EnterpriseIntelligentRitualsScreen from "./pages/EnterpriseIntelligentRitualsScreen.tsx";
 import EnterpriseAdminCenterScreen from "./pages/EnterpriseAdminCenterScreen.tsx";
 import EnterpriseBillingScreen from "./pages/EnterpriseBillingScreen.tsx";
 import EnterpriseCheckoutPlanScreen from "./pages/EnterpriseCheckoutPlanScreen.tsx";
@@ -373,6 +374,8 @@ const App = () => (
           <Route path="/enterprise/rh/evolucao" element={<RH><EnterpriseJourneyEvolutionScreen /></RH>} />
           <Route path="/enterprise/rh/status" element={<RH><EnterpriseStatusHealthScreen /></RH>} />
           <Route path="/enterprise/rh/rituais" element={<RH><EnterpriseRitualsScreen /></RH>} />
+          <Route path="/enterprise/rh/rituais-inteligentes" element={<RH><EnterpriseIntelligentRitualsScreen /></RH>} />
+          <Route path="/enterprise/rituais" element={<Ent><EnterpriseRitualsScreen /></Ent>} />
           <Route path="/enterprise/rh/saude-lideranca" element={<RH><EnterpriseLeadershipHealthScreen /></RH>} />
           <Route path="/enterprise/rh/navigation" element={<RH><EnterpriseNavigationSystemScreen /></RH>} />
           <Route path="/enterprise/rh/desktop" element={<RH><EnterpriseDesktopResponsiveScreen /></RH>} />
