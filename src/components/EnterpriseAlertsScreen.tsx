@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { 
   ShieldCheck, 
   ArrowRight,
@@ -7,9 +8,74 @@ import {
   AlertTriangle,
   Lock,
   LayoutDashboard,
-  FileText
+  FileText,
+  CheckCircle2,
+  Check
 } from "lucide-react";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+
+type Alert = {
+  id: string;
+  alert_type: string;
+  severity: "info" | "warning" | "critical";
+  title: string;
+  message: string;
+  status: "open" | "acknowledged" | "resolved";
+  created_at: string;
+  evidence: Record<string, unknown> | null;
+};
+
+const SEVERITY_STYLE: Record<Alert["severity"], { badge: string; label: string }> = {
+  info: { badge: "bg-black/5 text-[#666] border-black/10", label: "Info" },
+  warning: { badge: "bg-[#F88A2B1A] text-[#F88A2B] border-[#F88A2B2A]", label: "Atenção" },
+  critical: { badge: "bg-red-500/10 text-red-600 border-red-500/20", label: "Crítico" },
+};
+
+const RealAlertCard = ({ alert, onAck, onResolve }: { alert: Alert; onAck: () => void; onResolve: () => void }) => {
+  const s = SEVERITY_STYLE[alert.severity];
+  return (
+    <div className="rounded-[32px] bg-white p-7 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5 animate-fade-in">
+      <div className="flex justify-between items-start gap-3">
+        <h4 className="text-[20px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>{alert.title}</h4>
+        <div className={`px-3 py-1 rounded-full border ${s.badge}`}>
+          <span className="text-[10px] font-bold uppercase tracking-wider">{s.label}</span>
+        </div>
+      </div>
+      <p className="text-[13px] text-[#444] font-medium leading-relaxed">{alert.message}</p>
+      {alert.evidence && Object.keys(alert.evidence).length > 0 && (
+        <div className="text-[11px] text-[#999] font-mono bg-black/[0.02] rounded-xl p-3">
+          {Object.entries(alert.evidence).map(([k, v]) => (
+            <div key={k}><span className="text-[#666]">{k}:</span> {String(v)}</div>
+          ))}
+        </div>
+      )}
+      <div className="flex items-center justify-between pt-4 border-t border-[#F7F4F2]">
+        <span className="text-[10px] text-[#999] uppercase tracking-widest">{new Date(alert.created_at).toLocaleDateString()}</span>
+        <div className="flex gap-2">
+          {alert.status === "open" && (
+            <button onClick={onAck} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111]">
+              <Check className="h-3 w-3" /> Reconhecer
+            </button>
+          )}
+          {alert.status !== "resolved" && (
+            <button onClick={onResolve} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-700">
+              <CheckCircle2 className="h-3 w-3" /> Resolver
+            </button>
+          )}
+          {alert.status === "acknowledged" && (
+            <span className="text-[10px] text-[#999] uppercase">Reconhecido</span>
+          )}
+          {alert.status === "resolved" && (
+            <span className="text-[10px] text-emerald-600 uppercase">Resolvido</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AlertCard = ({ title, balance, overload, energy, trend, insight }: { 
   title: string; 
@@ -72,6 +138,38 @@ const SuggestionItem = ({ text }: { text: string }) => (
 
 export default function EnterpriseAlertsScreen() {
   const navigate = useNavigate();
+  const { organization, user } = useAuth();
+  const { toast } = useToast();
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+
+  const load = async () => {
+    if (!organization?.id) return;
+    const { data } = await supabase
+      .from("alerts")
+      .select("*")
+      .eq("organization_id", organization.id)
+      .order("created_at", { ascending: false });
+    setAlerts((data as unknown as Alert[]) ?? []);
+  };
+
+  useEffect(() => { void load(); }, [organization?.id]);
+
+  const ack = async (id: string) => {
+    const { error } = await supabase
+      .from("alerts")
+      .update({ status: "acknowledged", acknowledged_at: new Date().toISOString(), acknowledged_by: user?.id })
+      .eq("id", id);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else load();
+  };
+  const resolve = async (id: string) => {
+    const { error } = await supabase
+      .from("alerts")
+      .update({ status: "resolved", resolved_at: new Date().toISOString(), resolved_by: user?.id })
+      .eq("id", id);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else load();
+  };
 
   return (
     <EnterpriseRHLayout title="Áreas em alerta">
@@ -109,39 +207,19 @@ export default function EnterpriseAlertsScreen() {
 
         {/* Áreas prioritárias */}
         <section className="space-y-6">
-          <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] font-montserrat px-1">Áreas prioritárias</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div onClick={() => navigate('/enterprise/rh/departamento/operacoes')} className="cursor-pointer transition-transform hover:scale-[1.02]">
-              <AlertCard 
-                title="Operações"
-                balance={2.9}
-                overload="67%"
-                energy="baixa"
-                trend="queda há 3 semanas"
-                insight="O time demonstra sinais contínuos de desgaste emocional e redução de clareza."
-              />
+          <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] font-montserrat px-1">Alertas ativos</h3>
+          {alerts.length === 0 ? (
+            <div className="rounded-[32px] bg-white p-10 border border-white/60 shadow-sm text-center">
+              <p className="text-[14px] text-[#666]">Nenhum alerta no momento.</p>
+              <p className="text-[11px] text-[#999] mt-2 italic">Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.</p>
             </div>
-            <div onClick={() => navigate('/enterprise/rh/departamento/atendimento')} className="cursor-pointer opacity-90 transition-transform hover:scale-[1.02]">
-              <AlertCard 
-                title="Atendimento"
-                balance={3.1}
-                overload="58%"
-                energy="moderada"
-                trend="oscilando"
-                insight="O volume emocional parece aumentar em semanas de maior pressão operacional."
-              />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {alerts.map((a) => (
+                <RealAlertCard key={a.id} alert={a} onAck={() => ack(a.id)} onResolve={() => resolve(a.id)} />
+              ))}
             </div>
-            <div onClick={() => navigate('/enterprise/rh/departamento/tecnologia')} className="cursor-pointer opacity-80 transition-transform hover:scale-[1.02]">
-              <AlertCard 
-                title="Tecnologia"
-                balance={3.6}
-                overload="44%"
-                energy="estável"
-                trend="melhora leve"
-                insight="O grupo apresenta recuperação gradual após semanas anteriores de maior aceleração."
-              />
-            </div>
-          </div>
+          )}
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

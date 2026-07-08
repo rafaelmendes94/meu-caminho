@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ShieldCheck, 
   Sparkles, 
@@ -15,6 +18,17 @@ import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation
 
 const EnterpriseEmotionalMapScreen = () => {
   const navigate = useNavigate();
+  const { organization } = useAuth();
+  const [weeks, setWeeks] = useState<Array<{ week_of: string; avg_mood: number; avg_energy: number; avg_stress: number; equilibrium_index: number; participants_count: number }>>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    void supabase
+      .rpc("get_emotional_map", { _organization_id: organization.id, _weeks: 8 })
+      // deno-lint-ignore no-explicit-any
+      .then(({ data }: any) => { setWeeks(data ?? []); setLoaded(true); });
+  }, [organization?.id]);
 
   const emotionalAreas = [
     { name: "Operações", state: "Aceleração", intensity: 85, color: "bg-orange-500" },
@@ -153,7 +167,11 @@ const EnterpriseEmotionalMapScreen = () => {
               <Activity className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
-          
+          {loaded && weeks.length === 0 ? (
+            <p className="text-sm text-black/50 italic py-10 text-center">
+              Ainda não há volume mínimo de dados agregados para exibir o mapa emocional.
+            </p>
+          ) : (
           <div className="flex items-end justify-between gap-2 h-48 px-4">
             {weeklyMovement.map((item, idx) => (
               <div key={item.day} className="flex-1 flex flex-col items-center gap-4 group">
@@ -174,6 +192,23 @@ const EnterpriseEmotionalMapScreen = () => {
               </div>
             ))}
           </div>
+          )}
+
+          {weeks.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-black/5">
+              {weeks.slice(0, 4).map((w) => (
+                <div key={w.week_of} className="rounded-2xl bg-black/[0.02] p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-black/40 font-bold">{w.week_of}</p>
+                  <p className="text-[16px] font-bold text-[#111]">{Number(w.equilibrium_index).toFixed(2)}</p>
+                  <p className="text-[10px] text-black/40">{w.participants_count} participantes</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-[11px] text-black/40 italic pt-2">
+            Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.
+          </p>
 
           <div className="mt-8 pt-6 border-t border-black/5 flex gap-4 items-start">
             <div className="p-2 bg-orange-50 rounded-xl">

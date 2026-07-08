@@ -1,13 +1,37 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { 
   TrendingUp, 
   TrendingDown, 
   Minus, 
   ArrowRight,
   ShieldCheck,
-  Zap
+  Zap,
+  RefreshCw
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+
+type Summary = {
+  avg_mood_30d: number | null;
+  avg_energy_30d: number | null;
+  avg_stress_30d: number | null;
+  equilibrium_index_30d: number | null;
+  checkin_participants_30d: number | null;
+  pulse_energy_30d: number | null;
+  pulse_engagement_30d: number | null;
+  pulse_communication_30d: number | null;
+  pulse_equilibrium_30d: number | null;
+  pulse_recovery_30d: number | null;
+  pulse_participants_30d: number | null;
+  open_alerts_count: number;
+  critical_alerts_count: number;
+};
+
+const fmt = (v: number | null | undefined, digits = 1) =>
+  v === null || v === undefined ? "•••" : Number(v).toFixed(digits);
 
 const BG = "#F7F4F2";
 const ORANGE = "#F88A2B";
@@ -77,6 +101,32 @@ const AreaCard = ({
 
 export default function EnterpriseRHDashboardScreen() {
   const navigate = useNavigate();
+  const { organization } = useAuth();
+  const { toast } = useToast();
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [recomputing, setRecomputing] = useState(false);
+
+  const load = async () => {
+    if (!organization?.id) return;
+    setLoading(true);
+    const { data, error } = await supabase.rpc("get_rh_dashboard_summary", {
+      _organization_id: organization.id,
+    });
+    if (!error && data) setSummary(data as unknown as Summary);
+    setLoading(false);
+  };
+
+  useEffect(() => { void load(); }, [organization?.id]);
+
+  const refreshAlerts = async () => {
+    setRecomputing(true);
+    const { error } = await supabase.functions.invoke("compute-basic-alerts");
+    if (error) toast({ title: "Erro ao atualizar alertas", description: error.message, variant: "destructive" });
+    else toast({ title: "Alertas atualizados" });
+    await load();
+    setRecomputing(false);
+  };
 
   return (
     <EnterpriseRHLayout title="Dashboard">
@@ -114,11 +164,37 @@ export default function EnterpriseRHDashboardScreen() {
 
         {/* KPIs Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          <KPICard value="87%" label="Adesão ao check-in" />
-          <KPICard value="+12%" label="Clareza vs. mês 1" trend="Melhora" />
-          <KPICard value="3,8" label="Índice de equilíbrio" />
-          <KPICard value="2" label="Áreas em alerta" />
+          <KPICard
+            value={summary?.checkin_participants_30d != null ? String(summary.checkin_participants_30d) : "•••"}
+            label="Participantes 30d"
+          />
+          <KPICard
+            value={fmt(summary?.pulse_engagement_30d, 2)}
+            label="Engajamento (pulse)"
+          />
+          <KPICard
+            value={fmt(summary?.equilibrium_index_30d, 2)}
+            label="Índice de equilíbrio"
+          />
+          <KPICard
+            value={summary ? String(summary.open_alerts_count) : "•••"}
+            label="Alertas abertos"
+          />
         </section>
+
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[11px] text-[#999] italic">
+            Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.
+          </p>
+          <button
+            onClick={refreshAlerts}
+            disabled={recomputing || loading}
+            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111] disabled:opacity-40"
+          >
+            <RefreshCw className={`h-3 w-3 ${recomputing ? "animate-spin" : ""}`} />
+            Atualizar alertas
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Temperamento do Time Chart */}
