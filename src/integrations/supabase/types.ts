@@ -70,6 +70,58 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          created_at: string
+          id: string
+          leader_id: string | null
+          name: string
+          organization_id: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          leader_id?: string | null
+          name: string
+          organization_id: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          leader_id?: string | null
+          name?: string
+          organization_id?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emotional_checkins: {
         Row: {
           created_at: string
@@ -184,53 +236,83 @@ export type Database = {
           accepted_at: string | null
           created_at: string
           department: string | null
+          department_id: string | null
           email: string
           expires_at: string
           full_name: string | null
           id: string
           invited_by: string | null
           job_title: string | null
+          manager_id: string | null
           organization_id: string
           role: Database["public"]["Enums"]["app_role"]
           token_hash: string
+          unit_id: string | null
           updated_at: string
         }
         Insert: {
           accepted_at?: string | null
           created_at?: string
           department?: string | null
+          department_id?: string | null
           email: string
           expires_at?: string
           full_name?: string | null
           id?: string
           invited_by?: string | null
           job_title?: string | null
+          manager_id?: string | null
           organization_id: string
           role?: Database["public"]["Enums"]["app_role"]
           token_hash: string
+          unit_id?: string | null
           updated_at?: string
         }
         Update: {
           accepted_at?: string | null
           created_at?: string
           department?: string | null
+          department_id?: string | null
           email?: string
           expires_at?: string
           full_name?: string | null
           id?: string
           invited_by?: string | null
           job_title?: string | null
+          manager_id?: string | null
           organization_id?: string
           role?: Database["public"]["Enums"]["app_role"]
           token_hash?: string
+          unit_id?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "enterprise_invites_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_invites_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "enterprise_invites_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_invites_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -323,6 +405,35 @@ export type Database = {
           },
           {
             foreignKeyName: "onboarding_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_chart_snapshots: {
+        Row: {
+          id: string
+          organization_id: string
+          snapshot_at: string
+          tree: Json
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          snapshot_at?: string
+          tree: Json
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          snapshot_at?: string
+          tree?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chart_snapshots_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -427,44 +538,80 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           department: string | null
+          department_id: string | null
           display_name: string | null
           full_name: string | null
+          hired_at: string | null
           id: string
           job_title: string | null
+          manager_id: string | null
           organization_id: string | null
           phone: string | null
+          status: string | null
+          unit_id: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
           department?: string | null
+          department_id?: string | null
           display_name?: string | null
           full_name?: string | null
+          hired_at?: string | null
           id: string
           job_title?: string | null
+          manager_id?: string | null
           organization_id?: string | null
           phone?: string | null
+          status?: string | null
+          unit_id?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
           department?: string | null
+          department_id?: string | null
           display_name?: string | null
           full_name?: string | null
+          hired_at?: string | null
           id?: string
           job_title?: string | null
+          manager_id?: string | null
           organization_id?: string | null
           phone?: string | null
+          status?: string | null
+          unit_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -579,6 +726,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      units: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -705,6 +890,25 @@ export type Database = {
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
+      }
+      org_node_indicators: {
+        Args: { _days?: number; _organization_id: string; _profile_id: string }
+        Returns: Json
+      }
+      org_tree: {
+        Args: { _organization_id: string }
+        Returns: {
+          department_name: string
+          direct_reports_count: number
+          full_name: string
+          job_title: string
+          level: number
+          manager_id: string
+          profile_id: string
+          status: string
+          total_reports_count: number
+          unit_name: string
+        }[]
       }
     }
     Enums: {
