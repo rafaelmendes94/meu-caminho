@@ -343,6 +343,9 @@ export default function EnterpriseAlertsScreen() {
                           <button onClick={() => generatePlan("predictive_signal", s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
                             <Target className="h-3 w-3" /> Gerar plano
                           </button>
+                          <button onClick={() => suggestRitual("predictive_signal", s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
+                            <Sparkles className="h-3 w-3" /> Sugerir ritual
+                          </button>
                           {s.status === "open" && (
                             <button onClick={() => ackSignal(s.id)} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111]">
                               <Check className="h-3 w-3" /> Reconhecer
