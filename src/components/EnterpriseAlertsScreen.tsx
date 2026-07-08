@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Check,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Target
 } from "lucide-react";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +49,7 @@ const SEVERITY_STYLE: Record<Alert["severity"], { badge: string; label: string }
   critical: { badge: "bg-red-500/10 text-red-600 border-red-500/20", label: "Crítico" },
 };
 
-const RealAlertCard = ({ alert, onAck, onResolve }: { alert: Alert; onAck: () => void; onResolve: () => void }) => {
+const RealAlertCard = ({ alert, onAck, onResolve, onPlan }: { alert: Alert; onAck: () => void; onResolve: () => void; onPlan: () => void }) => {
   const s = SEVERITY_STYLE[alert.severity];
   return (
     <div className="rounded-[32px] bg-white p-7 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5 animate-fade-in">
@@ -68,7 +69,10 @@ const RealAlertCard = ({ alert, onAck, onResolve }: { alert: Alert; onAck: () =>
       )}
       <div className="flex items-center justify-between pt-4 border-t border-[#F7F4F2]">
         <span className="text-[10px] text-[#999] uppercase tracking-widest">{new Date(alert.created_at).toLocaleDateString()}</span>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
+          <button onClick={onPlan} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#F88A2B] hover:opacity-80">
+            <Target className="h-3 w-3" /> Gerar plano
+          </button>
           {alert.status === "open" && (
             <button onClick={onAck} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111]">
               <Check className="h-3 w-3" /> Reconhecer
