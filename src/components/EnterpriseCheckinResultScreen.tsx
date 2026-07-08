@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -18,6 +21,30 @@ import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 
 export default function EnterpriseCheckinResultScreen() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [history, setHistory] = useState<Array<{ mood_score: number; energy_score: number; stress_score: number; created_at: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("emotional_checkins")
+        .select("mood_score,energy_score,stress_score,created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      setHistory(data ?? []);
+      setLoading(false);
+    })();
+  }, [user]);
+
+  const last = history[0];
+  const balance = last
+    ? last.mood_score * 0.4 + last.energy_score * 0.3 + (6 - last.stress_score) * 0.3
+    : null;
+  const pct = (v: number) => Math.round((v / 5) * 100);
+  const balancePct = balance ? Math.round((balance / 5) * 100) : 0;
 
   return (
     <EnterpriseUserLayout title="Resultado Check-in">
@@ -67,7 +94,11 @@ export default function EnterpriseCheckinResultScreen() {
                   </div>
 
                   <p className="text-[16px] lg:text-[18px] leading-relaxed text-[#666] font-medium max-w-xl">
-                    Seu check-in indica sinais de mente acelerada e uma necessidade imediata de recuperar clareza emocional para manter o desempenho.
+                    {loading
+                      ? "Carregando seu resultado..."
+                      : last
+                        ? `Seu índice de equilíbrio atual é ${balance!.toFixed(1)}/5. Use os sinais abaixo para calibrar sua semana.`
+                        : "Este é o seu primeiro check-in por aqui. Continue registrando para ver a evolução."}
                   </p>
 
                   <div className="h-px w-full bg-black/5" />
@@ -104,12 +135,20 @@ export default function EnterpriseCheckinResultScreen() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                  {[
-                    { label: "Equilíbrio", value: "3.4", percentage: 68, color: "#F88A2B" },
-                    { label: "Clareza", value: "Evoluindo", percentage: 45, color: "#F88A2B" },
-                    { label: "Foco", value: "Moderado", percentage: 55, color: "#999" },
-                    { label: "Energia", value: "Média", percentage: 60, color: "#F88A2B" }
-                  ].map((item, idx) => (
+                  {(last
+                    ? [
+                        { label: "Equilíbrio", value: balance!.toFixed(1), percentage: balancePct, color: "#F88A2B" },
+                        { label: "Humor", value: `${last.mood_score}/5`, percentage: pct(last.mood_score), color: "#F88A2B" },
+                        { label: "Energia", value: `${last.energy_score}/5`, percentage: pct(last.energy_score), color: "#F88A2B" },
+                        { label: "Estresse", value: `${last.stress_score}/5`, percentage: pct(last.stress_score), color: "#999" },
+                      ]
+                    : [
+                        { label: "Equilíbrio", value: "—", percentage: 0, color: "#999" },
+                        { label: "Humor", value: "—", percentage: 0, color: "#999" },
+                        { label: "Energia", value: "—", percentage: 0, color: "#999" },
+                        { label: "Estresse", value: "—", percentage: 0, color: "#999" },
+                      ]
+                  ).map((item, idx) => (
                     <div key={idx} className="space-y-4">
                       <div className="flex justify-between items-end">
                         <span className="text-[13px] font-bold text-[#666] uppercase tracking-wider">{item.label}</span>
