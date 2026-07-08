@@ -171,6 +171,7 @@ import PlatformSystemHealthScreen from "./pages/PlatformSystemHealthScreen.tsx";
 import PlatformBillingScreen from "./pages/PlatformBillingScreen.tsx";
 import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
 import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
+import PlatformSettingsScreen from "./pages/PlatformSettingsScreen.tsx";
 
 
 
