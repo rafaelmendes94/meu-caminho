@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, RefreshCw, ShieldCheck, Plus, Play, Check, X, Trash2, Clock } from "lucide-react";
+import { Sparkles, RefreshCw, ShieldCheck, Plus, Play, Check, X, Trash2, Clock, Activity } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,6 +52,8 @@ export default function EnterpriseIntelligentRitualsScreen() {
   const [generating, setGenerating] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [manual, setManual] = useState({ title: "", description: "", ritual_type: "custom", duration_minutes: 15, expected_outcome: "" });
+  const [impactBySource, setImpactBySource] = useState<Record<string, number>>({});
+  const [measuringId, setMeasuringId] = useState<string | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -62,6 +64,19 @@ export default function EnterpriseIntelligentRitualsScreen() {
       .eq("organization_id", organization.id)
       .order("created_at", { ascending: false });
     setRituals((data ?? []) as Ritual[]);
+    const ids = (data ?? []).map((r: any) => r.id);
+    if (ids.length) {
+      const { data: imp } = await (supabase as any)
+        .from("impact_measurements")
+        .select("source_id, impact_score, measured_at")
+        .eq("organization_id", organization.id)
+        .eq("source_type", "ritual")
+        .in("source_id", ids)
+        .order("measured_at", { ascending: false });
+      const map: Record<string, number> = {};
+      ((imp ?? []) as any[]).forEach((r) => { if (!(r.source_id in map) && r.impact_score != null) map[r.source_id] = r.impact_score; });
+      setImpactBySource(map);
+    } else setImpactBySource({});
     setLoading(false);
   };
 
@@ -90,6 +105,16 @@ export default function EnterpriseIntelligentRitualsScreen() {
     const { error } = await (supabase as any).from("intelligent_rituals").delete().eq("id", id);
     if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
     else { toast({ title: "Ritual removido" }); load(); }
+  };
+
+  const measureImpact = async (id: string) => {
+    setMeasuringId(id);
+    const { error } = await supabase.functions.invoke("measure-impact", {
+      body: { source_type: "ritual", source_id: id },
+    });
+    setMeasuringId(null);
+    if (error) toast({ title: "Erro ao medir impacto", description: error.message, variant: "destructive" });
+    else { toast({ title: "Impacto medido" }); await load(); }
   };
 
   const createManual = async () => {
@@ -191,6 +216,11 @@ export default function EnterpriseIntelligentRitualsScreen() {
                             <Sparkles className="w-3 h-3" /> IA
                           </span>
                         )}
+                        {impactBySource[r.id] != null && (
+                          <span className={`text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${Number(impactBySource[r.id]) >= 0 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
+                            <Activity className="w-3 h-3" /> Impacto {Number(impactBySource[r.id]) >= 0 ? "+" : ""}{Number(impactBySource[r.id]).toFixed(1)}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-[18px] font-bold text-[#111] leading-snug">{r.title}</h3>
                     </div>
@@ -236,6 +266,9 @@ export default function EnterpriseIntelligentRitualsScreen() {
                         </button>
                       </>
                     )}
+                    <button onClick={() => measureImpact(r.id)} disabled={measuringId === r.id} className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#111] hover:text-[#F88A2B] disabled:opacity-40">
+                      {measuringId === r.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Activity className="w-3 h-3" />} Medir impacto
+                    </button>
                   </footer>
                 </article>
               );
