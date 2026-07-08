@@ -12,6 +12,7 @@ import {
   Calendar,
   Flag,
   Loader2,
+  Activity,
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +79,8 @@ export default function EnterpriseActionPlanScreen() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState<Record<string, string>>({});
   const [manualTitle, setManualTitle] = useState("");
+  const [impactBySource, setImpactBySource] = useState<Record<string, { impact: number | null; confidence: number | null }>>({});
+  const [measuringId, setMeasuringId] = useState<string | null>(null);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -101,8 +104,21 @@ export default function EnterpriseActionPlanScreen() {
         (grouped[t.action_plan_id] ??= []).push(t);
       });
       setTasks(grouped);
+      const { data: imp } = await (supabase as any)
+        .from("impact_measurements")
+        .select("source_id, impact_score, confidence, measured_at")
+        .eq("organization_id", organization.id)
+        .eq("source_type", "action_plan")
+        .in("source_id", list.map((p) => p.id))
+        .order("measured_at", { ascending: false });
+      const map: Record<string, { impact: number | null; confidence: number | null }> = {};
+      ((imp ?? []) as any[]).forEach((r) => {
+        if (!(r.source_id in map)) map[r.source_id] = { impact: r.impact_score, confidence: r.confidence };
+      });
+      setImpactBySource(map);
     } else {
       setTasks({});
+      setImpactBySource({});
     }
     setLoading(false);
   };
@@ -171,6 +187,16 @@ export default function EnterpriseActionPlanScreen() {
     else load();
   };
 
+  const measurePlan = async (id: string) => {
+    setMeasuringId(id);
+    const { error } = await supabase.functions.invoke("measure-impact", {
+      body: { source_type: "action_plan", source_id: id },
+    });
+    setMeasuringId(null);
+    if (error) toast({ title: "Erro ao medir impacto", description: error.message, variant: "destructive" });
+    else { toast({ title: "Impacto medido" }); await load(); }
+  };
+
   const grouped = useMemo(() => {
     const g: Record<PlanStatus, Plan[]> = { draft: [], active: [], paused: [], completed: [], canceled: [] };
     plans.forEach((p) => g[p.status].push(p));
@@ -205,6 +231,11 @@ export default function EnterpriseActionPlanScreen() {
                   {plan.status}
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-[#999]">{SOURCE_LABEL[plan.source_type]}</span>
+                {impactBySource[plan.id]?.impact != null && (
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${Number(impactBySource[plan.id].impact) >= 0 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
+                    <Activity className="w-3 h-3" /> Impacto {Number(impactBySource[plan.id].impact) >= 0 ? "+" : ""}{Number(impactBySource[plan.id].impact).toFixed(1)}
+                  </span>
+                )}
               </div>
               <h4 className="text-[17px] font-bold text-[#111] leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
                 {plan.title}
