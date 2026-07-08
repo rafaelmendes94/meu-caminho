@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import { 
   ShieldCheck, 
   EyeOff, 
@@ -20,6 +23,8 @@ import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 
 const EnterprisePrivacyConsentScreen = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const [saving, setSaving] = useState(false);
   const [consents, setConsents] = useState({
     individualPrivate: false,
     collectiveTrends: false,
@@ -33,10 +38,26 @@ const EnterprisePrivacyConsentScreen = () => {
     setConsents(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleContinue = () => {
-    if (allChecked) {
+  const handleContinue = async () => {
+    if (!allChecked || saving) return;
+    if (!user) {
       navigate("/enterprise/cadastro");
+      return;
     }
+    setSaving(true);
+    const { error } = await supabase.from("privacy_consents").insert({
+      user_id: user.id,
+      organization_id: profile?.organization_id ?? null,
+      consent_type: "enterprise_privacy",
+      version: "v1.0",
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+    });
+    setSaving(false);
+    if (error) {
+      toast.error("Não foi possível registrar seu consentimento.");
+      return;
+    }
+    navigate("/enterprise/cadastro");
   };
 
   return (
