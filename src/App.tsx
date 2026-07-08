@@ -161,6 +161,9 @@ import EnterpriseAcceptInvitePage from "./pages/EnterpriseAcceptInvitePage.tsx";
 import OnboardingChatScreen from "./pages/OnboardingChatScreen.tsx";
 import OnboardingConcluidoScreen from "./pages/OnboardingConcluidoScreen.tsx";
 import PulseSettingsScreen from "./pages/PulseSettingsScreen.tsx";
+import PlatformAdminDashboardScreen from "./pages/PlatformAdminDashboardScreen.tsx";
+import PlatformOrganizationsScreen from "./pages/PlatformOrganizationsScreen.tsx";
+import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetailScreen.tsx";
 
 
 
@@ -179,6 +182,9 @@ const Ent = ({ children }: { children: ReactNode }) => (
 );
 const Auth = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute>{children}</ProtectedRoute>
+);
+const PlatformAdmin = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute requiredRoles={["platform_admin"]}>{children}</ProtectedRoute>
 );
 
 const App = () => (
@@ -394,6 +400,12 @@ const App = () => (
           <Route path="/enterprise/rh/suporte" element={<RH><EnterpriseSupportScreen /></RH>} />
           <Route path="/enterprise/rh/roadmap" element={<RH><EnterpriseRoadmapScreen /></RH>} />
           <Route path="/enterprise/rh/comunicacao-lancamento" element={<RH><EnterpriseLaunchCommunicationScreen /></RH>} />
+
+          {/* Super Admin SaaS */}
+          <Route path="/admin" element={<PlatformAdmin><PlatformAdminDashboardScreen /></PlatformAdmin>} />
+          <Route path="/admin/dashboard" element={<PlatformAdmin><PlatformAdminDashboardScreen /></PlatformAdmin>} />
+          <Route path="/admin/organizations" element={<PlatformAdmin><PlatformOrganizationsScreen /></PlatformAdmin>} />
+          <Route path="/admin/organizations/:id" element={<PlatformAdmin><PlatformOrganizationDetailScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
