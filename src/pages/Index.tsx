@@ -90,7 +90,7 @@ const Index = () => {
   const goEmail = () => setMode("email");
   const goSignup = () => setMode("signup");
 
-  const LoginButtons = () => (
+  const loginButtons = (
     <div className="mt-5 w-full flex flex-col gap-3">
       <button
         onClick={handleGoogle}
@@ -215,7 +215,7 @@ const Index = () => {
               <p className="text-[#666] font-medium">Escolha como deseja acessar sua conta.</p>
             </div>
 
-            <LoginButtons />
+            {loginButtons}
 
             <div className="mt-8">
               <SparkDivider />
@@ -292,7 +292,7 @@ const Index = () => {
             <SparkDivider />
           </div>
 
-          <LoginButtons />
+          {loginButtons}
 
           <div className="mt-5 flex items-center justify-center gap-3 text-center">
             <ShieldIcon />
