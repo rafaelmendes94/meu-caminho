@@ -1785,6 +1785,7 @@ export type Database = {
         Args: { _organization_id: string }
         Returns: Json
       }
+      get_platform_analytics: { Args: { _days?: number }; Returns: Json }
       get_platform_dashboard_summary: { Args: never; Returns: Json }
       get_platform_organization_details: {
         Args: { _id: string }
