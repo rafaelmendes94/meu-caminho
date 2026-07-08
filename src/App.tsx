@@ -164,6 +164,10 @@ import PulseSettingsScreen from "./pages/PulseSettingsScreen.tsx";
 import PlatformAdminDashboardScreen from "./pages/PlatformAdminDashboardScreen.tsx";
 import PlatformOrganizationsScreen from "./pages/PlatformOrganizationsScreen.tsx";
 import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetailScreen.tsx";
+import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
+import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
+import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
+import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
 
 
 
@@ -406,6 +410,10 @@ const App = () => (
           <Route path="/admin/dashboard" element={<PlatformAdmin><PlatformAdminDashboardScreen /></PlatformAdmin>} />
           <Route path="/admin/organizations" element={<PlatformAdmin><PlatformOrganizationsScreen /></PlatformAdmin>} />
           <Route path="/admin/organizations/:id" element={<PlatformAdmin><PlatformOrganizationDetailScreen /></PlatformAdmin>} />
+          <Route path="/admin/subscriptions" element={<PlatformAdmin><PlatformSubscriptionsScreen /></PlatformAdmin>} />
+          <Route path="/admin/ai-usage" element={<PlatformAdmin><PlatformAIUsageScreen /></PlatformAdmin>} />
+          <Route path="/admin/support" element={<PlatformAdmin><PlatformSupportScreen /></PlatformAdmin>} />
+          <Route path="/admin/audit" element={<PlatformAdmin><PlatformAuditScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
