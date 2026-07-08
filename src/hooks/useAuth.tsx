@@ -32,6 +32,7 @@ interface AuthContextValue {
   profile: Profile | null;
   roles: AppRole[];
   organization: Organization | null;
+  hasEmployeeProfile: boolean;
   loading: boolean;
   isAuthenticated: boolean;
   hasRole: (role: AppRole) => boolean;
@@ -46,9 +47,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 async function loadUserData(userId: string) {
-  const [{ data: profile }, { data: rolesData }] = await Promise.all([
+  const [{ data: profile }, { data: rolesData }, { data: empProfile }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", userId),
+    supabase.from("employee_profiles").select("id").eq("user_id", userId).maybeSingle(),
   ]);
 
   let organization: Organization | null = null;
@@ -62,7 +64,7 @@ async function loadUserData(userId: string) {
   }
 
   const roles = ((rolesData ?? []) as { role: AppRole }[]).map((r) => r.role);
-  return { profile: (profile as Profile) ?? null, roles, organization };
+  return { profile: (profile as Profile) ?? null, roles, organization, hasEmployeeProfile: !!empProfile };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);
+  const [hasEmployeeProfile, setHasEmployeeProfile] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const hydrate = async (nextSession: Session | null) => {
@@ -82,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(data.profile);
         setRoles(data.roles);
         setOrganization(data.organization);
+        setHasEmployeeProfile(data.hasEmployeeProfile);
       } catch (e) {
         console.error("[auth] loadUserData failed", e);
       }
@@ -89,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setRoles([]);
       setOrganization(null);
+      setHasEmployeeProfile(false);
     }
     setLoading(false);
   };
@@ -110,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     roles,
     organization,
+    hasEmployeeProfile,
     loading,
     isAuthenticated: !!session,
     hasRole: (role) => roles.includes(role),
@@ -145,9 +151,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(data.profile);
         setRoles(data.roles);
         setOrganization(data.organization);
+        setHasEmployeeProfile(data.hasEmployeeProfile);
       }
     },
-  }), [user, session, profile, roles, organization, loading]);
+  }), [user, session, profile, roles, organization, hasEmployeeProfile, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

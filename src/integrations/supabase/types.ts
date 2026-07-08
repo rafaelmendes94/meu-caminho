@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      employee_profiles: {
+        Row: {
+          confidence: string
+          generated_at: string
+          generated_by_model: string | null
+          id: string
+          organization_id: string | null
+          profile_communication: Json
+          profile_development: Json
+          profile_energy: Json
+          profile_engagement: Json
+          profile_leadership: Json
+          profile_professional: Json
+          summary: string | null
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          confidence?: string
+          generated_at?: string
+          generated_by_model?: string | null
+          id?: string
+          organization_id?: string | null
+          profile_communication?: Json
+          profile_development?: Json
+          profile_energy?: Json
+          profile_engagement?: Json
+          profile_leadership?: Json
+          profile_professional?: Json
+          summary?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          confidence?: string
+          generated_at?: string
+          generated_by_model?: string | null
+          id?: string
+          organization_id?: string | null
+          profile_communication?: Json
+          profile_development?: Json
+          profile_energy?: Json
+          profile_engagement?: Json
+          profile_leadership?: Json
+          profile_professional?: Json
+          summary?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_invites: {
         Row: {
           accepted_at: string | null
@@ -63,6 +125,101 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "enterprise_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_interviews: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          message_count: number
+          model_used: string | null
+          organization_id: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          message_count?: number
+          model_used?: string | null
+          organization_id?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          message_count?: number
+          model_used?: string | null
+          organization_id?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_interviews_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_messages: {
+        Row: {
+          content: string
+          created_at: string
+          dimension_tags: string[] | null
+          id: string
+          interview_id: string
+          organization_id: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          dimension_tags?: string[] | null
+          id?: string
+          interview_id: string
+          organization_id?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          dimension_tags?: string[] | null
+          id?: string
+          interview_id?: string
+          organization_id?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_messages_interview_id_fkey"
+            columns: ["interview_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_interviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_messages_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -243,7 +400,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      employee_profiles_rh_view: {
+        Row: {
+          communication_style: string | null
+          energy_baseline: number | null
+          engagement_level: number | null
+          generated_at: string | null
+          is_leader: boolean | null
+          organization_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          communication_style?: never
+          energy_baseline?: never
+          engagement_level?: never
+          generated_at?: string | null
+          is_leader?: never
+          organization_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          communication_style?: never
+          energy_baseline?: never
+          engagement_level?: never
+          generated_at?: string | null
+          is_leader?: never
+          organization_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       current_organization_id: { Args: never; Returns: string }
