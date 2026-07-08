@@ -1740,6 +1740,23 @@ export type Database = {
         Returns: Json
       }
       current_organization_id: { Args: never; Returns: string }
+      get_ai_costs: {
+        Args: { _days?: number }
+        Returns: {
+          action_plans: number
+          cost_cents: number
+          dna_reports: number
+          exec_messages: number
+          messages: number
+          organization_id: string
+          organization_name: string
+          rituals: number
+          tokens_in: number
+          tokens_out: number
+          tokens_total: number
+        }[]
+      }
+      get_ai_usage: { Args: { _days?: number }; Returns: Json }
       get_capacity_pulse: {
         Args: { _days?: number; _organization_id: string }
         Returns: {
