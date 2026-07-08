@@ -7,13 +7,21 @@ interface Props {
   children: ReactNode;
   requiredRoles?: AppRole[];
   redirectTo?: string;
+  requireEmployeeProfile?: boolean;
 }
 
-const ProtectedRoute = ({ children, requiredRoles, redirectTo = "/login" }: Props) => {
-  const { isAuthenticated, loading, hasAnyRole } = useAuth();
+const ProtectedRoute = ({ children, requiredRoles, redirectTo = "/login", requireEmployeeProfile }: Props) => {
+  const { isAuthenticated, loading, hasAnyRole, hasEmployeeProfile } = useAuth();
   const location = useLocation();
 
   const denied = !loading && isAuthenticated && requiredRoles && requiredRoles.length > 0 && !hasAnyRole(requiredRoles);
+  const needsOnboarding =
+    !loading &&
+    isAuthenticated &&
+    requireEmployeeProfile &&
+    hasAnyRole(["employee", "leader"]) &&
+    !hasAnyRole(["owner", "rh_admin"]) &&
+    !hasEmployeeProfile;
 
   useEffect(() => {
     if (denied) toast.error("Acesso negado para este perfil.");
@@ -36,6 +44,10 @@ const ProtectedRoute = ({ children, requiredRoles, redirectTo = "/login" }: Prop
 
   if (denied) {
     return <Navigate to="/" replace />;
+  }
+
+  if (needsOnboarding) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
