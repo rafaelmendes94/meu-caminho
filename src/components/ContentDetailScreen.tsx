@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { MediaDesktopLayout } from "./layouts/MediaDesktopLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
 import { ChevronLeft, Bookmark, Heart, MessageCircle, Play, Mic, Clock, Check, MoreVertical } from "lucide-react";
+import { useCmsItemBySlug } from "@/hooks/use-cms-items";
 
 const serif = { fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: "-0.015em" } as const;
 
@@ -25,11 +26,9 @@ const Wave = ({ progress }: { progress: number }) => {
   );
 };
 
-const related = [
-  { title: "Ansiedade silenciosa", meta: "Podcast · 14 min", img: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=600&q=80", tone: "#9B8AC9" },
-  { title: "O poder do autocontrole", meta: "Reflexão · 6 min", img: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80", tone: "#F88A2B" },
-  { title: "Mentes cansadas", meta: "Áudio · 9 min", img: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=600&q=80", tone: "#7A9F6A" },
-];
+const TYPE_LABEL: Record<string, string> = { book: "Leitura", course: "Curso", track: "Trilha", podcast: "Podcast", video: "Vídeo", audio: "Áudio", material: "Material" };
+const TYPE_TONE: Record<string, string> = { podcast: "#9B8AC9", video: "#C25E5E", audio: "#7A6CA8", book: "#956A3F", track: "#F88A2B", course: "#5E8F76", material: "#7A9F6A" };
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=1200&q=85";
 
 const ContentDetailScreen = () => {
   const [saved, setSaved] = useState(false);
@@ -38,6 +37,18 @@ const ContentDetailScreen = () => {
   const isEnterprise = pathname.startsWith('/enterprise');
   const al = useAudienceLink();
   const backTo = isEnterprise ? "/enterprise/feed" : "/feed";
+  const [params] = useSearchParams();
+  const slug = params.get("slug");
+  const { item, related, author } = useCmsItemBySlug(slug);
+  const cover = item?.banner_url || item?.cover_url || FALLBACK_IMG;
+  const typeLabel = item ? (TYPE_LABEL[item.type] || item.type) : "Podcast";
+  const duration = item?.duration_minutes ? `${item.duration_minutes} min` : "18 Min";
+  const title = item?.title || "Como desacelerar pensamentos acelerados";
+  const subtitle = item?.subtitle || item?.short_description || "Aprenda técnicas práticas para reduzir a aceleração da mente e recuperar clareza emocional.";
+  const description = item?.long_description || item?.short_description || "Neste episódio, Augusto Cury revela por que a mente moderna acelera sem permissão e como recuperar o controle através de pequenas pausas conscientes.";
+  const authorName = author?.name || "Augusto Cury";
+  const authorRole = author?.role || "Mentor Emocional";
+  const authorAvatar = author?.avatar_url || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80";
 
   const content = (
     <main className={`${isEnterprise ? '' : 'h-screen min-h-[100dvh] w-full flex items-center justify-center overflow-hidden'} bg-[#F7F4F2] font-display`}>
@@ -66,33 +77,33 @@ const ContentDetailScreen = () => {
           <div className="flex-1 pb-10">
             {/* HERO Section */}
             <div className="relative h-[300px] lg:h-[400px] w-full overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=1200&q=85" alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#F7F4F2] via-transparent to-black/20" />
             </div>
 
             <div className="px-6 -mt-12 relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-3 py-1 rounded-full bg-[#F88A2B] text-white text-[10px] font-bold uppercase tracking-widest shadow-lg">Podcast</span>
-                <span className="px-3 py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest">18 Min</span>
+                <span className="px-3 py-1 rounded-full bg-[#F88A2B] text-white text-[10px] font-bold uppercase tracking-widest shadow-lg">{typeLabel}</span>
+                <span className="px-3 py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest">{duration}</span>
               </div>
               
               <h1 style={serif} className="text-3xl lg:text-4xl font-bold text-[#111] leading-tight mb-6">
-                Como desacelerar pensamentos acelerados
+                {title}
               </h1>
 
               <div className="flex items-center gap-3 mb-8 pb-8 border-b border-black/5">
                 <div className="w-12 h-12 rounded-full border-2 border-[#F88A2B] p-0.5">
-                  <div className="w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage: "url(https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80)" }} />
+                  <div className="w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${authorAvatar})` }} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#111]">Augusto Cury</p>
-                  <p className="text-[11px] text-[#666] font-medium">Mentor Emocional</p>
+                  <p className="text-sm font-bold text-[#111]">{authorName}</p>
+                  <p className="text-[11px] text-[#666] font-medium">{authorRole}</p>
                 </div>
               </div>
 
               <div className="prose prose-sm max-w-none text-[#555] leading-relaxed mb-10">
-                <p className="text-lg text-[#111] font-medium mb-4">Aprenda técnicas práticas para reduzir a aceleração da mente e recuperar clareza emocional.</p>
-                <p>Neste episódio, Augusto Cury revela por que a mente moderna acelera sem permissão e como recuperar o controle através de pequenas pausas conscientes. Você aprenderá a reconhecer pensamentos automáticos e suavizar reações emocionais.</p>
+                <p className="text-lg text-[#111] font-medium mb-4">{subtitle}</p>
+                <p>{description}</p>
               </div>
 
               {/* Player UI */}
@@ -114,17 +125,23 @@ const ContentDetailScreen = () => {
               <section className="mb-10">
                 <h3 className="text-sm font-bold text-[#111] uppercase tracking-[0.2em] mb-6">Você também pode gostar</h3>
                 <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6">
-                  {related.map((r, i) => (
-                    <Link key={i} to={al("/conteudo/detalhe")} className="w-[180px] shrink-0 group">
-                      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3 shadow-md">
-                        <img src={r.img} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                        <span className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[8px] font-bold uppercase tracking-wider" style={{ color: r.tone }}>{r.meta.split(' ')[0]}</span>
-                      </div>
-                      <p className="text-sm font-bold text-[#111] leading-tight line-clamp-1">{r.title}</p>
-                      <p className="text-[10px] text-[#999] font-medium mt-1">{r.meta.split('· ')[1]}</p>
-                    </Link>
-                  ))}
+                  {(related.length ? related : []).map((r) => {
+                    const rCover = r.cover_url || r.banner_url || FALLBACK_IMG;
+                    const rLabel = TYPE_LABEL[r.type] || r.type;
+                    const rTone = TYPE_TONE[r.type] || "#F88A2B";
+                    const rDur = r.duration_minutes ? `${r.duration_minutes} min` : "";
+                    return (
+                      <Link key={r.id} to={al(`/conteudo/detalhe?slug=${r.slug}`)} className="w-[180px] shrink-0 group">
+                        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3 shadow-md">
+                          <img src={rCover} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
+                          <span className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[8px] font-bold uppercase tracking-wider" style={{ color: rTone }}>{rLabel}</span>
+                        </div>
+                        <p className="text-sm font-bold text-[#111] leading-tight line-clamp-1">{r.title}</p>
+                        <p className="text-[10px] text-[#999] font-medium mt-1">{rDur}</p>
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
 
