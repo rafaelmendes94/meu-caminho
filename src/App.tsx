@@ -163,6 +163,7 @@ import OnboardingConcluidoScreen from "./pages/OnboardingConcluidoScreen.tsx";
 import PulseSettingsScreen from "./pages/PulseSettingsScreen.tsx";
 import PlatformAdminDashboardScreen from "./pages/PlatformAdminDashboardScreen.tsx";
 import PlatformOrganizationsScreen from "./pages/PlatformOrganizationsScreen.tsx";
+import PlatformOwnersScreen from "./pages/PlatformOwnersScreen.tsx";
 import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetailScreen.tsx";
 import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
 import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
@@ -430,6 +431,7 @@ const App = () => (
           <Route path="/admin/dashboard" element={<PlatformAdmin><PlatformAdminDashboardScreen /></PlatformAdmin>} />
           <Route path="/admin/organizations" element={<PlatformAdmin><PlatformOrganizationsScreen /></PlatformAdmin>} />
           <Route path="/admin/organizations/:id" element={<PlatformAdmin><PlatformOrganizationDetailScreen /></PlatformAdmin>} />
+          <Route path="/admin/owners" element={<PlatformAdmin><PlatformOwnersScreen /></PlatformAdmin>} />
           <Route path="/admin/subscriptions" element={<PlatformAdmin><PlatformSubscriptionsScreen /></PlatformAdmin>} />
           <Route path="/admin/billing" element={<PlatformAdmin><PlatformBillingScreen /></PlatformAdmin>} />
           <Route path="/admin/ai-usage" element={<PlatformAdmin><PlatformAIUsageScreen /></PlatformAdmin>} />

@@ -1451,6 +1451,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_status"]
             | null
           suspended_at: string | null
+          suspension_reason: string | null
+          suspension_until: string | null
           trial_ends_at: string | null
           updated_at: string | null
         }
@@ -1476,6 +1478,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_status"]
             | null
           suspended_at?: string | null
+          suspension_reason?: string | null
+          suspension_until?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -1501,6 +1505,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_status"]
             | null
           suspended_at?: string | null
+          suspension_reason?: string | null
+          suspension_until?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -2281,6 +2287,35 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_owners: {
+        Args: never
+        Returns: {
+          archived_at: string
+          created_at: string
+          current_period_end: string
+          deleted_at: string
+          email: string
+          full_name: string
+          invite_accepted_at: string
+          last_sign_in_at: string
+          licenses_total: number
+          licenses_used: number
+          mrr_cents: number
+          organization_id: string
+          organization_name: string
+          phone: string
+          plan: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          subscription_status: string
+          suspended_at: string
+          suspension_reason: string
+          suspension_until: string
+          trial_ends_at: string
+          user_id: string
+        }[]
+      }
+      admin_owners_kpis: { Args: never; Returns: Json }
       assign_support_ticket: {
         Args: { _assignee: string; _ticket_id: string }
         Returns: undefined
