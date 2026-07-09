@@ -48,7 +48,7 @@ export function RecommendedForYou({ mood, interest, preferredType, limit = 6, ti
         setMessage(data?.message ?? "");
         if (recs.length === 0) { setItems([]); setLoading(false); return; }
         const ids = recs.map((r) => r.id);
-        const { data: full } = await supabase.from("content_items").select("*").in("id", ids);
+        const { data: full } = await supabase.from("content_items").select("*").in("id", ids).eq("status", "published");
         const byId = new Map((full ?? []).map((f: any) => [f.id, f]));
         const ordered = recs.map((r) => {
           const f = byId.get(r.id);
