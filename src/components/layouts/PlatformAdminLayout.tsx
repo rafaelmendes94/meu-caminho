@@ -1,40 +1,13 @@
 import { ReactNode, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  BarChart3,
-  Building2,
-  UserCog,
-  CreditCard,
-  Wallet,
-  Sparkles,
-  Activity,
-  LifeBuoy,
-  ShieldCheck,
-  FolderKanban,
-  Library,
-  BookOpen,
-  GraduationCap,
-  Route,
-  Podcast,
-  Video,
-  Music,
-  FileText,
-  Tags,
-  Users,
-  Layers,
-  Import,
-  Settings,
-  ChevronDown,
-  Search,
-  Bell,
-  HelpCircle,
-  BookMarked,
-  LogOut,
-  ChevronsLeft,
-  ChevronsRight,
+  LayoutDashboard, BarChart3, Building2, UserCog, CreditCard, Wallet, Sparkles,
+  Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap,
+  Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings,
+  ChevronDown, ChevronsLeft, ChevronsRight,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import AdminTopbar from "@/components/admin/AdminTopbar";
 import logoMark from "@/assets/login-abstract.png";
 
 type NavItem = { to: string; label: string; icon: any };
@@ -122,13 +95,7 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
   }, [pathname]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initiallyOpen);
 
-  const initials =
-    (profile?.display_name || profile?.full_name || "SA")
-      .split(" ")
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
+  void profile;
 
   return (
     <div className="min-h-[100dvh] flex bg-[#F6F7FB] font-montserrat text-[#0F172A]">
@@ -224,47 +191,11 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
 
       {/* Main */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Topbar */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center gap-3 px-6 sticky top-0 z-30">
-          <div className="ml-auto w-full max-w-[360px] relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Pesquisar organizações, owners, conteúdos…"
-              className="w-full h-10 pl-9 pr-4 rounded-lg bg-slate-100 border border-transparent focus:border-slate-300 focus:bg-white focus:outline-none text-sm text-slate-700 placeholder:text-slate-400"
-            />
-          </div>
-          <div className="flex items-center gap-1 text-slate-500">
-            <button className="w-10 h-10 grid place-items-center rounded-lg hover:bg-slate-100" title="Notificações">
-              <Bell className="w-[18px] h-[18px]" />
-            </button>
-            <button className="w-10 h-10 grid place-items-center rounded-lg hover:bg-slate-100" title="Ajuda">
-              <HelpCircle className="w-[18px] h-[18px]" />
-            </button>
-            <button className="w-10 h-10 grid place-items-center rounded-lg hover:bg-slate-100" title="Documentação">
-              <BookMarked className="w-[18px] h-[18px]" />
-            </button>
-          </div>
-          <div className="h-8 w-px bg-slate-200 mx-1" />
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-[13px] font-semibold text-slate-800 leading-tight">
-                {profile?.display_name || profile?.full_name || "Admin"}
-              </p>
-              <p className="text-[11px] text-slate-500 leading-tight">Platform Admin</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F88A2B] to-[#e07020] text-white grid place-items-center text-xs font-bold">
-              {initials}
-            </div>
-            <button
-              onClick={async () => { await signOut(); navigate("/login", { replace: true }); }}
-              className="w-10 h-10 grid place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#F88A2B]"
-              title="Sair"
-            >
-              <LogOut className="w-[18px] h-[18px]" />
-            </button>
-          </div>
-        </header>
+        <AdminTopbar
+          variant="super"
+          title="Platform Admin"
+          onSignOut={async () => { await signOut(); navigate("/login", { replace: true }); }}
+        />
 
         {/* Scoped light theme for admin pages */}
         <main className="flex-1 min-w-0">
