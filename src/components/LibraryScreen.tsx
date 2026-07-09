@@ -183,7 +183,7 @@ export default function LibraryScreen() {
  {/* Filters */}
   <div className={`relative z-20 pl-5 pb-5 ${isEnterprise ? 'lg:px-0 lg:pt-4' : ''}`}>
   <div className="flex gap-2 overflow-x-auto overflow-y-visible no-scrollbar pr-5 py-6 -my-6">
-  {CATS.map((c) => {
+   {cats.map((c) => {
   const active = c.key === catId;
   return (
   <button
