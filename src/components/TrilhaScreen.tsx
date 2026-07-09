@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from"react";
-import { Link, useNavigate, useLocation } from"react-router-dom";
+import { useState, useEffect, useRef, useMemo } from"react";
+import { Link, useNavigate, useLocation, useSearchParams } from"react-router-dom";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import etapa1Img from"@/assets/trilha/etapa1.jpg";
@@ -10,6 +10,7 @@ import etapa3Img from"@/assets/trilha/etapa3.jpg";
 import diagImg from"@/assets/trilha/diagnostico.jpg";
 import heroImg from"@/assets/trilha/hero.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useCmsTrack } from "@/hooks/use-cms-items";
 
 const ink900 ="#111111";
 const ink500 ="#666666";
@@ -312,6 +313,30 @@ const TrilhaScreen = () => {
   const location = useLocation();
   const isEnterprise = location.pathname.startsWith('/enterprise');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [params] = useSearchParams();
+  const slug = params.get("slug");
+  const { track, items: trackItems } = useCmsTrack(slug);
+
+  const stageImgs = [etapa1Img, prova1Img, etapa2Img, prova2Img, etapa3Img, diagImg];
+  const trackTitle = track?.title || "Domínio Emocional";
+  const trackDesc = track?.short_description || "Desenvolva sua inteligência emocional e transforme sua forma de pensar, sentir e agir.";
+  const stageColors = [brand, green, purple];
+
+  const displayEtapas: Etapa[] = useMemo(() => {
+    if (!trackItems.length) return etapas;
+    return trackItems.map((it, i) => ({
+      tag: `ETAPA ${i + 1}`,
+      tagColor: stageColors[i % stageColors.length],
+      title: it.title,
+      desc: it.short_description || "",
+      meta: it.duration_minutes ? `${Math.floor(it.duration_minutes / 60)}h ${it.duration_minutes % 60}m` : undefined,
+      metaIcon: "play+clock",
+      status: (i === 0 ? "atual" : "bloqueado") as Status,
+      img: it.cover_url || stageImgs[i % stageImgs.length],
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackItems]);
+
  const menuRef = useRef<HTMLDivElement>(null);
 
  useEffect(() => {
@@ -385,12 +410,12 @@ const TrilhaScreen = () => {
  <p className="text-[10.5px] font-bold uppercase tracking-[0.22em]" style={{ color: brand }}>
  Sua jornada
  </p>
- <h2 className="mt-1.5 text-[28px] lg:text-[42px] leading-[1.05] text-[#111]" style={{ ...serif, fontWeight: 600 }}>
- Domínio Emocional
- </h2>
- <p className="mt-2 text-[12.5px] leading-[17px]" style={{ color: ink500 }}>
- Desenvolva sua inteligência emocional e transforme sua forma de pensar, sentir e agir.
-  </p>
+  <h2 className="mt-1.5 text-[28px] lg:text-[42px] leading-[1.05] text-[#111]" style={{ ...serif, fontWeight: 600 }}>
+  {trackTitle}
+  </h2>
+  <p className="mt-2 text-[12.5px] leading-[17px]" style={{ color: ink500 }}>
+  {trackDesc}
+   </p>
   </div>
   </div>
 
@@ -435,9 +460,9 @@ const TrilhaScreen = () => {
  <h3 className="text-[15px] lg:text-[18px] font-bold text-[#111] px-1 mb-3 lg:mb-5" style={{ letterSpacing:"-0.01em" }}>
  Sua jornada
  </h3>
- <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3 lg:gap-6">
- {etapas.map((e, i) => <EtapaCard key={i} e={e} />)}
- </div>
+  <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3 lg:gap-6">
+  {displayEtapas.map((e, i) => <EtapaCard key={i} e={e} />)}
+  </div>
  </section>
 
  {/* Footer encouragement */}
