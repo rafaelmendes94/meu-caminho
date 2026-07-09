@@ -1,1 +1,4 @@
 project_id = "txhaizbihxlalznkplaa"
+
+[functions.cms-recommend]
+verify_jwt = true
