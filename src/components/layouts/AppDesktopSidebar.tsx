@@ -12,7 +12,7 @@ import {
   User,
   Settings,
 } from "lucide-react";
-import avatar from "@/assets/avatar-juliana.jpg";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 import type { LucideIcon } from "lucide-react";
 type Item = { to: string; label: string; icon: LucideIcon };
