@@ -175,8 +175,21 @@ const TabData = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
   const [saving, setSaving] = useState(false);
   const save = async () => {
     setSaving(true);
+    if (f.slug && f.slug !== org.slug) {
+      const { data: dup } = await supabase.from("organizations").select("id").eq("slug", f.slug).neq("id", org.id).maybeSingle();
+      if (dup?.id) {
+        toast.error("Slug já em uso por outra empresa.");
+        setSaving(false); return;
+      }
+    }
     const { error } = await supabase.from("organizations").update(f as any).eq("id", org.id);
-    if (error) { toast.error(error.message); setSaving(false); return; }
+    if (error) {
+      const m = error.message || "";
+      if (m.includes("organizations_slug_key") || m.toLowerCase().includes("duplicate")) {
+        toast.error("Slug já em uso por outra empresa.");
+      } else toast.error(m);
+      setSaving(false); return;
+    }
     await audit(org.id, "org.data.update", f);
     toast.success("Dados atualizados.");
     setSaving(false); onSaved();
