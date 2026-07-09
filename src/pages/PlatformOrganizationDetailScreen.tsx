@@ -22,7 +22,7 @@ type Details = {
 const TABS = [
   ["overview", "Visão Geral"],
   ["data", "Dados"],
-  ["plan", "Plano"],
+  ["plan", "Plano e Licenças"],
   ["rh", "Config RH"],
   ["usage", "Uso"],
   ["ai", "IA"],
