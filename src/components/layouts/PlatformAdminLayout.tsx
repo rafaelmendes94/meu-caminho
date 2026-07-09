@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 const items = [
   { to: "/admin/dashboard", label: "Dashboard" },
   { to: "/admin/organizations", label: "Organizações" },
+  { to: "/admin/owners", label: "Organizações — Owners" },
   { to: "/admin/subscriptions", label: "Assinaturas" },
   { to: "/admin/billing", label: "Financeiro" },
   { to: "/admin/ai-usage", label: "Inteligência Artificial" },
