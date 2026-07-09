@@ -22,7 +22,7 @@ type Details = {
 const TABS = [
   ["overview", "Visão Geral"],
   ["data", "Dados"],
-  ["plan", "Plano"],
+  ["plan", "Plano e Licenças"],
   ["rh", "Config RH"],
   ["usage", "Uso"],
   ["ai", "IA"],
@@ -209,68 +209,212 @@ const TabData = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
   );
 };
 
+type PlanLite = {
+  id: string; name: string; slug: string; plan_type: string;
+  default_licenses: number; price_monthly_cents: number; price_yearly_cents: number;
+  currency: string; billing_cycle: string;
+  included_modules: Record<string, any>; ai_limits: Record<string, any>;
+};
+type Contract = {
+  id?: string;
+  organization_id: string;
+  plan_id: string | null;
+  contract_type: "standard" | "custom";
+  licenses_total: number;
+  price_monthly_cents: number;
+  price_yearly_cents: number;
+  discount_percent: number;
+  currency: string;
+  billing_cycle: "monthly" | "yearly" | "custom";
+  contract_start: string | null;
+  contract_end: string | null;
+  trial_ends_at: string | null;
+  grace_period_ends_at: string | null;
+  status: "trialing" | "active" | "past_due" | "canceled" | "suspended" | "expired";
+  custom_terms: string | null;
+  enabled_modules: Record<string, any>;
+  ai_limits_override: Record<string, any>;
+  notes: string | null;
+};
+
+const newContract = (orgId: string, org: any): Contract => ({
+  organization_id: orgId,
+  plan_id: null,
+  contract_type: "standard",
+  licenses_total: org.licenses_total ?? 0,
+  price_monthly_cents: org.mrr_cents ?? 0,
+  price_yearly_cents: 0,
+  discount_percent: 0,
+  currency: "BRL",
+  billing_cycle: "monthly",
+  contract_start: null,
+  contract_end: null,
+  trial_ends_at: org.trial_ends_at ?? null,
+  grace_period_ends_at: org.grace_period_ends_at ?? null,
+  status: (org.subscription_status ?? "trialing") as any,
+  custom_terms: null,
+  enabled_modules: {},
+  ai_limits_override: {},
+  notes: null,
+});
+
 const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
   const org = data.organization;
-  const [f, setF] = useState({
-    plan: org.plan ?? "", subscription_status: org.subscription_status ?? "trialing",
-    licenses_total: org.licenses_total ?? 0,
-    trial_ends_at: org.trial_ends_at ? org.trial_ends_at.slice(0, 10) : "",
-    grace_period_ends_at: org.grace_period_ends_at ? org.grace_period_ends_at.slice(0, 10) : "",
-  });
+  const [plans, setPlans] = useState<PlanLite[]>([]);
+  const [c, setC] = useState<Contract | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [{ data: p }, { data: k }] = await Promise.all([
+      supabase.from("platform_plans" as any).select("id,name,slug,plan_type,default_licenses,price_monthly_cents,price_yearly_cents,currency,billing_cycle,included_modules,ai_limits").eq("is_active", true).order("sort_order"),
+      supabase.from("organization_contracts" as any).select("*").eq("organization_id", org.id).maybeSingle(),
+    ]);
+    setPlans((p as any as PlanLite[]) ?? []);
+    setC(((k as any) as Contract) ?? newContract(org.id, org));
+    setLoading(false);
+  }, [org]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (loading || !c) return <div className="h-40 bg-slate-100 rounded-xl animate-pulse" />;
+
+  const set = (patch: Partial<Contract>) => setC({ ...c, ...patch });
+
+  const applyPlanDefaults = () => {
+    const p = plans.find((x) => x.id === c.plan_id);
+    if (!p) { toast.error("Selecione um plano primeiro."); return; }
+    set({
+      licenses_total: p.default_licenses,
+      price_monthly_cents: p.price_monthly_cents,
+      price_yearly_cents: p.price_yearly_cents,
+      currency: p.currency,
+      billing_cycle: p.billing_cycle as any,
+      enabled_modules: p.included_modules ?? {},
+      ai_limits_override: p.ai_limits ?? {},
+      contract_type: "standard",
+    });
+    toast.success("Valores do plano padrão aplicados.");
+  };
+
   const save = async () => {
     setSaving(true);
-    const payload: any = {
-      plan: f.plan || null, subscription_status: f.subscription_status,
-      licenses_total: Number(f.licenses_total) || 0,
-      trial_ends_at: f.trial_ends_at || null,
-      grace_period_ends_at: f.grace_period_ends_at || null,
-    };
-    const { error } = await supabase.from("organizations").update(payload).eq("id", org.id);
+    const payload: any = { ...c };
+    delete payload.id;
+    const { error } = await supabase
+      .from("organization_contracts" as any)
+      .upsert(payload, { onConflict: "organization_id" });
     if (error) { toast.error(error.message); setSaving(false); return; }
-    await audit(org.id, "org.plan.update", payload);
-    toast.success("Plano atualizado.");
-    setSaving(false); onSaved();
+    await audit(org.id, "org.contract.upsert", payload);
+    toast.success("Contrato salvo.");
+    setSaving(false); onSaved(); load();
   };
-  const quickAction = async (label: string, patch: any) => {
-    const { error } = await supabase.from("organizations").update(patch).eq("id", org.id);
+
+  const changeStatus = async (status: Contract["status"], label: string) => {
+    set({ status });
+    const payload: any = { ...c, status };
+    delete payload.id;
+    const { error } = await supabase
+      .from("organization_contracts" as any)
+      .upsert(payload, { onConflict: "organization_id" });
     if (error) return toast.error(error.message);
-    await audit(org.id, label, patch);
-    toast.success("Feito.");
-    onSaved();
+    await audit(org.id, label, { status });
+    toast.success("Status atualizado.");
+    onSaved(); load();
   };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
-        <Input label="Plano" value={f.plan} onChange={(v) => setF({ ...f, plan: v })} />
+        <div>
+          <Label>Plano base</Label>
+          <select value={c.plan_id ?? ""} onChange={(e) => set({ plan_id: e.target.value || null })}
+            className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
+            <option value="">— sem plano —</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.name} · {p.default_licenses} lic.</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <Label>Tipo de contrato</Label>
+          <select value={c.contract_type} onChange={(e) => set({ contract_type: e.target.value as any })}
+            className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
+            <option value="standard">Padrão</option>
+            <option value="custom">Personalizado</option>
+          </select>
+        </div>
         <div>
           <Label>Status</Label>
-          <select value={f.subscription_status} onChange={(e) => setF({ ...f, subscription_status: e.target.value })}
+          <select value={c.status} onChange={(e) => set({ status: e.target.value as any })}
             className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
-            {["trialing","active","past_due","suspended","canceled","grace_period"].map((s) => (
+            {["trialing","active","past_due","suspended","canceled","expired"].map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
         </div>
-        <Input label="Licenças contratadas" type="number" value={String(f.licenses_total)} onChange={(v) => setF({ ...f, licenses_total: Number(v) as any })} />
-        <Input label="Trial até" type="date" value={f.trial_ends_at} onChange={(v) => setF({ ...f, trial_ends_at: v })} />
-        <Input label="Grace period até" type="date" value={f.grace_period_ends_at} onChange={(v) => setF({ ...f, grace_period_ends_at: v })} />
-        <KPI label="Licenças usadas" value={org.licenses_used ?? 0} />
-      </div>
-      <div className="flex gap-2">
-        <button disabled={saving} onClick={save} className="px-6 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-bold disabled:opacity-50">
-          {saving ? "Salvando…" : "Salvar plano"}
-        </button>
-      </div>
-      <div className="border-t border-slate-200 pt-4">
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-2">Ações rápidas</p>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => quickAction("org.licenses.add", { licenses_total: (org.licenses_total ?? 0) + 10 })} className="px-3 py-2 rounded bg-white border border-slate-200 text-xs">+ 10 licenças</button>
-          <button onClick={() => quickAction("org.licenses.remove", { licenses_total: Math.max(0, (org.licenses_total ?? 0) - 10) })} className="px-3 py-2 rounded bg-white border border-slate-200 text-xs">− 10 licenças</button>
-          <button onClick={() => quickAction("org.trial.extend", { trial_ends_at: new Date(Date.now() + 30 * 86400000).toISOString() })} className="px-3 py-2 rounded bg-white border border-slate-200 text-xs">Renovar trial +30d</button>
-          <button onClick={() => quickAction("org.cancel", { subscription_status: "canceled" })} className="px-3 py-2 rounded bg-white border border-red-200 text-red-600 text-xs">Cancelar</button>
-          <button onClick={() => quickAction("org.reactivate", { subscription_status: "active", suspended_at: null })} className="px-3 py-2 rounded bg-white border border-emerald-200 text-emerald-700 text-xs">Reativar</button>
+
+        <Input label="Licenças contratadas" type="number" value={String(c.licenses_total)} onChange={(v) => set({ licenses_total: Number(v) || 0 })} />
+        <Input label="Preço mensal (centavos)" type="number" value={String(c.price_monthly_cents)} onChange={(v) => set({ price_monthly_cents: Number(v) || 0 })} />
+        <Input label="Preço anual (centavos)" type="number" value={String(c.price_yearly_cents)} onChange={(v) => set({ price_yearly_cents: Number(v) || 0 })} />
+
+        <Input label="Desconto %" type="number" value={String(c.discount_percent)} onChange={(v) => set({ discount_percent: Number(v) || 0 })} />
+        <Input label="Moeda" value={c.currency} onChange={(v) => set({ currency: v.toUpperCase() })} />
+        <div>
+          <Label>Ciclo cobrança</Label>
+          <select value={c.billing_cycle} onChange={(e) => set({ billing_cycle: e.target.value as any })}
+            className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
+            <option value="monthly">Mensal</option>
+            <option value="yearly">Anual</option>
+            <option value="custom">Personalizado</option>
+          </select>
         </div>
+
+        <Input label="Trial até" type="date" value={c.trial_ends_at ? c.trial_ends_at.slice(0,10) : ""} onChange={(v) => set({ trial_ends_at: v ? new Date(v).toISOString() : null })} />
+        <Input label="Grace period até" type="date" value={c.grace_period_ends_at ? c.grace_period_ends_at.slice(0,10) : ""} onChange={(v) => set({ grace_period_ends_at: v ? new Date(v).toISOString() : null })} />
+        <KPI label="Licenças usadas" value={org.licenses_used ?? 0} />
+
+        <Input label="Início do contrato" type="date" value={c.contract_start ?? ""} onChange={(v) => set({ contract_start: v || null })} />
+        <Input label="Fim do contrato" type="date" value={c.contract_end ?? ""} onChange={(v) => set({ contract_end: v || null })} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Módulos habilitados (JSON)</Label>
+          <textarea defaultValue={JSON.stringify(c.enabled_modules ?? {}, null, 2)} onChange={(e) => { try { set({ enabled_modules: JSON.parse(e.target.value || "{}") }); } catch { /* ignore */ } }} rows={4} className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 font-mono text-xs" />
+        </div>
+        <div>
+          <Label>Limites IA especiais (JSON)</Label>
+          <textarea defaultValue={JSON.stringify(c.ai_limits_override ?? {}, null, 2)} onChange={(e) => { try { set({ ai_limits_override: JSON.parse(e.target.value || "{}") }); } catch { /* ignore */ } }} rows={4} className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 font-mono text-xs" />
+        </div>
+      </div>
+
+      <div>
+        <Label>Observações comerciais</Label>
+        <textarea value={c.notes ?? ""} onChange={(e) => set({ notes: e.target.value })} rows={3}
+          className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900" />
+      </div>
+
+      <div className="flex flex-wrap gap-2 pt-2">
+        <button disabled={saving} onClick={save} className="px-6 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-bold disabled:opacity-50">
+          {saving ? "Salvando…" : "Salvar contrato"}
+        </button>
+        <button onClick={applyPlanDefaults} className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-sm">
+          Aplicar valores do plano padrão
+        </button>
+        <button onClick={() => set({ contract_type: "custom" })} className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-sm">
+          Criar condição especial
+        </button>
+        <button onClick={() => changeStatus("canceled", "org.contract.cancel")} className="px-4 py-2 rounded-lg bg-white border border-red-200 text-red-600 text-sm">
+          Cancelar assinatura
+        </button>
+        <button onClick={() => changeStatus("suspended", "org.contract.suspend")} className="px-4 py-2 rounded-lg bg-white border border-amber-200 text-amber-700 text-sm">
+          Suspender
+        </button>
+        <button onClick={() => changeStatus("active", "org.contract.reactivate")} className="px-4 py-2 rounded-lg bg-white border border-emerald-200 text-emerald-700 text-sm">
+          Reativar
+        </button>
       </div>
     </div>
   );

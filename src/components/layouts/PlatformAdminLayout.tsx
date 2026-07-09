@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BarChart3, Building2, CreditCard, Wallet, Sparkles,
   Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap,
-  Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings,
+  Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings, Package,
   ChevronDown, ChevronsLeft, ChevronsRight,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,7 @@ const groups: NavGroup[] = [
     label: "Plataforma",
     items: [
       { to: "/admin/organizations", label: "Empresas", icon: Building2 },
+      { to: "/admin/plans", label: "Planos", icon: Package },
       { to: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
       { to: "/admin/billing", label: "Financeiro", icon: Wallet },
       { to: "/admin/ai-usage", label: "IA", icon: Sparkles },

@@ -36,12 +36,31 @@ const PlatformAdminDashboardScreen = () => {
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [contracts, setContracts] = useState<{ mrr: number; arr: number; suspended: number } | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.rpc("get_platform_overview" as any);
+      const [{ data: ov, error }, { data: rows }] = await Promise.all([
+        supabase.rpc("get_platform_overview" as any),
+        supabase.from("organization_contracts" as any).select("price_monthly_cents,price_yearly_cents,billing_cycle,status,discount_percent"),
+      ]);
       if (error) setErr(error.message);
-      else setData(data as Overview);
+      else setData(ov as Overview);
+      if (rows) {
+        let mrr = 0; let arr = 0; let suspended = 0;
+        for (const r of rows as any[]) {
+          if (!["active", "trialing", "past_due"].includes(r.status)) {
+            if (r.status === "suspended") suspended += 1;
+            continue;
+          }
+          const disc = 1 - (Number(r.discount_percent) || 0) / 100;
+          const monthly = (Number(r.price_monthly_cents) || 0) * disc;
+          const yearly = (Number(r.price_yearly_cents) || 0) * disc;
+          if (r.billing_cycle === "yearly") { arr += yearly; mrr += yearly / 12; }
+          else { mrr += monthly; arr += monthly * 12; }
+        }
+        setContracts({ mrr, arr, suspended });
+      }
       setLoading(false);
     })();
   }, []);
@@ -69,8 +88,11 @@ const PlatformAdminDashboardScreen = () => {
           <Card label="Trials" value={data.trialing_organizations} />
           <Card label="Past due" value={data.past_due_organizations} />
           <Card label="Canceladas" value={data.canceled_organizations} />
+          <Card label="Suspensas" value={contracts?.suspended ?? 0} />
           <Card label="Licenças contratadas" value={data.total_licenses} />
           <Card label="Licenças usadas" value={data.licenses_used} />
+          <Card label="MRR estimado" value={`R$ ${((contracts?.mrr ?? 0) / 100).toFixed(2)}`} />
+          <Card label="ARR estimado" value={`R$ ${((contracts?.arr ?? 0) / 100).toFixed(2)}`} />
           <Card label="Usuários ativos (30d)" value={data.total_active_users_30d} />
           <Card label="Mensagens IA (30d)" value={data.total_ai_messages_30d} />
           <Card label="Tokens (30d)" value={data.total_tokens_30d} />

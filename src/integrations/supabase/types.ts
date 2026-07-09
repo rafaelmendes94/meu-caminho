@@ -1280,6 +1280,93 @@ export type Database = {
           },
         ]
       }
+      organization_contracts: {
+        Row: {
+          ai_limits_override: Json
+          billing_cycle: string
+          contract_end: string | null
+          contract_start: string | null
+          contract_type: string
+          created_at: string
+          currency: string
+          custom_terms: string | null
+          discount_percent: number
+          enabled_modules: Json
+          grace_period_ends_at: string | null
+          id: string
+          licenses_total: number
+          notes: string | null
+          organization_id: string
+          plan_id: string | null
+          price_monthly_cents: number
+          price_yearly_cents: number
+          status: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_limits_override?: Json
+          billing_cycle?: string
+          contract_end?: string | null
+          contract_start?: string | null
+          contract_type?: string
+          created_at?: string
+          currency?: string
+          custom_terms?: string | null
+          discount_percent?: number
+          enabled_modules?: Json
+          grace_period_ends_at?: string | null
+          id?: string
+          licenses_total?: number
+          notes?: string | null
+          organization_id: string
+          plan_id?: string | null
+          price_monthly_cents?: number
+          price_yearly_cents?: number
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_limits_override?: Json
+          billing_cycle?: string
+          contract_end?: string | null
+          contract_start?: string | null
+          contract_type?: string
+          created_at?: string
+          currency?: string
+          custom_terms?: string | null
+          discount_percent?: number
+          enabled_modules?: Json
+          grace_period_ends_at?: string | null
+          id?: string
+          licenses_total?: number
+          notes?: string | null
+          organization_id?: string
+          plan_id?: string | null
+          price_monthly_cents?: number
+          price_yearly_cents?: number
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_contracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_contracts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "platform_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_settings: {
         Row: {
           created_at: string
@@ -1638,6 +1725,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_plans: {
+        Row: {
+          ai_limits: Json
+          billing_cycle: string
+          created_at: string
+          currency: string
+          default_licenses: number
+          description: string | null
+          id: string
+          included_modules: Json
+          is_active: boolean
+          is_public: boolean
+          max_licenses: number | null
+          min_licenses: number | null
+          name: string
+          plan_type: string
+          price_monthly_cents: number
+          price_yearly_cents: number
+          slug: string
+          sort_order: number
+          support_level: string
+          updated_at: string
+        }
+        Insert: {
+          ai_limits?: Json
+          billing_cycle?: string
+          created_at?: string
+          currency?: string
+          default_licenses?: number
+          description?: string | null
+          id?: string
+          included_modules?: Json
+          is_active?: boolean
+          is_public?: boolean
+          max_licenses?: number | null
+          min_licenses?: number | null
+          name: string
+          plan_type?: string
+          price_monthly_cents?: number
+          price_yearly_cents?: number
+          slug: string
+          sort_order?: number
+          support_level?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_limits?: Json
+          billing_cycle?: string
+          created_at?: string
+          currency?: string
+          default_licenses?: number
+          description?: string | null
+          id?: string
+          included_modules?: Json
+          is_active?: boolean
+          is_public?: boolean
+          max_licenses?: number | null
+          min_licenses?: number | null
+          name?: string
+          plan_type?: string
+          price_monthly_cents?: number
+          price_yearly_cents?: number
+          slug?: string
+          sort_order?: number
+          support_level?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       platform_settings: {
         Row: {
