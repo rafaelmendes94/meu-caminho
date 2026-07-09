@@ -101,7 +101,7 @@ export function useCmsItemBySlug(slug: string | null | undefined) {
           .limit(6);
         if (alive) setRelated((rel ?? []) as any);
         // author
-        const { data: link } = await supabase.from("content_item_authors").select("author_id").eq("content_item_id", data.id).limit(1).maybeSingle();
+        const { data: link } = await supabase.from("content_item_authors").select("author_id").eq("item_id", data.id).limit(1).maybeSingle();
         if (link?.author_id) {
           const { data: a } = await supabase.from("content_authors").select("name,avatar_url,role").eq("id", link.author_id).maybeSingle();
           if (alive) setAuthor((a ?? null) as any);
