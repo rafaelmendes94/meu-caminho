@@ -5,6 +5,7 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
 import { useCmsItems, useCmsCategories, type CmsItem } from "@/hooks/use-cms-items";
+import { RecommendedForYou } from "./RecommendedForYou";
 
 const serif = { fontFamily:"'Playfair Display', Georgia, serif", letterSpacing:"-0.015em" } as const;
 
@@ -220,6 +221,10 @@ export default function LibraryScreen() {
   </div>
 
   {/* Books grid */}
+ <div className="relative z-20">
+   <RecommendedForYou preferredType="book" title="Recomendado para você" />
+ </div>
+
  {list.length === 0 ? (
  <div className="relative z-20 px-5 pb-8 text-center">
  <p className="text-[13px] text-[#666] py-8">{loading ? "Carregando biblioteca…" : query ? <>Nenhum livro encontrado para "<span className="text-[#1F1A14] font-semibold">{query}</span>"</> : "Nenhum livro disponível ainda."}</p>
