@@ -58,6 +58,19 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const translateAuthError = (msg?: string) => {
+    const m = (msg || "").toLowerCase();
+    if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
+    if (m.includes("email not confirmed")) return "E-mail ainda não confirmado. Verifique sua caixa de entrada.";
+    if (m.includes("user already registered")) return "Este e-mail já está cadastrado.";
+    if (m.includes("password should be at least")) return "A senha deve ter no mínimo 6 caracteres.";
+    if (m.includes("invalid email")) return "E-mail inválido.";
+    if (m.includes("network")) return "Falha de conexão. Tente novamente.";
+    if (m.includes("rate limit") || m.includes("too many")) return "Muitas tentativas. Aguarde alguns instantes e tente novamente.";
+    return msg || "Não foi possível entrar. Tente novamente.";
+  };
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -72,13 +85,17 @@ const Index = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return toast.error("Preencha e-mail e senha.");
+    setFormError(null);
+    if (!email || !password) {
+      setFormError("Preencha e-mail e senha.");
+      return;
+    }
     setSubmitting(true);
     const { error } = mode === "signup"
       ? await signUp(email, password)
       : await signInWithPassword(email, password);
     setSubmitting(false);
-    if (error) toast.error(error.message);
+    if (error) setFormError(translateAuthError(error.message));
     else if (mode === "signup") toast.success("Conta criada. Verifique seu e-mail se necessário.");
   };
 
@@ -129,17 +146,30 @@ const Index = () => {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value); if (formError) setFormError(null); }}
             placeholder="E-mail"
-            className="h-[52px] px-5 rounded-full bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B]"
+            className={`h-[52px] px-5 rounded-full bg-white border text-[15px] text-[#111] focus:outline-none ${formError ? "border-red-400 focus:border-red-500" : "border-[#EFEAE5] focus:border-[#F88A2B]"}`}
           />
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value); if (formError) setFormError(null); }}
             placeholder="Senha"
-            className="h-[52px] px-5 rounded-full bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B]"
+            className={`h-[52px] px-5 rounded-full bg-white border text-[15px] text-[#111] focus:outline-none ${formError ? "border-red-400 focus:border-red-500" : "border-[#EFEAE5] focus:border-[#F88A2B]"}`}
           />
+          {formError && (
+            <div
+              role="alert"
+              aria-live="polite"
+              className="flex items-start gap-2 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-[13.5px]"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="mt-[1px] shrink-0">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                <path d="M12 7v6M12 16.5v.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span>{formError}</span>
+            </div>
+          )}
           <button
             type="submit"
             disabled={submitting}
