@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
       const { data: created, error } = await admin.auth.admin.createUser({
         email, password, email_confirm: true,
       });
+      console.log("createUser result", email, JSON.stringify(error));
       if (!error) return created.user!.id;
       const { data: list } = await admin.auth.admin.listUsers();
       const f = list?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
