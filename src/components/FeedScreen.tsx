@@ -429,7 +429,7 @@ const FeedScreen = () => {
   const location = useLocation();
   const isEnterprise = location.pathname.startsWith('/enterprise');
   const LayoutComponent = isEnterprise ? (({ children, title }: { children: React.ReactNode, title?: string }) => <EnterpriseUserLayout title={title || "Feed"}>{children}</EnterpriseUserLayout>) : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
-  const userName = isEnterprise ? "Rafael" : "Juliana";
+  const userName = useDisplayUserName();
   const userAvatar = isEnterprise ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80";
 
  const [active, setActive] = useState<typeof filters[number]>("Tudo");
