@@ -16,7 +16,7 @@ type Variant = "super" | "rh";
 
 export type SearchResult = {
   id: string;
-  type: "organization" | "owner" | "content" | "ticket" | "setting";
+  type: "organization" | "content" | "ticket" | "setting";
   title: string;
   description?: string;
   route: string;
@@ -34,7 +34,6 @@ export type AdminNotification = {
 
 const iconByType = {
   organization: Building2,
-  owner: UserIcon,
   content: GraduationCap,
   ticket: LifeBuoy,
   setting: Settings,
@@ -52,22 +51,20 @@ function setReadIds(ids: Set<string>) {
 
 async function runSuperAdminSearch(q: string): Promise<SearchResult[]> {
   const like = `%${q}%`;
-  const ownerRoles = await supabase.from("user_roles").select("user_id").eq("role", "owner").limit(200);
-  const ownerIds = (ownerRoles.data || []).map((r: any) => r.user_id);
-  const [orgs, owners, contents, tickets] = await Promise.all([
-    supabase.from("organizations").select("id,name,slug,subscription_status").ilike("name", like).limit(5),
-    ownerIds.length
-      ? supabase.from("profiles").select("id, full_name, display_name, organization_id")
-          .in("id", ownerIds).or(`full_name.ilike.${like},display_name.ilike.${like}`).limit(5)
-      : Promise.resolve({ data: [] as any[] }),
+  const [orgs, contents, tickets] = await Promise.all([
+    supabase.from("organizations").select("id,name,slug,subscription_status,responsible_name,responsible_email,cnpj,domain")
+      .or(`name.ilike.${like},slug.ilike.${like},cnpj.ilike.${like},domain.ilike.${like},responsible_name.ilike.${like},responsible_email.ilike.${like}`)
+      .limit(8),
     supabase.from("content_items").select("id,title,type,slug").ilike("title", like).limit(5),
     supabase.from("support_tickets").select("id,title,status").ilike("title", like).limit(5),
   ]);
   const out: SearchResult[] = [];
   (orgs.data || []).forEach((o: any) =>
-    out.push({ id: `org-${o.id}`, type: "organization", title: o.name, description: `Organização • ${o.subscription_status || "—"}`, route: `/admin/organizations/${o.id}` }));
-  (owners.data || []).forEach((p: any) =>
-    out.push({ id: `own-${p.id}`, type: "owner", title: p.display_name || p.full_name || "Owner", description: "Owner", route: p.organization_id ? `/admin/organizations/${p.organization_id}` : "/admin/owners" }));
+    out.push({
+      id: `org-${o.id}`, type: "organization", title: o.name,
+      description: `Empresa • ${o.subscription_status || "—"}${o.responsible_name ? ` • ${o.responsible_name}` : ""}`,
+      route: `/admin/organizations/${o.id}`,
+    }));
   (contents.data || []).forEach((c: any) => {
     const map: Record<string, string> = { book: "books", course: "courses", track: "tracks", podcast: "podcasts", video: "videos", audio: "audios", material: "materials" };
     const seg = map[c.type] || "library";

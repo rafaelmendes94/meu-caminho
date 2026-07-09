@@ -1,7 +1,7 @@
 import { ReactNode, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, BarChart3, Building2, UserCog, CreditCard, Wallet, Sparkles,
+  LayoutDashboard, BarChart3, Building2, CreditCard, Wallet, Sparkles,
   Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap,
   Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings,
   ChevronDown, ChevronsLeft, ChevronsRight,
@@ -26,8 +26,7 @@ const groups: NavGroup[] = [
     key: "platform",
     label: "Plataforma",
     items: [
-      { to: "/admin/organizations", label: "Organizações", icon: Building2 },
-      { to: "/admin/owners", label: "Owners", icon: UserCog },
+      { to: "/admin/organizations", label: "Empresas", icon: Building2 },
       { to: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
       { to: "/admin/billing", label: "Financeiro", icon: Wallet },
       { to: "/admin/ai-usage", label: "IA", icon: Sparkles },
