@@ -8,6 +8,7 @@ import {
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 const brand = "#E07A2B";
 const brandSoft = "#F4B27A";
@@ -429,7 +430,7 @@ const FeedScreen = () => {
   const location = useLocation();
   const isEnterprise = location.pathname.startsWith('/enterprise');
   const LayoutComponent = isEnterprise ? (({ children, title }: { children: React.ReactNode, title?: string }) => <EnterpriseUserLayout title={title || "Feed"}>{children}</EnterpriseUserLayout>) : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
-  const userName = useDisplayUserName();
+  const { firstName: userName } = useDisplayUser();
   const userAvatar = isEnterprise ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80";
 
  const [active, setActive] = useState<typeof filters[number]>("Tudo");
