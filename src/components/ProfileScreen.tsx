@@ -1,8 +1,8 @@
 import { Link, useLocation } from"react-router-dom";
 import { ChevronLeft, Flame, Sparkles, Mail, MapPin, Calendar, User, BookOpen, Activity, Clock } from"lucide-react";
-import avatar from"@/assets/avatar-juliana.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 const serif = { fontFamily:"'Playfair Display', serif" };
 
@@ -67,9 +67,8 @@ const Header = ({ title, back }: { title: string; back?: string }) => {
 const ProfileScreen = () => {
   const { pathname } = useLocation();
   const isEnterprise = pathname.startsWith('/enterprise');
-  const userAvatar = isEnterprise ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" : avatar;
-  const userName = isEnterprise ? "Rafael" : "Juliana Andrade";
-  const userEmail = isEnterprise ? "rafael@enterprise.com" : "juliana@email.com";
+  const { name: userName, email: userEmail, avatarUrl, initial } = useDisplayUser();
+  const userAvatar = avatarUrl;
 
   const LayoutComponent = isEnterprise ? EnterpriseUserLayout : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
 
