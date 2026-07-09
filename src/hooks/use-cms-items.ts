@@ -75,3 +75,42 @@ export function useCmsCategories() {
 
   return { categories, loading };
 }
+
+export function useCmsItemBySlug(slug: string | null | undefined) {
+  const [item, setItem] = useState<CmsItem | null>(null);
+  const [related, setRelated] = useState<CmsItem[]>([]);
+  const [author, setAuthor] = useState<{ name: string; avatar_url: string | null; role: string | null } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    if (!slug) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase.from("content_items").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
+      if (!alive) return;
+      setItem((data ?? null) as any);
+      if (data) {
+        // related same category/type
+        const { data: rel } = await supabase
+          .from("content_items")
+          .select("*")
+          .eq("status", "published")
+          .neq("id", data.id)
+          .or(`category_id.eq.${data.category_id ?? "00000000-0000-0000-0000-000000000000"},type.eq.${data.type}`)
+          .limit(6);
+        if (alive) setRelated((rel ?? []) as any);
+        // author
+        const { data: link } = await supabase.from("content_item_authors").select("author_id").eq("item_id", data.id).limit(1).maybeSingle();
+        if (link?.author_id) {
+          const { data: a } = await supabase.from("content_authors").select("name,avatar_url,role").eq("id", link.author_id).maybeSingle();
+          if (alive) setAuthor((a ?? null) as any);
+        }
+      }
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [slug]);
+
+  return { item, related, author, loading };
+}
