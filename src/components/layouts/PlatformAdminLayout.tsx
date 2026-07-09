@@ -136,7 +136,7 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
       <aside
         className={`${
           collapsed ? "w-[72px]" : "w-[248px]"
-        } shrink-0 bg-[#0F172A] text-slate-200 flex flex-col transition-[width] duration-200 ease-out`}
+        } sticky top-0 h-[100dvh] shrink-0 bg-[#0F172A] text-slate-200 flex flex-col transition-[width] duration-200 ease-out overflow-hidden`}
       >
         <div className="h-16 px-4 flex items-center gap-3 border-b border-white/5">
           <div className="w-9 h-9 rounded-lg bg-white grid place-items-center overflow-hidden shrink-0 ring-1 ring-white/10">
