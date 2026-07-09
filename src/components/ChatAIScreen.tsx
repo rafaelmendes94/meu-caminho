@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from"react-router-dom";
 import { ArrowLeft, MoreVertical, ShieldCheck, Brain, Wind, Leaf, Sun, Send, Check } from"lucide-react";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 const SignalIcon = () => (
  <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true">
@@ -92,7 +93,7 @@ const UserBubble = ({ children, time }: { children: React.ReactNode; time: strin
 
 const ChatAIScreen = () => {
   const isEnterprise = useLocation().pathname.startsWith('/enterprise');
-  const userName = isEnterprise ? "Rafael" : "Juliana";
+  const { firstName: userName } = useDisplayUser();
 
  const navigate = useNavigate();
   const LayoutComponent = isEnterprise ? EnterpriseUserLayout : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);

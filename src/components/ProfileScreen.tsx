@@ -1,8 +1,8 @@
 import { Link, useLocation } from"react-router-dom";
 import { ChevronLeft, Flame, Sparkles, Mail, MapPin, Calendar, User, BookOpen, Activity, Clock } from"lucide-react";
-import avatar from"@/assets/avatar-juliana.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 const serif = { fontFamily:"'Playfair Display', serif" };
 
@@ -67,9 +67,8 @@ const Header = ({ title, back }: { title: string; back?: string }) => {
 const ProfileScreen = () => {
   const { pathname } = useLocation();
   const isEnterprise = pathname.startsWith('/enterprise');
-  const userAvatar = isEnterprise ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" : avatar;
-  const userName = isEnterprise ? "Rafael" : "Juliana Andrade";
-  const userEmail = isEnterprise ? "rafael@enterprise.com" : "juliana@email.com";
+  const { name: userName, email: userEmail, avatarUrl, initial } = useDisplayUser();
+  const userAvatar = avatarUrl;
 
   const LayoutComponent = isEnterprise ? EnterpriseUserLayout : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
 
@@ -81,7 +80,13 @@ const ProfileScreen = () => {
   {/* Main user card */}
   <div className="mt-3 rounded-3xl bg-white/75 backdrop-blur-sm border border-white/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] p-5 flex flex-col items-center text-center">
   <div className="relative">
-  <img src={userAvatar} alt={userName} className="w-[96px] h-[96px] rounded-full object-cover ring-2 ring-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)]" />
+  {userAvatar ? (
+    <img src={userAvatar} alt={userName} className="w-[96px] h-[96px] rounded-full object-cover ring-2 ring-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)]" />
+  ) : (
+    <div className="w-[96px] h-[96px] rounded-full bg-[#0B0908] text-white flex items-center justify-center text-3xl font-bold ring-2 ring-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)]">
+      {initial}
+    </div>
+  )}
   <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#F88A2B] border-2 border-white flex items-center justify-center">
   <Sparkles size={13} className="text-white" />
   </div>
