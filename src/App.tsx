@@ -172,6 +172,10 @@ import PlatformBillingScreen from "./pages/PlatformBillingScreen.tsx";
 import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
 import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
 import PlatformSettingsScreen from "./pages/PlatformSettingsScreen.tsx";
+import PlatformContentDashboardScreen from "./pages/PlatformContentDashboardScreen.tsx";
+import PlatformContentAuthorsScreen from "./pages/PlatformContentAuthorsScreen.tsx";
+import PlatformContentCategoriesScreen from "./pages/PlatformContentCategoriesScreen.tsx";
+import PlatformContentTagsScreen from "./pages/PlatformContentTagsScreen.tsx";
 
 
 
@@ -422,6 +426,10 @@ const App = () => (
           <Route path="/admin/support" element={<PlatformAdmin><PlatformSupportScreen /></PlatformAdmin>} />
           <Route path="/admin/audit" element={<PlatformAdmin><PlatformAuditScreen /></PlatformAdmin>} />
           <Route path="/admin/settings" element={<PlatformAdmin><PlatformSettingsScreen /></PlatformAdmin>} />
+          <Route path="/admin/content" element={<PlatformAdmin><PlatformContentDashboardScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/authors" element={<PlatformAdmin><PlatformContentAuthorsScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/categories" element={<PlatformAdmin><PlatformContentCategoriesScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/tags" element={<PlatformAdmin><PlatformContentTagsScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
