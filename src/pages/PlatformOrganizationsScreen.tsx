@@ -101,10 +101,11 @@ const PlatformOrganizationsScreen = () => {
   useEffect(() => { load(); }, [load]);
 
   const setAction = async (id: string, patch: Record<string, any>, actionLabel: string) => {
-    const { error } = await supabase.from("organizations").update(patch as any).eq("id", id);
+    const { _reason, ...dbPatch } = patch;
+    const { error } = await supabase.from("organizations").update(dbPatch as any).eq("id", id);
     if (error) return toast.error(error.message);
     await supabase.from("platform_audit_logs" as any).insert({
-      action: actionLabel, entity_type: "organization", entity_id: id, metadata: patch,
+      action: actionLabel, entity_type: "organization", entity_id: id, metadata: { ...dbPatch, reason: _reason ?? null },
     });
     toast.success("Atualizado.");
     load();
@@ -294,10 +295,20 @@ const RowActions = ({ row, onAction }: {
         <div data-row-actions-menu style={{ position: "fixed", top: pos.top, left: pos.left }} className="w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 text-xs">
           <Link to={`/admin/organizations/${row.id}`} className="block px-3 py-2 hover:bg-slate-50 text-slate-700">Ver detalhes</Link>
           {!isSuspended ? (
-            <button onClick={() => { setOpen(false); onAction(row.id, { suspended_at: new Date().toISOString(), subscription_status: "suspended" }, "org.suspend"); }}
+            <button onClick={() => {
+              if (!window.confirm(`Suspender "${row.name}"? Os dados são preservados.`)) return;
+              const reason = window.prompt("Motivo (opcional):", "") || null;
+              setOpen(false);
+              onAction(row.id, { suspended_at: new Date().toISOString(), subscription_status: "suspended", _reason: reason } as any, "org.suspend");
+            }}
               className="w-full text-left px-3 py-2 hover:bg-slate-50 text-amber-600">Suspender</button>
           ) : (
-            <button onClick={() => { setOpen(false); onAction(row.id, { suspended_at: null, subscription_status: "active" }, "org.reactivate"); }}
+            <button onClick={() => {
+              if (!window.confirm(`Reativar "${row.name}"?`)) return;
+              const reason = window.prompt("Motivo (opcional):", "") || null;
+              setOpen(false);
+              onAction(row.id, { suspended_at: null, subscription_status: "active", _reason: reason } as any, "org.reactivate");
+            }}
               className="w-full text-left px-3 py-2 hover:bg-slate-50 text-emerald-600">Reativar</button>
           )}
           {!isArchived ? (
