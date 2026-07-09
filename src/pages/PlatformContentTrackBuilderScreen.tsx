@@ -24,7 +24,7 @@ export default function PlatformContentTrackBuilderScreen() {
       .select("id,track_id,item_id,sort_order,note, item:content_items!track_items_item_id_fkey(id,title,type,status)")
       .eq("track_id", id).order("sort_order");
     setItems((ti ?? []) as any);
-    const { data: avail } = await supabase.from("content_items").select("id,title,type,status").neq("id", id).neq("type", "track").order("title").limit(500);
+    const { data: avail } = await supabase.from("content_items").select("id,title,type,status").neq("id", id).neq("type", "track").eq("status", "published").order("title").limit(500);
     setAvailable((avail ?? []) as any);
     setLoading(false);
   };
