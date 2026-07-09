@@ -364,12 +364,12 @@ export const EnterpriseRHLayout = ({ children, title }: { children: ReactNode; t
         } shrink-0 bg-[#0F172A] text-slate-200 hidden lg:flex flex-col transition-[width] duration-200 ease-out`}
       >
         <div className="h-16 px-4 flex items-center gap-3 border-b border-white/5">
-          <div className="w-9 h-9 rounded-lg bg-[#F88A2B] text-black grid place-items-center font-black">
-            M
+          <div className="w-9 h-9 rounded-lg bg-white grid place-items-center overflow-hidden shrink-0 ring-1 ring-white/10">
+            <img src={logoMark} alt="Meu Caminho" className="w-[22px] h-[22px] object-contain" style={{ mixBlendMode: "multiply" }} draggable={false} />
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.22em] text-white/40 leading-none">
+              <p className="text-[10px] uppercase tracking-[0.22em] text-white/40 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 Meu Caminho
               </p>
               <p className="text-sm font-bold text-white leading-tight mt-1">Admin Empresa</p>
