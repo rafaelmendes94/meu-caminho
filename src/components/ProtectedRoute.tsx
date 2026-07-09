@@ -11,10 +11,17 @@ interface Props {
 }
 
 const ProtectedRoute = ({ children, requiredRoles, redirectTo = "/login", requireEmployeeProfile }: Props) => {
-  const { isAuthenticated, loading, hasAnyRole, hasEmployeeProfile } = useAuth();
+  const { isAuthenticated, loading, hasAnyRole, hasEmployeeProfile, organization } = useAuth();
   const location = useLocation();
 
   const denied = !loading && isAuthenticated && requiredRoles && requiredRoles.length > 0 && !hasAnyRole(requiredRoles);
+  // Bloqueia acesso de usuários de organizações suspensas/canceladas (exceto platform_admin, que gerencia tudo).
+  const orgBlocked =
+    !loading &&
+    isAuthenticated &&
+    !hasAnyRole(["platform_admin"]) &&
+    organization &&
+    ["suspended", "canceled"].includes(organization.subscription_status ?? "");
   const needsOnboarding =
     !loading &&
     isAuthenticated &&
@@ -25,7 +32,8 @@ const ProtectedRoute = ({ children, requiredRoles, redirectTo = "/login", requir
 
   useEffect(() => {
     if (denied) toast.error("Acesso negado para este perfil.");
-  }, [denied]);
+    if (orgBlocked) toast.error("Sua organização está suspensa. Contate o administrador.");
+  }, [denied, orgBlocked]);
 
   if (loading) {
     return (
@@ -44,6 +52,10 @@ const ProtectedRoute = ({ children, requiredRoles, redirectTo = "/login", requir
 
   if (denied) {
     return <Navigate to="/" replace />;
+  }
+
+  if (orgBlocked) {
+    return <Navigate to="/login" replace />;
   }
 
   if (needsOnboarding) {
