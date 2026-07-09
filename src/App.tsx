@@ -170,6 +170,7 @@ import PlatformOrganizationsScreen from "./pages/PlatformOrganizationsScreen.tsx
 import PlatformOwnersScreen from "./pages/PlatformOwnersScreen.tsx";
 import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetailScreen.tsx";
 import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
+import PlatformPlansScreen from "./pages/PlatformPlansScreen.tsx";
 import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
 import PlatformAnalyticsScreen from "./pages/PlatformAnalyticsScreen.tsx";
 import PlatformSystemHealthScreen from "./pages/PlatformSystemHealthScreen.tsx";
