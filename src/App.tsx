@@ -176,6 +176,11 @@ import PlatformContentDashboardScreen from "./pages/PlatformContentDashboardScre
 import PlatformContentAuthorsScreen from "./pages/PlatformContentAuthorsScreen.tsx";
 import PlatformContentCategoriesScreen from "./pages/PlatformContentCategoriesScreen.tsx";
 import PlatformContentTagsScreen from "./pages/PlatformContentTagsScreen.tsx";
+import PlatformContentBooksScreen from "./pages/PlatformContentItemsListScreen.tsx";
+import PlatformContentCoursesScreen from "./pages/PlatformContentCoursesScreen.tsx";
+import PlatformContentCourseBuilderScreen from "./pages/PlatformContentCourseBuilderScreen.tsx";
+import PlatformContentTracksScreen from "./pages/PlatformContentTracksScreen.tsx";
+import PlatformContentTrackBuilderScreen from "./pages/PlatformContentTrackBuilderScreen.tsx";
 
 
 
@@ -430,6 +435,11 @@ const App = () => (
           <Route path="/admin/content/authors" element={<PlatformAdmin><PlatformContentAuthorsScreen /></PlatformAdmin>} />
           <Route path="/admin/content/categories" element={<PlatformAdmin><PlatformContentCategoriesScreen /></PlatformAdmin>} />
           <Route path="/admin/content/tags" element={<PlatformAdmin><PlatformContentTagsScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/books" element={<PlatformAdmin><PlatformContentBooksScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/courses" element={<PlatformAdmin><PlatformContentCoursesScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/courses/:id" element={<PlatformAdmin><PlatformContentCourseBuilderScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/tracks" element={<PlatformAdmin><PlatformContentTracksScreen /></PlatformAdmin>} />
+          <Route path="/admin/content/tracks/:id" element={<PlatformAdmin><PlatformContentTrackBuilderScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
