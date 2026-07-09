@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutGrid, 
@@ -28,7 +28,26 @@ import {
   Dna,
   Sparkle,
   Gauge,
-  Activity
+  Activity,
+  LayoutDashboard,
+  Search,
+  HelpCircle,
+  BookMarked,
+  Building2,
+  Users2,
+  UserPlus,
+  Package,
+  Layers,
+  Brain,
+  Compass,
+  Send,
+  ShieldQuestion,
+  KeyRound,
+  Globe,
+  Wallet,
+  Plug,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.png";
 import {
@@ -223,9 +242,113 @@ export const EnterpriseRHButton = ({
   );
 };
 
-export const EnterpriseRHLayout = ({ children, title }: { children: React.ReactNode; title: string }) => {
+type RHNavItem = { to: string; label: string; icon: React.ElementType };
+type RHNavGroup = { key: string; label: string; icon?: React.ElementType; collapsible?: boolean; items: RHNavItem[] };
+
+const rhGroups: RHNavGroup[] = [
+  {
+    key: "overview",
+    label: "Visão Geral",
+    items: [
+      { to: "/enterprise/rh/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/enterprise/rh/score-organizacional", label: "Score Organizacional", icon: Gauge },
+      { to: "/enterprise/rh/insights-semanais", label: "Insights Semanais", icon: Sparkles },
+    ],
+  },
+  {
+    key: "company",
+    label: "Empresa",
+    icon: Building2,
+    collapsible: true,
+    items: [
+      { to: "/enterprise/rh/central-admin", label: "Central Admin", icon: Settings },
+      { to: "/enterprise/rh/equipe", label: "Equipe", icon: Users },
+      { to: "/enterprise/rh/equipe/convidar", label: "Convites", icon: UserPlus },
+      { to: "/enterprise/rh/equipe/licencas", label: "Licenças", icon: KeyRound },
+      { to: "/enterprise/rh/departamentos", label: "Departamentos", icon: Users2 },
+      { to: "/enterprise/rh/unidades", label: "Unidades", icon: Package },
+      { to: "/enterprise/rh/organograma", label: "Organograma Vivo", icon: Network },
+    ],
+  },
+  {
+    key: "intel",
+    label: "Inteligência Humana",
+    icon: Brain,
+    collapsible: true,
+    items: [
+      { to: "/enterprise/rh/dna-organizacional", label: "DNA Organizacional", icon: Dna },
+      { to: "/enterprise/rh/conselho-executivo", label: "Conselho Executivo IA", icon: Sparkle },
+      { to: "/enterprise/rh/insights-ia", label: "Inteligência Preditiva", icon: Sparkles },
+      { to: "/enterprise/rh/alertas", label: "Alertas", icon: AlertTriangle },
+      { to: "/enterprise/rh/mapa-emocional", label: "Mapa Emocional", icon: Map },
+      { to: "/enterprise/rh/capacidade", label: "Capacidade", icon: Activity },
+    ],
+  },
+  {
+    key: "actions",
+    label: "Ações",
+    icon: Compass,
+    collapsible: true,
+    items: [
+      { to: "/enterprise/rh/plano-acao", label: "Planos de Ação", icon: FileText },
+      { to: "/enterprise/rh/rituais-inteligentes", label: "Rituais Inteligentes", icon: Zap },
+      { to: "/enterprise/rh/comunicados", label: "Comunicados", icon: Send },
+      { to: "/enterprise/rh/impacto", label: "Motor de Impacto", icon: TrendingUp },
+    ],
+  },
+  {
+    key: "governance",
+    label: "Governança",
+    icon: ShieldCheck,
+    collapsible: true,
+    items: [
+      { to: "/enterprise/rh/compliance", label: "Compliance", icon: ShieldCheck },
+      { to: "/enterprise/rh/politicas", label: "Políticas", icon: ShieldQuestion },
+      { to: "/enterprise/rh/privacidade", label: "Privacidade", icon: Lock },
+      { to: "/enterprise/rh/retencao-dados", label: "Retenção de Dados", icon: Layers },
+      { to: "/enterprise/rh/auditoria", label: "Auditoria", icon: FileText },
+      { to: "/enterprise/rh/permissoes", label: "Permissões", icon: KeyRound },
+      { to: "/enterprise/rh/multiplos-admins", label: "Multi Admins", icon: Users2 },
+      { to: "/enterprise/rh/dominio", label: "Domínio", icon: Globe },
+    ],
+  },
+  {
+    key: "settings",
+    label: "Configurações",
+    icon: Settings,
+    collapsible: true,
+    items: [
+      { to: "/enterprise/rh/configuracoes", label: "Configurações da Empresa", icon: Settings },
+      { to: "/enterprise/rh/integracoes", label: "Integrações", icon: Plug },
+      { to: "/enterprise/rh/billing", label: "Billing", icon: Wallet },
+    ],
+  },
+];
+
+export const EnterpriseRHLayout = ({ children, title }: { children: ReactNode; title?: string }) => {
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const initiallyOpen = useMemo(() => {
+    const set: Record<string, boolean> = {};
+    for (const g of rhGroups) {
+      if (g.collapsible) {
+        set[g.key] = g.items.some((i) => pathname === i.to || pathname.startsWith(i.to + "/"));
+      }
+    }
+    return set;
+  }, [pathname]);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initiallyOpen);
+
+  const initials =
+    (profile?.display_name || profile?.full_name || "AE")
+      .split(" ")
+      .map((p) => p[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
@@ -233,166 +356,140 @@ export const EnterpriseRHLayout = ({ children, title }: { children: React.ReactN
   };
 
   return (
-    <div className="h-screen bg-white flex font-montserrat relative z-10 overflow-hidden">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-72 bg-white border-r border-[#0B0908]/5 p-6 flex-col h-full overflow-y-auto no-scrollbar z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)] shrink-0">
-        <div className="mb-10 px-2 pt-2">
-          <EnterpriseRHLogo />
+    <div className="min-h-[100dvh] flex bg-[#F6F7FB] font-montserrat text-[#0F172A]">
+      {/* Sidebar (desktop) */}
+      <aside
+        className={`${
+          collapsed ? "w-[72px]" : "w-[248px]"
+        } shrink-0 bg-[#0F172A] text-slate-200 hidden lg:flex flex-col transition-[width] duration-200 ease-out`}
+      >
+        <div className="h-16 px-4 flex items-center gap-3 border-b border-white/5">
+          <div className="w-9 h-9 rounded-lg bg-[#F88A2B] text-black grid place-items-center font-black">
+            M
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.22em] text-white/40 leading-none">
+                Meu Caminho
+              </p>
+              <p className="text-sm font-bold text-white leading-tight mt-1">Admin Empresa</p>
+            </div>
+          )}
         </div>
 
-        <nav className="flex-1 space-y-1">
-          <SidebarSection title="Insights">
-            <SidebarItem to="/enterprise/rh/dashboard" icon={LayoutGrid} label="Dashboard" />
-            <SidebarItem to="/enterprise/rh/mapa-emocional" icon={Map} label="Mapa Emocional" />
-            <SidebarItem to="/enterprise/rh/evolucao" icon={TrendingUp} label="Evolução" />
-          </SidebarSection>
+        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+          {rhGroups.map((g) => {
+            const isOpen = g.collapsible ? openGroups[g.key] ?? false : true;
+            return (
+              <div key={g.key}>
+                {g.collapsible ? (
+                  <button
+                    onClick={() => setOpenGroups((s) => ({ ...s, [g.key]: !s[g.key] }))}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 text-[12px] font-semibold"
+                  >
+                    {g.icon && <g.icon className="w-4 h-4 shrink-0" />}
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left uppercase tracking-wider">{g.label}</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  !collapsed && (
+                    <p className="px-3 pb-1 text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold">
+                      {g.label}
+                    </p>
+                  )
+                )}
 
-          <SidebarSection title="Governança">
-            <SidebarItem to="/enterprise/rh/equipe" icon={Users} label="Equipe" />
-            <SidebarItem to="/enterprise/rh/organograma" icon={Network} label="Organograma Vivo" />
-            <SidebarItem to="/enterprise/rh/dna-organizacional" icon={Dna} label="DNA Organizacional" />
-            <SidebarItem to="/enterprise/rh/score-organizacional" icon={Gauge} label="Score Organizacional" />
-            <SidebarItem to="/enterprise/rh/impacto" icon={Activity} label="Motor de Impacto" />
-            <SidebarItem to="/enterprise/rh/conselho-executivo" icon={Sparkle} label="Conselho Executivo IA" />
-            <SidebarItem to="/enterprise/rh/insights-semanais" icon={Sparkles} label="Insights Semanais IA" />
-            <SidebarItem to="/enterprise/rh/alertas" icon={AlertTriangle} label="Alertas" />
-            <SidebarItem to="/enterprise/rh/privacidade" icon={Lock} label="Privacidade" />
-            <SidebarItem to="/enterprise/rh/compliance" icon={ShieldCheck} label="Compliance" />
-          </SidebarSection>
-
-          <SidebarSection title="Cultura">
-             <SidebarItem to="/enterprise/rh/denuncias" icon={ShieldAlert} label="Canal Direto" />
-             <SidebarItem to="/enterprise/rh/rituais" icon={Zap} label="Rituais" />
-             <SidebarItem to="/enterprise/rh/rituais-inteligentes" icon={Sparkles} label="Rituais Inteligentes" />
-             <SidebarItem to="/enterprise/rh/lideranca" icon={HeartPulse} label="Liderança" />
-          </SidebarSection>
-          
-          <SidebarSection title="Operação">
-            <SidebarItem to="/enterprise/rh/relatorio" icon={FileText} label="Relatórios" />
-            <SidebarItem to="/enterprise/rh/central-admin" icon={Settings} label="Configurações" />
-          </SidebarSection>
+                {isOpen && (
+                  <ul className={`mt-1 space-y-0.5 ${g.collapsible && !collapsed ? "pl-2" : ""}`}>
+                    {g.items.map((i) => (
+                      <li key={i.to}>
+                        <NavLink
+                          to={i.to}
+                          end
+                          title={collapsed ? i.label : undefined}
+                          className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                              isActive
+                                ? "bg-[#F88A2B] text-black"
+                                : "text-slate-300 hover:bg-white/5 hover:text-white"
+                            }`
+                          }
+                        >
+                          <i.icon className="w-4 h-4 shrink-0" />
+                          {!collapsed && <span className="truncate">{i.label}</span>}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
-        {/* User Footer in Sidebar */}
-        <div className="mt-8 pt-6 border-t border-black/5">
-          <button 
-            onClick={handleSignOut}
-            className="flex items-center gap-3 w-full p-3 rounded-2xl text-[#666] hover:bg-red-50 hover:text-red-600 transition-all duration-300"
-          >
-            <LogOut size={18} />
-            <span className="text-[11px] font-bold uppercase tracking-widest">Sair do Admin</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          className="h-11 border-t border-white/5 flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-white hover:bg-white/5"
+        >
+          {collapsed ? <ChevronsRight className="w-4 h-4" /> : <><ChevronsLeft className="w-4 h-4" /> Recolher</>}
+        </button>
       </aside>
-      
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+
+      {/* Main */}
+      <div className="flex-1 min-w-0 flex flex-col">
         {/* Mobile Header */}
         <div className="lg:hidden shrink-0">
           <AppMobileHeader audience="rh" />
         </div>
-        
-        {/* Desktop Topbar */}
-        <header className="hidden lg:flex h-20 bg-white border-b border-[#0B0908]/5 items-center justify-between px-10 z-30 shrink-0">
-          <div>
-             <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0B0908]/40">{title}</h2>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-2xl bg-[#FBF9F7] flex items-center justify-center text-[#0B0908]/40 hover:bg-[#F88A2B]/10 hover:text-[#F88A2B] transition-all relative outline-none">
-                  <Bell size={18} />
-                  <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#F88A2B] border-2 border-white" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 rounded-2xl p-0 overflow-hidden font-montserrat border-black/5 shadow-2xl">
-                <div className="p-4 border-b border-black/5 flex items-center justify-between bg-white">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#111]">Notificações Admin</h3>
-                  <span className="bg-[#F88A2B]/10 text-[#F88A2B] text-[10px] font-bold px-2 py-0.5 rounded-full">3 novas</span>
-                </div>
-                <div className="max-h-[320px] overflow-y-auto no-scrollbar bg-white">
-                  <div className="p-3 space-y-1">
-                    <button className="w-full text-left p-3 rounded-xl hover:bg-[#F9F8F6] transition-all flex gap-3 group">
-                      <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                        <AlertTriangle size={18} className="text-red-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#111] leading-tight mb-1">Alerta de Sobrecarga</p>
-                        <p className="text-[11px] text-[#666] line-clamp-2">A equipe de Design apresentou níveis elevados de estresse.</p>
-                        <span className="text-[9px] font-bold text-[#999] uppercase tracking-tighter mt-1 block">Agora</span>
-                      </div>
-                    </button>
-                    <button className="w-full text-left p-3 rounded-xl hover:bg-[#F9F8F6] transition-all flex gap-3 group">
-                      <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                        <Zap size={18} className="text-[#F88A2B]" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#111] leading-tight mb-1">Ritual Concluído</p>
-                        <p className="text-[11px] text-[#666] line-clamp-2">85% dos colaboradores participaram do ritual de hoje.</p>
-                        <span className="text-[9px] font-bold text-[#999] uppercase tracking-tighter mt-1 block">1h atrás</span>
-                      </div>
-                    </button>
-                    <button className="w-full text-left p-3 rounded-xl hover:bg-[#F9F8F6] transition-all flex gap-3 group">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                        <FileText size={18} className="text-blue-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#111] leading-tight mb-1">Relatório Mensal</p>
-                        <p className="text-[11px] text-[#666] line-clamp-2">O relatório executivo de Maio já está disponível para download.</p>
-                        <span className="text-[9px] font-bold text-[#999] uppercase tracking-tighter mt-1 block">3h atrás</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-                <div className="p-2 bg-[#F9F8F6] border-t border-black/5">
-                  <button 
-                    onClick={() => navigate("/enterprise/rh/alertas")}
-                    className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] hover:text-[#d7711d] transition-colors"
-                  >
-                    Ver Central de Alertas
-                  </button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 pl-4 border-l border-[#0B0908]/5 outline-none group">
-                   <div className="text-right hidden sm:block">
-                     <p className="text-[12px] font-bold text-[#111] group-hover:text-[#F88A2B] transition-colors">RH Admin</p>
-                     <p className="text-[10px] font-medium text-[#666]">Premium Partner</p>
-                   </div>
-                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F7F4F2] to-[#EFEAE5] border border-[#E5E0DA] text-[#111] text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-black/10">A</div>
-                   <ChevronDown size={14} className="text-[#0B0908]/20" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 font-montserrat">
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-[#999] px-3 py-2">Minha Conta</DropdownMenuLabel>
-                <DropdownMenuItem className="rounded-xl cursor-pointer py-2.5 px-3">
-                  <User size={16} className="mr-2 text-[#666]" />
-                  <span className="text-sm font-medium">Meu Perfil</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl cursor-pointer py-2.5 px-3">
-                  <Settings size={16} className="mr-2 text-[#666]" />
-                  <span className="text-sm font-medium">Configurações</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-2" />
-                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl cursor-pointer py-2.5 px-3 text-red-600 focus:text-red-600 focus:bg-red-50">
-                  <LogOut size={16} className="mr-2" />
-                  <span className="text-sm font-medium">Sair do Painel</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        {/* Topbar */}
+        <header className="hidden lg:flex h-16 bg-white border-b border-slate-200 items-center gap-3 px-6 sticky top-0 z-30">
+          <div className="ml-auto w-full max-w-[420px] relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Pesquisar equipe, indicadores, planos, conteúdos…"
+              className="w-full h-10 pl-9 pr-4 rounded-lg bg-slate-100 border border-transparent focus:border-slate-300 focus:bg-white focus:outline-none text-sm text-slate-700 placeholder:text-slate-400"
+            />
+          </div>
+          <div className="flex items-center gap-1 text-slate-500">
+            <button className="w-10 h-10 grid place-items-center rounded-lg hover:bg-slate-100" title="Notificações">
+              <Bell className="w-[18px] h-[18px]" />
+            </button>
+            <button className="w-10 h-10 grid place-items-center rounded-lg hover:bg-slate-100" title="Ajuda">
+              <HelpCircle className="w-[18px] h-[18px]" />
+            </button>
+            <button className="w-10 h-10 grid place-items-center rounded-lg hover:bg-slate-100" title="Documentação">
+              <BookMarked className="w-[18px] h-[18px]" />
+            </button>
+          </div>
+          <div className="h-8 w-px bg-slate-200 mx-1" />
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden sm:block">
+              <p className="text-[13px] font-semibold text-slate-800 leading-tight">
+                {profile?.display_name || profile?.full_name || "Admin"}
+              </p>
+              <p className="text-[11px] text-slate-500 leading-tight">{title || "Admin Empresa"}</p>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F88A2B] to-[#e07020] text-white grid place-items-center text-xs font-bold">
+              {initials}
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="w-10 h-10 grid place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#F88A2B]"
+              title="Sair"
+            >
+              <LogOut className="w-[18px] h-[18px]" />
+            </button>
           </div>
         </header>
 
-        {/* Main Content Area - Scrollable */}
-        <main className="flex-1 w-full overflow-y-auto relative no-scrollbar bg-white">
-          <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-8 pb-24 lg:pb-12 bg-white">
-            {children}
-          </div>
-          
-          {/* Mobile Bottom Nav */}
+        <main className="flex-1 min-w-0">
+          <div className="admin-surface p-6 lg:p-8 pb-24 lg:pb-8 max-w-[1440px] mx-auto">{children}</div>
           <EnterpriseRHBottomNav />
         </main>
       </div>
