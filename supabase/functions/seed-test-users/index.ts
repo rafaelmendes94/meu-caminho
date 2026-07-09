@@ -26,7 +26,9 @@ Deno.serve(async (req) => {
     }
 
     const adminEmail = "admin@teste.com.br";
+    console.log("creating admin");
     const adminId = await ensureUser(adminEmail, "12345678");
+    console.log("adminId", adminId);
     await admin.from("user_roles").delete().eq("user_id", adminId);
     await admin.from("user_roles").insert({ user_id: adminId, organization_id: null, role: "platform_admin" });
     await admin.from("profiles").upsert({ id: adminId, full_name: "Platform Admin", organization_id: null });
