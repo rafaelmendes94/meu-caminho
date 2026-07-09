@@ -6,6 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import type { ReactNode } from "react";
+import PlatformSearchScreen from "./pages/PlatformSearchScreen";
+import PlatformDocsScreen from "./pages/PlatformDocsScreen";
+import PlatformAccountScreen from "./pages/PlatformAccountScreen";
+import PlatformSecurityScreen from "./pages/PlatformSecurityScreen";
 import EnterpriseCuryDigitalScreen from "./components/EnterpriseCuryDigitalScreen.tsx";
 import CanalDiretoRHScreen from "./components/CanalDiretoRHScreen.tsx";
 import CanalDiretoMensagemScreen from "./components/CanalDiretoMensagemScreen.tsx";
@@ -435,6 +439,10 @@ const App = () => (
           {/* Super Admin SaaS */}
           <Route path="/admin" element={<PlatformAdmin><PlatformAdminDashboardScreen /></PlatformAdmin>} />
           <Route path="/admin/dashboard" element={<PlatformAdmin><PlatformAdminDashboardScreen /></PlatformAdmin>} />
+          <Route path="/admin/search" element={<PlatformAdmin><PlatformSearchScreen /></PlatformAdmin>} />
+          <Route path="/admin/docs" element={<PlatformAdmin><PlatformDocsScreen /></PlatformAdmin>} />
+          <Route path="/admin/account" element={<PlatformAdmin><PlatformAccountScreen /></PlatformAdmin>} />
+          <Route path="/admin/security" element={<PlatformAdmin><PlatformSecurityScreen /></PlatformAdmin>} />
           <Route path="/admin/organizations" element={<PlatformAdmin><PlatformOrganizationsScreen /></PlatformAdmin>} />
           <Route path="/admin/organizations/:id" element={<PlatformAdmin><PlatformOrganizationDetailScreen /></PlatformAdmin>} />
           <Route path="/admin/owners" element={<PlatformAdmin><PlatformOwnersScreen /></PlatformAdmin>} />
