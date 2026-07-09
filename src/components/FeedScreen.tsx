@@ -9,6 +9,7 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
 import { useDisplayUser } from "@/hooks/use-display-user";
+import { useCmsItems, type CmsItem } from "@/hooks/use-cms-items";
 
 const brand = "#E07A2B";
 const brandSoft = "#F4B27A";
@@ -65,7 +66,46 @@ type Post = {
  when: string;
 };
 
-const posts: Post[] = [
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=900&q=80";
+const CMS_TYPE_TO_POST: Record<CmsItem["type"], PostType> = {
+  book: "livro", podcast: "podcast", video: "video", audio: "audio",
+  material: "reflexao", track: "ia", course: "exercicio",
+};
+const POST_SUBTITLE: Record<PostType, string> = {
+  reflexao: "Reflexão", frase: "Reflexão do dia", audio: "Audiolivro", podcast: "Podcast",
+  video: "Insight em vídeo", livro: "Novo no Clube do Livro", ia: "Trilha sugerida",
+  exercicio: "Exercício de presença", meditacao: "Meditação guiada", corte: "Corte",
+};
+function timeAgo(iso: string | null): string {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return "agora";
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return "ontem";
+  if (d < 7) return `há ${d}d`;
+  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+function mapCmsToPost(it: CmsItem): Post {
+  const t = CMS_TYPE_TO_POST[it.type];
+  const dur = it.duration_minutes ? (it.duration_minutes < 60 ? `${it.duration_minutes} min` : `${Math.floor(it.duration_minutes / 60)}h ${it.duration_minutes % 60}min`) : undefined;
+  return {
+    id: it.id,
+    type: t,
+    to: `/conteudo/detalhe?slug=${it.slug}`,
+    subtitle: POST_SUBTITLE[t],
+    badge: it.subtitle || it.title,
+    caption: it.short_description || "",
+    image: it.cover_url || it.banner_url || FALLBACK_IMG,
+    duration: dur,
+    inspires: "—",
+    reflections: "—",
+    when: timeAgo(it.published_at),
+  };
+}
+
+const postsFallback: Post[] = [
  { id:"p1", type:"frase", to:"/feed/leitura", subtitle:"Reflexão do dia", badge:"2 min", quote:"A mente tranquila vê soluções onde os ansiosos veem problemas.", caption:"Pequenos pensamentos podem transformar grandes destinos.", image:"https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=900&q=80", inspires:"2.4k", reflections:"56", when:"há 1h" },
  { id:"p2", type:"meditacao", to:"/conteudo/detalhe", subtitle:"Meditação guiada", badge:"Respiração consciente", duration:"5 min", caption:"Pause. Respire. Sua mente também pede silêncio.", image:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80", inspires:"1.8k", reflections:"84", when:"há 3h" },
  { id:"p3", type:"video", to:"/feed/video", subtitle:"Insight em vídeo", badge:"Como acolher a ansiedade", duration:"1:24", caption:"Três passos suaves para acalmar pensamentos acelerados.", image:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=900&q=80", inspires:"3.6k", reflections:"142", when:"há 5h" },
@@ -439,6 +479,12 @@ const FeedScreen = () => {
  const [query, setQuery] = useState("");
  const [unread, setUnread] = useState(notifications.filter((n) => n.unread).length);
 
+  const { items: cmsItems } = useCmsItems(undefined, { limit: 30 });
+  const posts: Post[] = useMemo(
+    () => (cmsItems.length ? cmsItems.map(mapCmsToPost) : postsFallback),
+    [cmsItems]
+  );
+
  const visible = useMemo(() => {
  let v = filterMap[active] ? posts.filter((p) => filterMap[active]!.includes(p.type)) : posts;
  if (searchOpen && query.trim()) {
@@ -446,7 +492,7 @@ const FeedScreen = () => {
  v = v.filter((p) => (p.caption +"" + p.subtitle +"" + p.badge +"" + (p.quote ||"")).toLowerCase().includes(q));
  }
  return v;
- }, [active, query, searchOpen]);
+ }, [active, query, searchOpen, posts]);
 
  const markAllRead = () => { notifications.forEach((n) => (n.unread = false)); setUnread(0); };
 
