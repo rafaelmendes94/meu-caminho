@@ -325,6 +325,12 @@ const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
   };
 
   const changeStatus = async (status: Contract["status"], label: string) => {
+    const verbo = status === "suspended" ? "suspender"
+      : status === "canceled" ? "cancelar"
+      : status === "active" ? "reativar"
+      : `mudar para ${status}`;
+    if (!window.confirm(`Deseja ${verbo} esta organização?\n\nOs dados são preservados.`)) return;
+    const reason = window.prompt(`Motivo (opcional):`, "") || null;
     set({ status });
     const payload: any = { ...c, status };
     delete payload.id;
@@ -332,7 +338,7 @@ const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
       .from("organization_contracts" as any)
       .upsert(payload, { onConflict: "organization_id" });
     if (error) return toast.error(error.message);
-    await audit(org.id, label, { status });
+    await audit(org.id, label, { status, reason });
     toast.success("Status atualizado.");
     onSaved(); load();
   };
