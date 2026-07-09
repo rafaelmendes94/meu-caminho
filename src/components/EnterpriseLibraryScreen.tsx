@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -13,6 +13,7 @@ import {
   LayoutGrid
 } from "lucide-react";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
+import { useCmsItems, useCmsCategories } from "@/hooks/use-cms-items";
 
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" } as const;
 
@@ -84,18 +85,33 @@ const BOOKS: Book[] = [
   },
 ];
 
-const CATEGORIES = ["Todos", "Liderança", "Foco", "Relacional", "Criatividade"];
+const COVERS = [
+  { grad: "linear-gradient(180deg,#FBE7C7 0%,#F5C786 50%,#C25A2A 100%)", accent: "#5B2A12", bg: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop" },
+  { grad: "linear-gradient(180deg,#D8E4EA 0%,#7C9AAE 60%,#3B5567 100%)", accent: "#0E2230", bg: "https://images.unsplash.com/photo-1505144808419-1957a94ca61e?w=600&q=70&auto=format&fit=crop" },
+  { grad: "linear-gradient(180deg,#E8D7BE 0%,#B89770 60%,#6E4F33 100%)", accent: "#3A2616", bg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=70&auto=format&fit=crop" },
+  { grad: "linear-gradient(180deg,#EFEBE2 0%,#C9C0B0 60%,#7B7367 100%)", accent: "#2E2A22", bg: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600&q=70&auto=format&fit=crop" },
+  { grad: "linear-gradient(180deg,#E8DABF 0%,#B58F62 55%,#5C3D26 100%)", accent: "#3A2614", bg: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=70&auto=format&fit=crop" },
+];
 
 export default function EnterpriseLibraryScreen() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
+  const { items } = useCmsItems("book");
+  const { categories } = useCmsCategories();
+  const catMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    categories.forEach(c => { m[c.id] = c.name; });
+    return m;
+  }, [categories]);
+  const CATEGORIES = useMemo(() => ["Todos", ...categories.map(c => c.name)], [categories]);
 
-  const filteredBooks = BOOKS.filter(book => {
-    const matchesCategory = selectedCategory === "Todos" || book.category === selectedCategory;
-    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredBooks = useMemo(() => items.filter(b => {
+    const catName = b.category_id ? catMap[b.category_id] : "";
+    const matchesCategory = selectedCategory === "Todos" || catName === selectedCategory;
+    const matchesSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  });
+  }), [items, catMap, selectedCategory, searchQuery]);
 
   return (
     <EnterpriseUserLayout title="Biblioteca">
@@ -162,45 +178,37 @@ export default function EnterpriseLibraryScreen() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 lg:gap-x-6 gap-y-8 lg:gap-y-10">
-            {filteredBooks.map((book, idx) => (
-              <div 
-                key={book.id} 
-                className="animate-fade-up group cursor-pointer"
-                style={{ animationDelay: `${200 + idx * 100}ms` }}
-                onClick={() => navigate(`/biblioteca/detalhe?livro=${book.id}`)}
-              >
-                <div className="relative aspect-[3/4.2] rounded-[20px] overflow-hidden shadow-sm mb-3 transition-all group-hover:shadow-xl group-hover:-translate-y-1">
-                  <div className="absolute inset-0" style={{ background: book.cover }} />
-                  <img src={book.bg} alt="" className="absolute inset-0 w-full h-full object-cover mix-blend-soft-light opacity-60" />
-                  
-                  {/* Progress overlay if any */}
-                  {book.progress && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10">
-                      <div className="h-full bg-white/60" style={{ width: `${book.progress}%` }} />
+            {filteredBooks.map((book, idx) => {
+              const preset = COVERS[idx % COVERS.length];
+              const catName = book.category_id ? catMap[book.category_id] : "";
+              const duration = book.duration_minutes ? `${Math.floor(book.duration_minutes / 60)}h ${book.duration_minutes % 60}min` : "";
+              return (
+                <div 
+                  key={book.id} 
+                  className="animate-fade-up group cursor-pointer"
+                  style={{ animationDelay: `${200 + idx * 100}ms` }}
+                  onClick={() => navigate(`/enterprise/conteudo/detalhe?slug=${book.slug}`)}
+                >
+                  <div className="relative aspect-[3/4.2] rounded-[20px] overflow-hidden shadow-sm mb-3 transition-all group-hover:shadow-xl group-hover:-translate-y-1">
+                    <div className="absolute inset-0" style={{ background: preset.grad }} />
+                    <img src={book.cover_url || preset.bg} alt="" className="absolute inset-0 w-full h-full object-cover mix-blend-soft-light opacity-60" />
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-3 text-center">
+                      <p style={{ ...serif, color: preset.accent }} className="text-[12px] font-bold uppercase tracking-tighter leading-tight">
+                        {book.title}
+                      </p>
                     </div>
-                  )}
-
-                  {/* Title centered on cover */}
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-3 text-center">
-                    <p style={{ ...serif, color: book.accent }} className="text-[12px] font-bold uppercase tracking-tighter leading-tight">
-                      {book.title}
-                    </p>
+                    <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                      <Bookmark className="h-3.5 w-3.5 text-[#111]" />
+                    </div>
                   </div>
-
-                  <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    <Bookmark className="h-3.5 w-3.5 text-[#111]" />
+                  <h4 className="text-[14px] font-bold text-[#111] line-clamp-1 mb-1">{book.title}</h4>
+                  <div className="flex items-center gap-2">
+                    {catName && <span className="text-[10px] font-bold text-[#F88A2B] px-2 py-0.5 rounded-md bg-[#F88A2B]/10">{catName}</span>}
+                    {duration && <span className="flex items-center gap-1 text-[10px] text-[#999] font-medium"><Clock className="h-2.5 w-2.5" />{duration}</span>}
                   </div>
                 </div>
-                <h4 className="text-[14px] font-bold text-[#111] line-clamp-1 mb-1">{book.title}</h4>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-[#F88A2B] px-2 py-0.5 rounded-md bg-[#F88A2B]/10">{book.category}</span>
-                  <span className="flex items-center gap-1 text-[10px] text-[#999] font-medium">
-                    <Clock className="h-2.5 w-2.5" />
-                    {book.duration}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
