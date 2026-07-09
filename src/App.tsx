@@ -163,6 +163,7 @@ import OnboardingConcluidoScreen from "./pages/OnboardingConcluidoScreen.tsx";
 import PulseSettingsScreen from "./pages/PulseSettingsScreen.tsx";
 import PlatformAdminDashboardScreen from "./pages/PlatformAdminDashboardScreen.tsx";
 import PlatformOrganizationsScreen from "./pages/PlatformOrganizationsScreen.tsx";
+import PlatformOwnersScreen from "./pages/PlatformOwnersScreen.tsx";
 import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetailScreen.tsx";
 import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
 import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
