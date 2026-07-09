@@ -114,3 +114,75 @@ export function useCmsItemBySlug(slug: string | null | undefined) {
 
   return { item, related, author, loading };
 }
+
+export type CmsCourseModule = {
+  id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  lessons: { id: string; title: string; duration_minutes: number | null; lesson_type: string; sort_order: number; media_url: string | null }[];
+};
+
+export function useCmsCourse(slug: string | null | undefined) {
+  const [course, setCourse] = useState<CmsItem | null>(null);
+  const [modules, setModules] = useState<CmsCourseModule[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    if (!slug) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
+      const { data: c } = await supabase.from("content_items").select("*").eq("slug", slug).eq("type", "course").maybeSingle();
+      if (!alive) return;
+      setCourse((c ?? null) as any);
+      if (c) {
+        const { data: mods } = await supabase.from("course_modules").select("id,title,description,sort_order").eq("course_id", c.id).order("sort_order");
+        const modIds = (mods ?? []).map(m => m.id);
+        const { data: lessons } = modIds.length
+          ? await supabase.from("course_lessons").select("id,title,duration_minutes,lesson_type,sort_order,media_url,module_id").in("module_id", modIds).eq("is_published", true).order("sort_order")
+          : { data: [] as any[] };
+        if (!alive) return;
+        setModules((mods ?? []).map(m => ({
+          ...m,
+          lessons: (lessons ?? []).filter((l: any) => l.module_id === m.id),
+        })) as any);
+      }
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [slug]);
+
+  return { course, modules, loading };
+}
+
+export function useCmsTrack(slug: string | null | undefined) {
+  const [track, setTrack] = useState<CmsItem | null>(null);
+  const [items, setItems] = useState<CmsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    if (!slug) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
+      const { data: t } = await supabase.from("content_items").select("*").eq("slug", slug).eq("type", "track").maybeSingle();
+      if (!alive) return;
+      setTrack((t ?? null) as any);
+      if (t) {
+        const { data: ti } = await supabase.from("track_items").select("item_id,sort_order").eq("track_id", t.id).order("sort_order");
+        const ids = (ti ?? []).map(x => x.item_id);
+        const { data: its } = ids.length
+          ? await supabase.from("content_items").select("*").in("id", ids).eq("status", "published")
+          : { data: [] as any[] };
+        if (!alive) return;
+        const byId = new Map((its ?? []).map((x: any) => [x.id, x]));
+        setItems((ti ?? []).map(x => byId.get(x.item_id)).filter(Boolean) as any);
+      }
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [slug]);
+
+  return { track, items, loading };
+}
