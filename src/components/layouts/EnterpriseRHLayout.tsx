@@ -1,5 +1,6 @@
 import React from "react";
 import { EnterpriseRHLayout as StandardLayout } from "../EnterpriseRHNavigation";
+import ImpersonationBanner from "../admin/ImpersonationBanner";
 
 interface EnterpriseRHLayoutProps {
   children: React.ReactNode;
@@ -11,5 +12,10 @@ interface EnterpriseRHLayoutProps {
  * All Enterprise RH screens should use this or EnterpriseRHNavigation directly.
  */
 export const EnterpriseRHLayout = ({ children, title }: EnterpriseRHLayoutProps) => {
-  return <StandardLayout title={title || "Enterprise RH"}>{children}</StandardLayout>;
+  return (
+    <StandardLayout title={title || "Enterprise RH"}>
+      <ImpersonationBanner />
+      {children}
+    </StandardLayout>
+  );
 };
