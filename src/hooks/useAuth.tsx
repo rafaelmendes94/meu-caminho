@@ -77,9 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const hydrate = async (nextSession: Session | null) => {
-    setSession(nextSession);
-    setUser(nextSession?.user ?? null);
     if (nextSession?.user) {
+      // Gate consumers until roles/profile are loaded, so role-based
+      // redirects don't fire with a stale empty roles array.
+      setLoading(true);
+      setSession(nextSession);
+      setUser(nextSession.user);
       try {
         const data = await loadUserData(nextSession.user.id);
         setProfile(data.profile);
@@ -90,6 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("[auth] loadUserData failed", e);
       }
     } else {
+      setSession(null);
+      setUser(null);
       setProfile(null);
       setRoles([]);
       setOrganization(null);
