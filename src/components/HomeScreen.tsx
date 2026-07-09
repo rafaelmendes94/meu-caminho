@@ -1,6 +1,7 @@
 import { Link, useLocation } from"react-router-dom";
 import { useState } from"react";
 import NotificationsSheet from"./NotificationsSheet";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 /* ============ Status bar ============ */
 const SignalIcon = () => (
@@ -264,7 +265,8 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const HomeScreen = () => {
   const isEnterprise = useLocation().pathname.startsWith('/enterprise');
-  const userName = isEnterprise ? "Rafael" : "Juliana";
+  const { firstName } = useDisplayUser();
+  const userName = firstName;
 
  const [notifOpen, setNotifOpen] = useState(false);
   return (
