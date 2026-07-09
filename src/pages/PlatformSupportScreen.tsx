@@ -56,6 +56,18 @@ const PlatformSupportScreen = () => {
   const [internal, setInternal] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const audit = async (action: string, ticketId: string, meta: Record<string, any> = {}, orgId: string | null = null) => {
+    if (!user?.id) return;
+    await supabase.from("platform_audit_logs" as any).insert({
+      actor_user_id: user.id,
+      action,
+      entity_type: "support_ticket",
+      entity_id: ticketId,
+      organization_id: orgId,
+      metadata: meta,
+    });
+  };
+
   const load = async () => {
     setLoading(true);
     const [{ data: tks }, { data: os }] = await Promise.all([
@@ -108,7 +120,9 @@ const PlatformSupportScreen = () => {
 
   const updateStatus = async (id: string, status: string) => {
     setSaving(true);
+    const before = tickets.find((t) => t.id === id);
     await supabase.from("support_tickets" as any).update({ status }).eq("id", id);
+    await audit("support_ticket.status_changed", id, { from: before?.status, to: status }, before?.organization_id ?? null);
     if (selected?.id === id) setSelected({ ...selected, status: status as Ticket["status"] });
     setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, status: status as Ticket["status"] } : t)));
     setSaving(false);
@@ -116,7 +130,9 @@ const PlatformSupportScreen = () => {
 
   const updatePriority = async (id: string, priority: string) => {
     setSaving(true);
+    const before = tickets.find((t) => t.id === id);
     await supabase.from("support_tickets" as any).update({ priority }).eq("id", id);
+    await audit("support_ticket.priority_changed", id, { from: before?.priority, to: priority }, before?.organization_id ?? null);
     if (selected?.id === id) setSelected({ ...selected, priority: priority as Ticket["priority"] });
     setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, priority: priority as Ticket["priority"] } : t)));
     setSaving(false);
@@ -125,7 +141,9 @@ const PlatformSupportScreen = () => {
   const assignSelf = async (id: string) => {
     if (!user?.id) return;
     setSaving(true);
+    const before = tickets.find((t) => t.id === id);
     await supabase.rpc("assign_support_ticket" as any, { _ticket_id: id, _assignee: user.id });
+    await audit("support_ticket.assigned", id, { assignee: user.id }, before?.organization_id ?? null);
     if (selected?.id === id) setSelected({ ...selected, assigned_to: user.id });
     setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, assigned_to: user.id } : t)));
     setSaving(false);
@@ -133,7 +151,9 @@ const PlatformSupportScreen = () => {
 
   const unassign = async (id: string) => {
     setSaving(true);
+    const before = tickets.find((t) => t.id === id);
     await supabase.rpc("assign_support_ticket" as any, { _ticket_id: id, _assignee: null });
+    await audit("support_ticket.unassigned", id, {}, before?.organization_id ?? null);
     if (selected?.id === id) setSelected({ ...selected, assigned_to: null });
     setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, assigned_to: null } : t)));
     setSaving(false);
@@ -148,6 +168,7 @@ const PlatformSupportScreen = () => {
       .select()
       .single();
     if (data) setComments((prev) => [...prev, data as unknown as Comment]);
+    await audit("support_ticket.comment_added", selected.id, { is_internal: internal }, selected.organization_id);
     setNewComment("");
     setSaving(false);
   };
