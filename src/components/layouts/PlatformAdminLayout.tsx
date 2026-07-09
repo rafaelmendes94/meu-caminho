@@ -12,6 +12,10 @@ const items = [
   { to: "/admin/system", label: "System Health" },
   { to: "/admin/support", label: "Suporte" },
   { to: "/admin/audit", label: "Auditoria" },
+  { to: "/admin/content", label: "Content — Dashboard" },
+  { to: "/admin/content/authors", label: "Content — Autores" },
+  { to: "/admin/content/categories", label: "Content — Categorias" },
+  { to: "/admin/content/tags", label: "Content — Tags" },
   { to: "/admin/settings", label: "Configurações" },
 ];
 
