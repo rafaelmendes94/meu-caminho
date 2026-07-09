@@ -1,9 +1,10 @@
-import { useState } from"react";
+import { useMemo, useState } from"react";
 import { Link, useLocation } from"react-router-dom";
 import NotificationsSheet from"./NotificationsSheet";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useCmsItems, useCmsCategories, type CmsItem } from "@/hooks/use-cms-items";
 
 const serif = { fontFamily:"'Playfair Display', Georgia, serif", letterSpacing:"-0.015em" } as const;
 
@@ -27,48 +28,68 @@ const IcHeart = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="non
 const IcGrid = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>);
 
 type Cat = { key: string; label: string; icon: JSX.Element };
-const CATS: Cat[] = [
- { key:"Todos", label:"Todos", icon: <IcGrid/> },
- { key:"ie", label:"Inteligência emocional", icon: <IcEmotion/> },
- { key:"anx", label:"Ansiedade", icon: <IcCloud/> },
- { key:"rel", label:"Relações", icon: <IcPeople/> },
- { key:"mind", label:"Mindfulness", icon: <IcLeaf/> },
- { key:"auto", label:"Autocontrole", icon: <IcShield/> },
- { key:"sm", label:"Saúde mental", icon: <IcHeart/> },
+const CAT_ICONS: Record<string, JSX.Element> = {
+  brain: <IcEmotion/>, cloud: <IcCloud/>, people: <IcPeople/>,
+  leaf: <IcLeaf/>, shield: <IcShield/>, heart: <IcHeart/>,
+};
+const GRADIENTS = [
+  "linear-gradient(180deg,#FBE7C7 0%,#F5C786 50%,#C25A2A 100%)",
+  "linear-gradient(180deg,#D8E4EA 0%,#7C9AAE 60%,#3B5567 100%)",
+  "linear-gradient(180deg,#E8D7BE 0%,#B89770 60%,#6E4F33 100%)",
+  "linear-gradient(180deg,#EFEBE2 0%,#C9C0B0 60%,#7B7367 100%)",
+  "linear-gradient(180deg,#E8DABF 0%,#B58F62 55%,#5C3D26 100%)",
+  "linear-gradient(180deg,#E6E1D6 0%,#B6B0A2 60%,#74695A 100%)",
 ];
+const ACCENTS = ["#5B2A12","#0E2230","#3A2616","#2E2A22","#3A2614","#2C2519"];
 
 type Book = {
- id: string;
- title: string;
- cover: string; // gradient css
- accent: string; // text color over cover
- bg: string; // cover background hint image (subtle photo)
- progress?: number;
- duration?: string;
- isNew?: boolean;
- locked?: boolean;
- cat: string;
+  id: string;
+  slug: string;
+  title: string;
+  cover: string;
+  accent: string;
+  bg: string;
+  progress?: number;
+  duration?: string;
+  isNew?: boolean;
+  locked?: boolean;
+  categoryId: string | null;
 };
 
-const BOOKS: Book[] = [
- { id:"vendedor", title:"O Vendedor de Sonhos", cover:"linear-gradient(180deg,#FBE7C7 0%,#F5C786 50%,#C25A2A 100%)", accent:"#5B2A12", bg:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop", progress: 72, duration:"5h 20min", isNew: true, cat:"ie" },
- { id:"ansiedade", title:"Ansiedade", cover:"linear-gradient(180deg,#D8E4EA 0%,#7C9AAE 60%,#3B5567 100%)", accent:"#0E2230", bg:"https://images.unsplash.com/photo-1505144808419-1957a94ca61e?w=600&q=70&auto=format&fit=crop", progress: 48, duration:"6h 40min", isNew: true, cat:"anx" },
- { id:"homem", title:"O Homem Mais Inteligente da História", cover:"linear-gradient(180deg,#E8D7BE 0%,#B89770 60%,#6E4F33 100%)", accent:"#3A2616", bg:"https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=70&auto=format&fit=crop", progress: 25, duration:"7h 10min", cat:"ie" },
- { id:"gestao", title:"Gestão da Emoção", cover:"linear-gradient(180deg,#EFEBE2 0%,#C9C0B0 60%,#7B7367 100%)", accent:"#2E2A22", bg:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600&q=70&auto=format&fit=crop", progress: 90, duration:"4h 50min", cat:"ie" },
- { id:"multifocal", title:"Inteligência Multifocal", cover:"linear-gradient(180deg,#E8DABF 0%,#B58F62 55%,#5C3D26 100%)", accent:"#3A2614", bg:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=70&auto=format&fit=crop", progress: 33, duration:"6h 30min", cat:"ie" },
- { id:"pais", title:"Pais Brilhantes, Professores Fascinantes", cover:"linear-gradient(180deg,#E6E1D6 0%,#B6B0A2 60%,#74695A 100%)", accent:"#2C2519", bg:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=600&q=70&auto=format&fit=crop", locked: true, cat:"rel" },
- { id:"codigo", title:"O Código da Inteligência", cover:"linear-gradient(180deg,#DCDCDC 0%,#A8A8A8 60%,#5E5E5E 100%)", accent:"#1F1F1F", bg:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=70&auto=format&fit=crop", locked: true, cat:"ie" },
- { id:"futuro", title:"O Futuro da Humanidade", cover:"linear-gradient(180deg,#D8DEE2 0%,#909AA1 60%,#4A535B 100%)", accent:"#161B1F", bg:"https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&q=70&auto=format&fit=crop", locked: true, cat:"sm" },
-];
+function mapItem(item: CmsItem, idx: number): Book {
+  const mins = item.duration_minutes ?? 0;
+  const duration = mins ? `${Math.floor(mins/60)}h ${String(mins%60).padStart(2,"0")}min` : "";
+  const isNew = item.published_at ? (Date.now() - new Date(item.published_at).getTime()) < 1000*60*60*24*30 : false;
+  return {
+    id: item.id,
+    slug: item.slug,
+    title: item.title,
+    cover: GRADIENTS[idx % GRADIENTS.length],
+    accent: ACCENTS[idx % ACCENTS.length],
+    bg: item.cover_url || item.banner_url || "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop",
+    progress: 0,
+    duration,
+    isNew,
+    locked: item.is_premium,
+    categoryId: item.category_id,
+  };
+}
 
 export default function LibraryScreen() {
  const location = useLocation();
  const isEnterprise = location.pathname.startsWith("/enterprise");
- const [cat, setCat] = useState("Todos");
+ const [catId, setCatId] = useState<string>("Todos");
  const [searchOpen, setSearchOpen] = useState(false);
  const [query, setQuery] = useState("");
  const [notifOpen, setNotifOpen] = useState(false);
- const base = cat ==="Todos" ? BOOKS : BOOKS.filter((b) => b.cat === cat);
+ const { items, loading } = useCmsItems("book");
+ const { categories } = useCmsCategories();
+ const books = useMemo(() => items.map(mapItem), [items]);
+ const cats: Cat[] = useMemo(() => [
+   { key: "Todos", label: "Todos", icon: <IcGrid/> },
+   ...categories.map((c) => ({ key: c.id, label: c.name, icon: CAT_ICONS[c.icon ?? ""] ?? <IcGrid/> })),
+ ], [categories]);
+ const base = catId === "Todos" ? books : books.filter((b) => b.categoryId === catId);
  const q = query.trim().toLowerCase();
  const list = q ? base.filter((b) => b.title.toLowerCase().includes(q)) : base;
 
@@ -163,11 +184,11 @@ export default function LibraryScreen() {
   <div className={`relative z-20 pl-5 pb-5 ${isEnterprise ? 'lg:px-0 lg:pt-4' : ''}`}>
   <div className="flex gap-2 overflow-x-auto overflow-y-visible no-scrollbar pr-5 py-6 -my-6">
   {CATS.map((c) => {
-  const active = c.key === cat;
+  const active = c.key === catId;
   return (
   <button
   key={c.key}
-  onClick={() => setCat(c.key)}
+  onClick={() => setCatId(c.key)}
   className={`shrink-0 h-11 pl-1.5 pr-4 rounded-full text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
   active ?"text-white shadow-[0_12px_24px_-8px_rgba(248,138,43,0.5)]" :"text-[#444444] bg-white border border-[#EFE3D5] hover:border-[#F88A2B]/30 shadow-[0_4px_12px_rgba(0,0,0,0.03)]"
   }`}
