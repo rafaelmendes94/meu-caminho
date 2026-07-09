@@ -8,6 +8,7 @@ import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
 import { useDisplayUser } from "@/hooks/use-display-user";
+import { useAuth } from "@/hooks/useAuth";
 
 const serif = { fontFamily: "'Playfair Display', serif" };
 
@@ -16,7 +17,13 @@ export default function MenuScreen() {
   const isEnterprise = pathname.startsWith('/enterprise');
   const al = useAudienceLink();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { name, email, avatarUrl, initial, planLabel } = useDisplayUser();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
 
   if (!isEnterprise) {
     return <LegacyMobileMenu />;
@@ -160,7 +167,7 @@ export default function MenuScreen() {
               </div>
               
               <button 
-                onClick={() => navigate("/login")}
+                onClick={handleSignOut}
                 className="w-full mt-6 py-4 flex items-center justify-center gap-2 text-red-500 font-bold text-sm hover:bg-red-50 rounded-2xl transition-all"
               >
                 <LogOut size={18} /> Sair da Conta
@@ -181,7 +188,13 @@ export default function MenuScreen() {
 function LegacyMobileMenu() {
   const al = useAudienceLink();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const serif = { fontFamily:"'Playfair Display', serif" };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
 
   const sections = [
     {
@@ -235,7 +248,7 @@ function LegacyMobileMenu() {
           ))}
         </div>
 
-        <button onClick={() => navigate("/login")} className="mt-10 w-full py-4 rounded-[24px] bg-white border border-black/5 text-red-500 font-bold flex items-center justify-center gap-2">
+        <button onClick={handleSignOut} className="mt-10 w-full py-4 rounded-[24px] bg-white border border-black/5 text-red-500 font-bold flex items-center justify-center gap-2">
           <LogOut size={18} /> Sair da conta
         </button>
       </main>

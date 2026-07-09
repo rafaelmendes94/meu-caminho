@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
+import { getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 
 
 const EnterpriseRHLoginScreen = () => {
@@ -23,13 +23,17 @@ const EnterpriseRHLoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const { signInWithPassword, isAuthenticated, hasAnyRole, loading } = useAuth();
+  const { signInWithPassword, isAuthenticated, roles, hasAnyRole, hasEmployeeProfile, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && isAuthenticated && hasAnyRole(["owner", "rh_admin"])) {
-      navigate("/enterprise/rh/welcome", { replace: true });
+    if (!loading && isAuthenticated) {
+      if (hasAnyRole(["platform_admin"])) {
+        navigate(getDefaultAuthenticatedPath(roles, hasEmployeeProfile), { replace: true });
+      } else if (hasAnyRole(["owner", "rh_admin"])) {
+        navigate("/enterprise/rh/welcome", { replace: true });
+      }
     }
-  }, [isAuthenticated, loading, hasAnyRole, navigate]);
+  }, [isAuthenticated, loading, roles, hasAnyRole, hasEmployeeProfile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

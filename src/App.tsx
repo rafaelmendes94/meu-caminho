@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import type { ReactNode } from "react";
 import EnterpriseCuryDigitalScreen from "./components/EnterpriseCuryDigitalScreen.tsx";
@@ -205,9 +205,15 @@ const RH = ({ children }: { children: ReactNode }) => (
 const Ent = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute requiredRoles={["owner", "rh_admin", "leader", "employee"]} requireEmployeeProfile>{children}</ProtectedRoute>
 );
-const Auth = ({ children }: { children: ReactNode }) => (
-  <ProtectedRoute>{children}</ProtectedRoute>
-);
+const Auth = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, loading, roles, hasEmployeeProfile } = useAuth();
+
+  if (!loading && isAuthenticated && roles.includes("platform_admin")) {
+    return <Navigate to={getDefaultAuthenticatedPath(roles, hasEmployeeProfile)} replace />;
+  }
+
+  return <ProtectedRoute>{children}</ProtectedRoute>;
+};
 const PlatformAdmin = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute requiredRoles={["platform_admin"]}>{children}</ProtectedRoute>
 );

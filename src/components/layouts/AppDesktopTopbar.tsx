@@ -10,6 +10,7 @@ import {
 import { useAudienceLink } from "@/hooks/use-audience";
 import { useLocation } from "react-router-dom";
 import { useDisplayUser } from "@/hooks/use-display-user";
+import { useAuth } from "@/hooks/useAuth";
 
 export const AppDesktopTopbar = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export const AppDesktopTopbar = () => {
   const al = useAudienceLink();
   const isEnterprise = location.pathname.startsWith('/enterprise');
   const { firstName, initial, planLabel } = useDisplayUser();
+  const { signOut } = useAuth();
   if (isEnterprise) return null;
 
   return (
@@ -62,7 +64,7 @@ export const AppDesktopTopbar = () => {
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/")} className="cursor-pointer text-red-600">
+            <DropdownMenuItem onClick={async () => { await signOut(); navigate("/login", { replace: true }); }} className="cursor-pointer text-red-600">
               <LogOut size={16} className="mr-2" /> Sair
             </DropdownMenuItem>
           </DropdownMenuContent>

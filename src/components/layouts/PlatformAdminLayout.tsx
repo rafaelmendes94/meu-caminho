@@ -256,7 +256,7 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
               {initials}
             </div>
             <button
-              onClick={async () => { await signOut(); navigate("/"); }}
+              onClick={async () => { await signOut(); navigate("/login", { replace: true }); }}
               className="w-10 h-10 grid place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#F88A2B]"
               title="Sair"
             >

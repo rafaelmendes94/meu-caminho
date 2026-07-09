@@ -1,7 +1,8 @@
-import { Link, useLocation } from"react-router-dom";
+import { Link, Navigate, useLocation } from"react-router-dom";
 import { useState } from"react";
 import NotificationsSheet from"./NotificationsSheet";
 import { useDisplayUser } from "@/hooks/use-display-user";
+import { useAuth } from "@/hooks/useAuth";
 
 /* ============ Status bar ============ */
 const SignalIcon = () => (
@@ -265,10 +266,15 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const HomeScreen = () => {
   const isEnterprise = useLocation().pathname.startsWith('/enterprise');
+  const { loading, hasAnyRole } = useAuth();
   const { firstName } = useDisplayUser();
   const userName = firstName;
 
  const [notifOpen, setNotifOpen] = useState(false);
+  if (!loading && hasAnyRole(["platform_admin"])) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
   return (
    <AppUserLayout>
      <div className="relative min-h-[100dvh] bg-[#F7F4F2] animate-fade-in">
