@@ -4,10 +4,10 @@ import {
   Crown, HelpCircle, Settings, Headphones, BellRing, LogOut, Flame, Sparkles,
   User, CreditCard, Lock, Globe, Smartphone, Home, Flag, MessageCircle, Play, BookOpen
 } from "lucide-react";
-import avatar from "@/assets/avatar-juliana.jpg";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 const serif = { fontFamily: "'Playfair Display', serif" };
 
@@ -16,6 +16,7 @@ export default function MenuScreen() {
   const isEnterprise = pathname.startsWith('/enterprise');
   const al = useAudienceLink();
   const navigate = useNavigate();
+  const { name, email, avatarUrl, initial, planLabel } = useDisplayUser();
 
   if (!isEnterprise) {
     return <LegacyMobileMenu />;
