@@ -30,7 +30,7 @@ const EnterpriseRHLoginScreen = () => {
       if (hasAnyRole(["platform_admin"])) {
         navigate(getDefaultAuthenticatedPath(roles, hasEmployeeProfile), { replace: true });
       } else if (hasAnyRole(["owner", "rh_admin"])) {
-        navigate("/enterprise/rh/welcome", { replace: true });
+        navigate("/enterprise/rh/central-admin", { replace: true });
       }
     }
   }, [isAuthenticated, loading, roles, hasAnyRole, hasEmployeeProfile, navigate]);
