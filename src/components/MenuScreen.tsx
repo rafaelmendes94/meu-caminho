@@ -29,10 +29,17 @@ export default function MenuScreen() {
         {/* Profile SaaS Hero Section */}
         <section className="bg-white rounded-[32px] p-8 lg:p-12 shadow-sm border border-black/5 flex flex-col lg:flex-row items-center gap-10">
           <div className="relative group">
-            <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
-              className="w-32 h-32 lg:w-40 lg:h-40 rounded-[48px] object-cover shadow-2xl ring-4 ring-orange-50 transition-transform group-hover:scale-105" 
-            />
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={name}
+                className="w-32 h-32 lg:w-40 lg:h-40 rounded-[48px] object-cover shadow-2xl ring-4 ring-orange-50 transition-transform group-hover:scale-105"
+              />
+            ) : (
+              <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-[48px] bg-[#0B0908] text-white flex items-center justify-center text-5xl font-bold shadow-2xl ring-4 ring-orange-50">
+                {initial}
+              </div>
+            )}
             <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-[#F88A2B] border-4 border-white flex items-center justify-center text-white shadow-lg">
               <Sparkles size={20} fill="currentColor" />
             </div>
@@ -40,10 +47,10 @@ export default function MenuScreen() {
           
           <div className="flex-1 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-[#F88A2B] text-[10px] font-bold uppercase tracking-widest mb-4">
-              <Crown size={12} fill="currentColor" /> Membro Enterprise
+              <Crown size={12} fill="currentColor" /> {planLabel}
             </div>
-            <h1 style={serif} className="text-4xl lg:text-6xl font-bold text-[#111] leading-tight mb-2">Rafael Oliveira</h1>
-            <p className="text-base lg:text-lg text-[#8A8A8A] font-medium mb-6">rafael.oliveira@cury.com.br</p>
+            <h1 style={serif} className="text-4xl lg:text-6xl font-bold text-[#111] leading-tight mb-2">{name}</h1>
+            <p className="text-base lg:text-lg text-[#8A8A8A] font-medium mb-6">{email}</p>
             
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
               <button className="px-8 py-3 bg-[#F88A2B] text-white text-sm font-bold rounded-2xl shadow-lg shadow-orange-500/20 hover:scale-105 transition-all">Editar Perfil</button>
