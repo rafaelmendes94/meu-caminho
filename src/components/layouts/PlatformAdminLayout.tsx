@@ -225,7 +225,7 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center gap-3 px-6 sticky top-0 z-30">
-          <div className="flex-1 max-w-xl relative">
+          <div className="ml-auto w-full max-w-[360px] relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"

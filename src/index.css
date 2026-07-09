@@ -179,3 +179,35 @@
 main > div:not([data-fullbleed]) {
   padding-top: calc(env(safe-area-inset-top, 0px) + 24px) !important;
 }
+
+/* ============================================================
+   Platform Admin (Super Admin) — scoped light theme overrides
+   Pages were authored assuming a dark background. The admin
+   surface is light (#F6F7FB), so remap white/near-white text
+   and translucent borders/backgrounds to dark, readable tokens.
+   ============================================================ */
+.admin-surface { color: #0F172A; }
+.admin-surface main > div:not([data-fullbleed]) { padding-top: 0 !important; }
+
+.admin-surface .text-white { color: #0F172A !important; }
+.admin-surface .text-white\/90 { color: #0F172A !important; }
+.admin-surface .text-white\/80 { color: #1E293B !important; }
+.admin-surface .text-white\/70 { color: #334155 !important; }
+.admin-surface .text-white\/60 { color: #475569 !important; }
+.admin-surface .text-white\/50 { color: #64748B !important; }
+.admin-surface .text-white\/40 { color: #64748B !important; }
+.admin-surface .text-white\/30 { color: #94A3B8 !important; }
+
+.admin-surface .bg-white\/\[0\.03\],
+.admin-surface .bg-white\/5,
+.admin-surface .bg-white\/10 { background-color: #FFFFFF !important; }
+
+.admin-surface .border-white\/5,
+.admin-surface .border-white\/10,
+.admin-surface .border-white\/20 { border-color: #E2E8F0 !important; }
+
+.admin-surface .divide-white\/10 > * + * { border-color: #E2E8F0 !important; }
+
+/* Preserve readable placeholders inside admin */
+.admin-surface input::placeholder,
+.admin-surface textarea::placeholder { color: #94A3B8 !important; }
