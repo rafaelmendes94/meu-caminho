@@ -92,7 +92,7 @@ const UserBubble = ({ children, time }: { children: React.ReactNode; time: strin
 
 const ChatAIScreen = () => {
   const isEnterprise = useLocation().pathname.startsWith('/enterprise');
-  const userName = isEnterprise ? "Rafael" : "Juliana";
+  const userName = (useDisplayUserSafe()) || (isEnterprise ? "Rafael" : "Convidado");
 
  const navigate = useNavigate();
   const LayoutComponent = isEnterprise ? EnterpriseUserLayout : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
