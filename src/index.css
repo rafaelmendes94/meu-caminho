@@ -211,3 +211,20 @@ main > div:not([data-fullbleed]) {
 /* Preserve readable placeholders inside admin */
 .admin-surface input::placeholder,
 .admin-surface textarea::placeholder { color: #94A3B8 !important; }
+
+/* Remap light amber/yellow text (designed for dark bg) to dark, readable
+   tones on the light admin surface. */
+.admin-surface .text-amber-100,
+.admin-surface .text-amber-100\/80,
+.admin-surface .text-amber-200,
+.admin-surface .text-amber-300,
+.admin-surface .text-amber-400 { color: #92400E !important; }
+.admin-surface .text-yellow-300,
+.admin-surface .text-yellow-400 { color: #92400E !important; }
+.admin-surface .text-red-300,
+.admin-surface .text-red-400 { color: #991B1B !important; }
+.admin-surface .text-emerald-300,
+.admin-surface .text-emerald-400 { color: #065F46 !important; }
+.admin-surface .text-green-400 { color: #065F46 !important; }
+.admin-surface .text-sky-300,
+.admin-surface .text-sky-400 { color: #075985 !important; }
