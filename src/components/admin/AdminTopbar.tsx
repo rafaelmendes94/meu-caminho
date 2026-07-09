@@ -52,13 +52,14 @@ function setReadIds(ids: Set<string>) {
 
 async function runSuperAdminSearch(q: string): Promise<SearchResult[]> {
   const like = `%${q}%`;
+  const ownerRoles = await supabase.from("user_roles").select("user_id").eq("role", "owner").limit(200);
+  const ownerIds = (ownerRoles.data || []).map((r: any) => r.user_id);
   const [orgs, owners, contents, tickets] = await Promise.all([
     supabase.from("organizations").select("id,name,slug,subscription_status").ilike("name", like).limit(5),
-    supabase.from("profiles")
-      .select("id, full_name, display_name, organization_id, user_roles!inner(role)")
-      .eq("user_roles.role", "owner")
-      .or(`full_name.ilike.${like},display_name.ilike.${like}`)
-      .limit(5),
+    ownerIds.length
+      ? supabase.from("profiles").select("id, full_name, display_name, organization_id")
+          .in("id", ownerIds).or(`full_name.ilike.${like},display_name.ilike.${like}`).limit(5)
+      : Promise.resolve({ data: [] as any[] }),
     supabase.from("content_items").select("id,title,type,slug").ilike("title", like).limit(5),
     supabase.from("support_tickets").select("id,title,status").ilike("title", like).limit(5),
   ]);
