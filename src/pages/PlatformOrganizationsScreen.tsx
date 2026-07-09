@@ -101,10 +101,11 @@ const PlatformOrganizationsScreen = () => {
   useEffect(() => { load(); }, [load]);
 
   const setAction = async (id: string, patch: Record<string, any>, actionLabel: string) => {
-    const { error } = await supabase.from("organizations").update(patch as any).eq("id", id);
+    const { _reason, ...dbPatch } = patch;
+    const { error } = await supabase.from("organizations").update(dbPatch as any).eq("id", id);
     if (error) return toast.error(error.message);
     await supabase.from("platform_audit_logs" as any).insert({
-      action: actionLabel, entity_type: "organization", entity_id: id, metadata: patch,
+      action: actionLabel, entity_type: "organization", entity_id: id, metadata: { ...dbPatch, reason: _reason ?? null },
     });
     toast.success("Atualizado.");
     load();
