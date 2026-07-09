@@ -24,7 +24,7 @@ export type ContentItem = {
   is_premium: boolean;
   is_featured: boolean;
   published_at: string | null;
-  metadata: Record<string, unknown>;
+  metadata: any;
 };
 
 function slugify(s: string) {
