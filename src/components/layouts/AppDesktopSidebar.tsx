@@ -71,6 +71,7 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 export const AppDesktopSidebar = () => {
   const { pathname } = useLocation();
   const isEnterprise = pathname.startsWith('/enterprise');
+  const { name, initial, planLabel } = useDisplayUser();
   
   const principalItems = isEnterprise ? [
     { to: "/enterprise", label: "Início", icon: Home },
