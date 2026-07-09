@@ -181,6 +181,13 @@ import PlatformContentCoursesScreen from "./pages/PlatformContentCoursesScreen.t
 import PlatformContentCourseBuilderScreen from "./pages/PlatformContentCourseBuilderScreen.tsx";
 import PlatformContentTracksScreen from "./pages/PlatformContentTracksScreen.tsx";
 import PlatformContentTrackBuilderScreen from "./pages/PlatformContentTrackBuilderScreen.tsx";
+import PlatformContentPodcastsScreen from "./pages/PlatformContentPodcastsScreen.tsx";
+import PlatformContentVideosScreen from "./pages/PlatformContentVideosScreen.tsx";
+import PlatformContentAudiosScreen from "./pages/PlatformContentAudiosScreen.tsx";
+import PlatformContentMaterialsScreen from "./pages/PlatformContentMaterialsScreen.tsx";
+import PlatformContentCollectionsScreen from "./pages/PlatformContentCollectionsScreen.tsx";
+import PlatformContentCollectionBuilderScreen from "./pages/PlatformContentCollectionBuilderScreen.tsx";
+import PlatformContentLibraryScreen from "./pages/PlatformContentLibraryScreen.tsx";
 
 
 
@@ -440,6 +447,13 @@ const App = () => (
           <Route path="/admin/content/courses/:id" element={<PlatformAdmin><PlatformContentCourseBuilderScreen /></PlatformAdmin>} />
           <Route path="/admin/content/tracks" element={<PlatformAdmin><PlatformContentTracksScreen /></PlatformAdmin>} />
           <Route path="/admin/content/tracks/:id" element={<PlatformAdmin><PlatformContentTrackBuilderScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/podcasts" element={<PlatformAdmin><PlatformContentPodcastsScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/videos" element={<PlatformAdmin><PlatformContentVideosScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/audios" element={<PlatformAdmin><PlatformContentAudiosScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/materials" element={<PlatformAdmin><PlatformContentMaterialsScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/collections" element={<PlatformAdmin><PlatformContentCollectionsScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/collections/:id" element={<PlatformAdmin><PlatformContentCollectionBuilderScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/library" element={<PlatformAdmin><PlatformContentLibraryScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes>
