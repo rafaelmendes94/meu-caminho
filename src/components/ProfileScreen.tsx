@@ -80,7 +80,13 @@ const ProfileScreen = () => {
   {/* Main user card */}
   <div className="mt-3 rounded-3xl bg-white/75 backdrop-blur-sm border border-white/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] p-5 flex flex-col items-center text-center">
   <div className="relative">
-  <img src={userAvatar} alt={userName} className="w-[96px] h-[96px] rounded-full object-cover ring-2 ring-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)]" />
+  {userAvatar ? (
+    <img src={userAvatar} alt={userName} className="w-[96px] h-[96px] rounded-full object-cover ring-2 ring-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)]" />
+  ) : (
+    <div className="w-[96px] h-[96px] rounded-full bg-[#0B0908] text-white flex items-center justify-center text-3xl font-bold ring-2 ring-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)]">
+      {initial}
+    </div>
+  )}
   <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#F88A2B] border-2 border-white flex items-center justify-center">
   <Sparkles size={13} className="text-white" />
   </div>
