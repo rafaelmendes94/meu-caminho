@@ -7,15 +7,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import avatar from "@/assets/avatar-juliana.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
 import { useLocation } from "react-router-dom";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 export const AppDesktopTopbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const al = useAudienceLink();
   const isEnterprise = location.pathname.startsWith('/enterprise');
+  const { firstName, initial, planLabel } = useDisplayUser();
   if (isEnterprise) return null;
 
   return (
@@ -39,14 +40,14 @@ export const AppDesktopTopbar = () => {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 p-1 pr-3 rounded-2xl bg-white ring-1 ring-black/5 hover:ring-black/10 transition-all group">
               <div className="w-8 h-8 rounded-xl bg-[#0B0908] text-white flex items-center justify-center font-bold text-xs">
-                J
+                {initial}
               </div>
               <div className="flex flex-col items-start leading-tight">
                 <span className="text-[12px] font-bold text-[#111] font-montserrat group-hover:text-[#F88A2B] transition-colors">
-                  Juliana
+                  {firstName}
                 </span>
                 <span className="text-[10px] font-medium text-[#666]">
-                  Plano Premium
+                  {planLabel}
                 </span>
               </div>
               <ChevronDown size={14} className="text-[#0B0908]/20 group-hover:text-[#F88A2B] transition-colors" />
