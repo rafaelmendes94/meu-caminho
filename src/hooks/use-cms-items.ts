@@ -133,7 +133,7 @@ export function useCmsCourse(slug: string | null | undefined) {
     if (!slug) { setLoading(false); return; }
     (async () => {
       setLoading(true);
-      const { data: c } = await supabase.from("content_items").select("*").eq("slug", slug).eq("type", "course").maybeSingle();
+      const { data: c } = await supabase.from("content_items").select("*").eq("slug", slug).eq("type", "course").eq("status", "published").maybeSingle();
       if (!alive) return;
       setCourse((c ?? null) as any);
       if (c) {
@@ -166,7 +166,7 @@ export function useCmsTrack(slug: string | null | undefined) {
     if (!slug) { setLoading(false); return; }
     (async () => {
       setLoading(true);
-      const { data: t } = await supabase.from("content_items").select("*").eq("slug", slug).eq("type", "track").maybeSingle();
+      const { data: t } = await supabase.from("content_items").select("*").eq("slug", slug).eq("type", "track").eq("status", "published").maybeSingle();
       if (!alive) return;
       setTrack((t ?? null) as any);
       if (t) {
