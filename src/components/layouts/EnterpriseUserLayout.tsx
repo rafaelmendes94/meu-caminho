@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
 
 interface BaseLayoutProps {
   children: React.ReactNode;
@@ -45,6 +46,12 @@ const SidebarItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: 
 
 export const EnterpriseUserLayout = ({ children, title }: BaseLayoutProps) => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
   
   return (
     <div className="h-screen bg-white flex font-montserrat relative z-10 overflow-hidden touch-none">
@@ -77,7 +84,7 @@ export const EnterpriseUserLayout = ({ children, title }: BaseLayoutProps) => {
         <div className="mt-auto pt-6 border-t border-black/5 space-y-2">
           <SidebarItem to="/enterprise/menu" icon={Settings} label="Configurações" />
           <button 
-            onClick={() => navigate("/")}
+            onClick={handleSignOut}
             className="flex items-center gap-3 w-full p-3 rounded-2xl text-[#666] hover:bg-red-50 hover:text-red-600 transition-all duration-300"
           >
             <LogOut size={18} />
@@ -164,7 +171,7 @@ export const EnterpriseUserLayout = ({ children, title }: BaseLayoutProps) => {
                   <span className="text-sm font-medium">Meu Perfil</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="my-2" />
-                <DropdownMenuItem onClick={() => navigate("/")} className="rounded-xl cursor-pointer py-2.5 px-3 text-red-600 focus:text-red-600 focus:bg-red-50">
+                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl cursor-pointer py-2.5 px-3 text-red-600 focus:text-red-600 focus:bg-red-50">
                   <LogOut size={16} className="mr-2" />
                   <span className="text-sm font-medium">Sair da Conta</span>
                 </DropdownMenuItem>
