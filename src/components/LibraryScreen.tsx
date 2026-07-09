@@ -222,7 +222,7 @@ export default function LibraryScreen() {
   {/* Books grid */}
  {list.length === 0 ? (
  <div className="relative z-20 px-5 pb-8 text-center">
- <p className="text-[13px] text-[#666] py-8">Nenhum livro encontrado para"<span className="text-[#1F1A14] font-semibold">{query}</span>"</p>
+ <p className="text-[13px] text-[#666] py-8">{loading ? "Carregando biblioteca…" : query ? <>Nenhum livro encontrado para "<span className="text-[#1F1A14] font-semibold">{query}</span>"</> : "Nenhum livro disponível ainda."}</p>
  </div>
  ) : (
   <div className={`relative z-20 px-5 pb-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 lg:gap-x-8 gap-y-6 lg:gap-y-12 ${isEnterprise ? 'lg:px-0 lg:pt-8' : ''}`}>
