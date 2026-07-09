@@ -5,6 +5,15 @@ import { lovable } from "@/integrations/lovable";
 
 export type AppRole = "owner" | "rh_admin" | "leader" | "employee" | "b2c_user" | "platform_admin";
 
+export function getDefaultAuthenticatedPath(roles: AppRole[], hasEmployeeProfile: boolean) {
+  if (roles.includes("platform_admin")) return "/admin/dashboard";
+  if (roles.some((role) => role === "owner" || role === "rh_admin")) return "/enterprise/rh/central-admin";
+  if (roles.some((role) => role === "employee" || role === "leader")) {
+    return hasEmployeeProfile ? "/enterprise" : "/onboarding";
+  }
+  return "/home";
+}
+
 export interface Profile {
   id: string;
   organization_id: string | null;

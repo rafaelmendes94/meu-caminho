@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import abstractArt from "@/assets/login-abstract.png";
 import { useIsDesktop } from "@/hooks/use-desktop";
-import { useAuth } from "@/hooks/useAuth";
+import { getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const GoogleIcon = () => (
@@ -53,7 +53,7 @@ const SparkDivider = () => (
 const Index = () => {
   const navigate = useNavigate();
   const isDesktop = useIsDesktop();
-  const { isAuthenticated, signInWithGoogle, signInWithPassword, signUp, hasAnyRole, hasEmployeeProfile, loading } = useAuth();
+  const { isAuthenticated, signInWithGoogle, signInWithPassword, signUp, roles, hasEmployeeProfile, loading } = useAuth();
   const [mode, setMode] = useState<"choose" | "email" | "signup">("choose");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,14 +61,9 @@ const Index = () => {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      if (hasAnyRole(["platform_admin"])) navigate("/admin/dashboard", { replace: true });
-      else if (hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh/central-admin", { replace: true });
-      else if (hasAnyRole(["employee", "leader"])) {
-        if (!hasEmployeeProfile) navigate("/onboarding", { replace: true });
-        else navigate("/enterprise", { replace: true });
-      } else navigate("/home", { replace: true });
+      navigate(getDefaultAuthenticatedPath(roles, hasEmployeeProfile), { replace: true });
     }
-  }, [isAuthenticated, loading, hasAnyRole, hasEmployeeProfile, navigate]);
+  }, [isAuthenticated, loading, roles, hasEmployeeProfile, navigate]);
 
   const handleGoogle = async () => {
     const { error } = await signInWithGoogle();
