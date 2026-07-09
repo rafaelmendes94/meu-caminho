@@ -61,14 +61,18 @@ const PlatformAIUsageScreen = () => {
   const [daily, setDaily] = useState<Daily[]>([]);
   const [orgs, setOrgs] = useState<OrgCost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [orgFilter, setOrgFilter] = useState<string>("");
+  const [insightsCount, setInsightsCount] = useState<number>(0);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const [usage, costs] = await Promise.all([
+      const sinceISO = new Date(Date.now() - Math.max(days, 1) * 86400000).toISOString();
+      const [usage, costs, insights] = await Promise.all([
         supabase.rpc("get_ai_usage" as any, { _days: days }),
         supabase.rpc("get_ai_costs" as any, { _days: days }),
+        supabase.from("weekly_ai_insights").select("id", { count: "exact", head: true }).gte("created_at", sinceISO),
       ]);
       if (cancelled) return;
       const payload = (usage.data as any) ?? {};
@@ -82,12 +86,37 @@ const PlatformAIUsageScreen = () => {
         cost_cents: Number(d.cost_cents) || 0,
       })));
       setOrgs(((costs.data as any[]) ?? []) as OrgCost[]);
+      setInsightsCount(insights.count ?? 0);
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
   }, [days]);
+
+  const filteredOrgs = useMemo(
+    () => (orgFilter ? orgs.filter((o) => o.organization_id === orgFilter) : orgs),
+    [orgs, orgFilter]
+  );
+  const displayTotals = useMemo<Totals | null>(() => {
+    if (!orgFilter) return totals;
+    const acc = filteredOrgs.reduce(
+      (a, o) => ({
+        messages: a.messages + Number(o.messages || 0),
+        exec_messages: a.exec_messages + Number(o.exec_messages || 0),
+        tokens_in: a.tokens_in + Number(o.tokens_in || 0),
+        tokens_out: a.tokens_out + Number(o.tokens_out || 0),
+        tokens_total: a.tokens_total + Number(o.tokens_total || 0),
+        cost_cents: a.cost_cents + Number(o.cost_cents || 0),
+        dna_reports: a.dna_reports + Number(o.dna_reports || 0),
+        action_plans: a.action_plans + Number(o.action_plans || 0),
+        rituals: a.rituals + Number(o.rituals || 0),
+        active_orgs: filteredOrgs.length,
+      }),
+      { messages: 0, exec_messages: 0, tokens_in: 0, tokens_out: 0, tokens_total: 0, cost_cents: 0, dna_reports: 0, action_plans: 0, rituals: 0, active_orgs: 0 }
+    );
+    return acc;
+  }, [orgFilter, filteredOrgs, totals]);
 
   const maxMsg = useMemo(() => Math.max(1, ...daily.map((d) => d.messages)), [daily]);
   const maxCost = useMemo(() => Math.max(1, ...daily.map((d) => d.cost_cents)), [daily]);
@@ -96,7 +125,18 @@ const PlatformAIUsageScreen = () => {
     <PlatformAdminLayout>
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-3xl font-black">Inteligência Artificial</h1>
-        <div className="flex gap-1 bg-white/[0.03] border border-white/10 rounded-full p-1">
+        <div className="flex items-center gap-2">
+          <select
+            value={orgFilter}
+            onChange={(e) => setOrgFilter(e.target.value)}
+            className="bg-white/[0.03] border border-white/10 rounded-full px-3 py-1.5 text-xs text-white/80"
+          >
+            <option value="">Todas empresas</option>
+            {orgs.map((o) => (
+              <option key={o.organization_id} value={o.organization_id}>{o.organization_name}</option>
+            ))}
+          </select>
+          <div className="flex gap-1 bg-white/[0.03] border border-white/10 rounded-full p-1">
           {PERIODS.map((p) => (
             <button
               key={p.days}
@@ -108,25 +148,26 @@ const PlatformAIUsageScreen = () => {
               {p.label}
             </button>
           ))}
+          </div>
         </div>
       </div>
       <p className="text-white/60 mb-6">Consumo global de IA agregado do banco.</p>
 
       {loading ? (
         <p className="text-white/50">Carregando…</p>
-      ) : !totals ? (
+      ) : !displayTotals ? (
         <p className="text-white/50">Sem dados disponíveis.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Card label="Mensagens IA" value={fmt(totals.messages)} />
-            <Card label="Conselho IA" value={fmt(totals.exec_messages)} />
-            <Card label="Tokens Input" value={fmt(totals.tokens_in)} />
-            <Card label="Tokens Output" value={fmt(totals.tokens_out)} />
-            <Card label="Tokens (total)" value={fmt(totals.tokens_total)} />
-            <Card label="Custo estimado" value={brl(totals.cost_cents)} />
-            <Card label="Orgs ativas" value={fmt(totals.active_orgs)} />
-            <Card label="DNA + Planos + Rituais" value={fmt(totals.dna_reports + totals.action_plans + totals.rituals)} />
+            <Card label="Mensagens IA" value={fmt(displayTotals.messages)} />
+            <Card label="Conselho IA" value={fmt(displayTotals.exec_messages)} />
+            <Card label="Tokens Input" value={fmt(displayTotals.tokens_in)} />
+            <Card label="Tokens Output" value={fmt(displayTotals.tokens_out)} />
+            <Card label="Custo estimado" value={brl(displayTotals.cost_cents)} />
+            <Card label="DNA gerados" value={fmt(displayTotals.dna_reports)} />
+            <Card label="Insights gerados" value={fmt(orgFilter ? 0 : insightsCount)} hint={orgFilter ? "filtro por empresa" : undefined} />
+            <Card label="Planos + Rituais" value={fmt(displayTotals.action_plans + displayTotals.rituals)} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
@@ -185,9 +226,9 @@ const PlatformAIUsageScreen = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orgs.length === 0 ? (
+                  {filteredOrgs.length === 0 ? (
                     <tr><td colSpan={7} className="px-6 py-6 text-center text-white/40">Sem consumo no período.</td></tr>
-                  ) : orgs.map((o) => (
+                  ) : filteredOrgs.map((o) => (
                     <tr key={o.organization_id} className="border-b border-white/5 hover:bg-white/[0.02]">
                       <td className="px-6 py-3 text-white font-medium">{o.organization_name}</td>
                       <td className="px-3 py-3 text-right text-white/80">{fmt(Number(o.messages))}</td>
