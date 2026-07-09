@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -179,7 +180,7 @@ const PlatformOrganizationsScreen = () => {
         </div>
       ) : (
         <>
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-[10px] uppercase tracking-[0.2em] text-slate-500">
                 <tr>
@@ -256,13 +257,41 @@ const RowActions = ({ row, onAction }: {
   onAction: (id: string, patch: Record<string, any>, label: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const width = 192; // w-48
+      setPos({ top: r.bottom + 4, left: Math.min(r.right - width, window.innerWidth - width - 8) });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    const onDoc = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement)?.closest?.("[data-row-actions-menu]") &&
+          !btnRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+      document.removeEventListener("mousedown", onDoc);
+    };
+  }, [open]);
+
   const isSuspended = !!row.suspended_at || row.subscription_status === "suspended";
   const isArchived = !!row.archived_at;
   return (
-    <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className="px-2 py-1 rounded bg-white border border-slate-200 text-xs">⋯</button>
-      {open && (
-        <div className="absolute right-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-10 py-1 text-xs">
+    <>
+      <button ref={btnRef} onClick={() => setOpen((v) => !v)} className="px-2 py-1 rounded bg-white border border-slate-200 text-xs">⋯</button>
+      {open && pos && createPortal(
+        <div data-row-actions-menu style={{ position: "fixed", top: pos.top, left: pos.left }} className="w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 text-xs">
           <Link to={`/admin/organizations/${row.id}`} className="block px-3 py-2 hover:bg-slate-50 text-slate-700">Ver detalhes</Link>
           {!isSuspended ? (
             <button onClick={() => { setOpen(false); onAction(row.id, { suspended_at: new Date().toISOString(), subscription_status: "suspended" }, "org.suspend"); }}
@@ -283,9 +312,10 @@ const RowActions = ({ row, onAction }: {
             setOpen(false);
             onAction(row.id, { deleted_at: new Date().toISOString() }, "org.soft_delete");
           }} className="w-full text-left px-3 py-2 hover:bg-slate-50 text-red-600">Excluir (soft)</button>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
