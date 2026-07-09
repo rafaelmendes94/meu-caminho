@@ -21,10 +21,14 @@ export default function PlatformSearchScreen() {
       setLoading(true); setErr(null);
       try {
         const like = `%${q}%`;
+        const ownerRoles = await supabase.from("user_roles").select("user_id").eq("role", "owner").limit(500);
+        const ownerIds = (ownerRoles.data || []).map((r: any) => r.user_id);
         const [o, own, c, t] = await Promise.all([
           supabase.from("organizations").select("id,name,subscription_status").ilike("name", like).limit(50),
-          supabase.from("profiles").select("id, full_name, display_name, organization_id, user_roles!inner(role)")
-            .eq("user_roles.role", "owner").or(`full_name.ilike.${like},display_name.ilike.${like}`).limit(50),
+          ownerIds.length
+            ? supabase.from("profiles").select("id, full_name, display_name, organization_id")
+                .in("id", ownerIds).or(`full_name.ilike.${like},display_name.ilike.${like}`).limit(50)
+            : Promise.resolve({ data: [] as any[] }),
           supabase.from("content_items").select("id,title,type").ilike("title", like).limit(50),
           supabase.from("support_tickets").select("id,title,status,priority").ilike("title", like).limit(50),
         ]);
