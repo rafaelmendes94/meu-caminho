@@ -1,6 +1,9 @@
-import { useMemo, useState } from"react";
+import { useEffect, useMemo, useState } from"react";
 import { Link, useLocation } from"react-router-dom";
 import { AppUserLayout } from "./layouts/AppUserLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { RecommendedForYou } from "./RecommendedForYou";
+import { useAudienceLink } from "@/hooks/use-audience";
 
 const serif = { fontFamily:"'Playfair Display', Georgia, serif", letterSpacing:"-0.015em" } as const;
 
@@ -47,18 +50,28 @@ type Card = {
  tone?: string;
 };
 
-const CARDS: Card[] = [
- { id:"1", type:"Áudio", title:"A coragem de recomeçar", meta:"12 min · Augusto Cury", img:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop", h: 220, to:"/player/audio" },
- { id:"2", type:"Reflexão", title:"Quem ama, educa pelo exemplo, não pela exigência.", meta:"Reflexão", h: 170, to:"/conteudo/detalhe", tone:"linear-gradient(135deg,#FFE3C7,#F8C892)" },
- { id:"3", type:"Vídeo", title:"O território das emoções", meta:"4 min", img:"https://images.unsplash.com/photo-1499346030926-9a72daac6c63?w=600&q=70&auto=format&fit=crop", h: 280, to:"/conteudo/video" },
- { id:"4", type:"Leitura", title:"Quando o silêncio fala mais alto", meta:"6 min de leitura", img:"https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=70&auto=format&fit=crop", h: 200, to:"/conteudo/leitura" },
- { id:"5", type:"Podcast", title:"Reconstruir a paz interior", meta:"Ep. 12 · 32 min", img:"https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600&q=70&auto=format&fit=crop", h: 240, to:"/player/podcast" },
- { id:"6", type:"Áudio", title:"Treine sua mente para a paz", meta:"18 min", img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=600&q=70&auto=format&fit=crop", h: 190, to:"/player/audio" },
- { id:"7", type:"Reflexão", title:"Sua mente é um jardim que pede cuidado diário.", meta:"Reflexão", h: 150, to:"/conteudo/detalhe", tone:"linear-gradient(135deg,#F4E3D7,#E9C9B0)" },
- { id:"8", type:"Vídeo", title:"Pensar antes de sentir", meta:"7 min", img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70&auto=format&fit=crop", h: 230, to:"/conteudo/video" },
- { id:"9", type:"Leitura", title:"O preço invisível da pressa", meta:"8 min", img:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=70&auto=format&fit=crop", h: 260, to:"/conteudo/leitura" },
- { id:"10", type:"Áudio", title:"Domínio sem violência", meta:"9 min", img:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=70&auto=format&fit=crop", h: 200, to:"/player/audio" },
-];
+const CARD_TYPE: Record<string, Card["type"]> = {
+  audio: "Áudio", video: "Vídeo", book: "Leitura", material: "Leitura",
+  podcast: "Podcast", course: "Leitura", track: "Leitura",
+};
+const HEIGHTS = [220, 170, 280, 200, 240, 190, 150, 230, 260, 200];
+const REFLECTION_TONES = ["linear-gradient(135deg,#FFE3C7,#F8C892)", "linear-gradient(135deg,#F4E3D7,#E9C9B0)"];
+
+function metaFor(item: any): string {
+  if (item.duration_minutes) return `${item.duration_minutes} min${item.short_description ? " · " + item.short_description.split(".")[0] : ""}`;
+  return item.short_description ?? "";
+}
+function routeFor(item: any, al: (p: string) => string): string {
+  const s = encodeURIComponent(item.slug);
+  switch (item.type) {
+    case "audio": return al(`/player/audio?slug=${s}`);
+    case "video": return al(`/conteudo/video?slug=${s}`);
+    case "podcast": return al(`/player/podcast?slug=${s}`);
+    case "book": return al(`/biblioteca/leitor?livro=${s}`);
+    case "material": return al(`/conteudo/leitura?slug=${s}`);
+    default: return al(`/conteudo/detalhe?slug=${s}`);
+  }
+}
 
 const TYPE_COLOR: Record<Card["type"], string> = {
 "Áudio":"#F88A2B",
@@ -70,11 +83,40 @@ const TYPE_COLOR: Record<Card["type"], string> = {
 
 export default function ExploreScreen() {
  const location = useLocation();
+ const al = useAudienceLink();
  const [q, setQ] = useState("");
  const [filter, setFilter] = useState<Filter>("Todos");
+ const [cards, setCards] = useState<Card[]>([]);
+ const [loading, setLoading] = useState(true);
+
+ useEffect(() => {
+   let alive = true;
+   (async () => {
+     const { data } = await supabase
+       .from("content_items")
+       .select("id,type,slug,title,short_description,cover_url,duration_minutes")
+       .eq("status", "published")
+       .in("type", ["audio","video","podcast","book","material"])
+       .order("published_at", { ascending: false })
+       .limit(20);
+     if (!alive) return;
+     const mapped: Card[] = (data ?? []).map((it: any, i: number) => ({
+       id: it.id,
+       type: CARD_TYPE[it.type] ?? "Leitura",
+       title: it.title,
+       meta: metaFor(it),
+       img: it.cover_url ?? undefined,
+       h: HEIGHTS[i % HEIGHTS.length],
+       to: routeFor(it, al),
+     }));
+     setCards(mapped);
+     setLoading(false);
+   })();
+   return () => { alive = false; };
+ }, [al]);
 
  const filtered = useMemo(() => {
- let list = CARDS;
+ let list = cards;
  if (filter !=="Todos") {
  const map: Record<Exclude<Filter,"Todos">, Card["type"]> = {
 "Áudios":"Áudio","Vídeos":"Vídeo","Leituras":"Leitura","Podcasts":"Podcast","Reflexões":"Reflexão",
@@ -86,7 +128,7 @@ export default function ExploreScreen() {
  list = list.filter((c) => c.title.toLowerCase().includes(k));
  }
  return list;
- }, [filter, q]);
+ }, [cards, filter, q]);
 
  // split into two columns for masonry
  const left: Card[] = [], right: Card[] = [];
@@ -248,13 +290,19 @@ export default function ExploreScreen() {
  {!showSearchState && <span className="text-[10.5px] text-[#8A7868]">curado por IA</span>}
  </div>
 
+ {!showSearchState && (
+   <div className="relative z-20">
+     <RecommendedForYou interest={filter !== "Todos" ? filter : undefined} title="Recomendado para você" />
+   </div>
+ )}
+
  {/* Masonry grid */}
  <div className="relative z-20 px-5 pb-32">
  {filtered.length === 0 ? (
  <div className="rounded-3xl border border-[#EFE3D5] bg-white/85 px-6 py-10 text-center mt-3">
  <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center text-white shadow-[0_10px_24px_rgba(248,138,43,0.35)]" style={{ background:"linear-gradient(135deg,#FFA158,#F88A2B)" }}><SearchI s={18}/></div>
- <h3 style={serif} className="mt-4 text-[18px]">Nada encontrado</h3>
- <p className="mt-1.5 text-[12px] text-[#7A6A5C]">Tente outra palavra ou explore as tendências acima.</p>
+ <h3 style={serif} className="mt-4 text-[18px]">{loading ? "Carregando…" : "Nada encontrado"}</h3>
+ <p className="mt-1.5 text-[12px] text-[#7A6A5C]">{loading ? "Buscando conteúdos publicados." : "Tente outra palavra ou explore as tendências acima."}</p>
  </div>
  ) : (
  <div className="grid grid-cols-2 gap-3">
