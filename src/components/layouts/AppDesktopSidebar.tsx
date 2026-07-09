@@ -125,14 +125,14 @@ export const AppDesktopSidebar = () => {
       <div className="px-4 pb-6">
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-white ring-1 ring-black/5 shadow-sm">
           <div className="w-10 h-10 rounded-xl bg-[#0B0908] text-white flex items-center justify-center font-bold text-sm shrink-0">
-            {isEnterprise ? "C" : "J"}
+            {initial}
           </div>
           <div className="min-w-0">
             <div className="text-sm font-bold text-[#0B0908] truncate font-montserrat">
-              {isEnterprise ? "Colaborador" : "Juliana"}
+              {name}
             </div>
             <div className="text-[10px] uppercase tracking-wider text-[#F88A2B] font-bold">
-              {isEnterprise ? "Plano Enterprise" : "Plano Premium"}
+              {planLabel}
             </div>
           </div>
         </div>
