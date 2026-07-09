@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { AppUserLayout } from "./layouts/AppUserLayout";
+import { useCmsItemBySlug } from "@/hooks/use-cms-items";
 import {
   ArrowLeft, Share2, Bookmark, BookmarkCheck, Headphones, Play,
   Star, Clock, BookOpen, Quote, ChevronRight, Heart, Sparkles, Lock, Check,
@@ -30,6 +31,14 @@ const quotes = [
 
 export default function BookDetailScreen() {
   const isEnterprise = useLocation().pathname.startsWith('/enterprise');
+  const [params] = useSearchParams();
+  const slug = params.get("slug");
+  const { item: cmsBook, author: cmsAuthor } = useCmsItemBySlug(slug);
+  const bookTitle = cmsBook?.title || "O vendedor de sonhos";
+  const bookAuthor = cmsAuthor?.name || "Augusto Cury";
+  const bookSubtitle = cmsBook?.subtitle || "Romance contemplativo · Edição premium";
+  const bookDescription = cmsBook?.long_description || cmsBook?.short_description || "Em uma narrativa que beira a poesia, Augusto Cury apresenta um homem que, ao perder tudo, decide vender o bem mais raro do mundo: sonhos. Uma jornada sobre o valor da vida, da coragem e da reconstrução interior.";
+  const bookCover = cmsBook?.cover_url || null;
   const reviews = [
     { name: "Marina S.", emotion: "Transformador", color: "#F8B05A", text: "Mudou a forma como eu enxergo meus próprios limites." },
     { name: "Rafael T.", emotion: "Profundo", color: "#A8C5F0", text: "Cada capítulo é uma conversa franca com a alma." },
@@ -82,12 +91,17 @@ export default function BookDetailScreen() {
                 background: "linear-gradient(160deg, #8B4A28, #3A1F12)",
                 boxShadow: "0 30px 60px -16px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.06)",
               }}>
+                {bookCover && <img src={bookCover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
                 <div className="absolute inset-0" style={{ background: "radial-gradient(120% 80% at 30% 0%, rgba(248,176,90,0.3), transparent 60%)" }} />
-                <div className="absolute inset-x-4 top-5 text-[8px] tracking-[0.3em] uppercase opacity-80" style={{ color: "#F8B05A" }}>Augusto Cury</div>
-                <div className="absolute inset-x-4 bottom-5">
-                  <div className="text-[14px] leading-tight mb-1" style={{ ...serif, color: "#F4E7CE" }}>O vendedor de sonhos</div>
-                  <div className="h-[1px] w-8" style={{ background: "#F8B05A" }} />
-                </div>
+                {!bookCover && (
+                  <>
+                    <div className="absolute inset-x-4 top-5 text-[8px] tracking-[0.3em] uppercase opacity-80" style={{ color: "#F8B05A" }}>{bookAuthor}</div>
+                    <div className="absolute inset-x-4 bottom-5">
+                      <div className="text-[14px] leading-tight mb-1" style={{ ...serif, color: "#F4E7CE" }}>{bookTitle}</div>
+                      <div className="h-[1px] w-8" style={{ background: "#F8B05A" }} />
+                    </div>
+                  </>
+                )}
                 <div className="absolute inset-y-0 left-0 w-[3px]" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.5), transparent, rgba(0,0,0,0.5))" }} />
               </div>
             </div>
@@ -95,9 +109,9 @@ export default function BookDetailScreen() {
 
           {/* title block */}
           <div className="fade-up text-center mb-6">
-            <div className="text-[10px] tracking-[0.4em] uppercase mb-2" style={{ color: "#9A6B2C" }}>Augusto Cury</div>
-            <h1 className="text-[28px] leading-[1.1] mb-2" style={serif}>O vendedor de sonhos</h1>
-            <p className="text-[12px] opacity-60 max-w-[280px] mx-auto">Romance contemplativo · Edição premium</p>
+            <div className="text-[10px] tracking-[0.4em] uppercase mb-2" style={{ color: "#9A6B2C" }}>{bookAuthor}</div>
+            <h1 className="text-[28px] leading-[1.1] mb-2" style={serif}>{bookTitle}</h1>
+            <p className="text-[12px] opacity-60 max-w-[280px] mx-auto">{bookSubtitle}</p>
           </div>
 
           {/* meta row */}
@@ -162,11 +176,8 @@ export default function BookDetailScreen() {
             <div className="fade-up space-y-6">
               <div>
                 <h3 className="text-[16px] mb-3" style={serif}>Sobre a obra</h3>
-                <p className="text-[14px] leading-relaxed opacity-75">
-                  Em uma narrativa que beira a poesia, Augusto Cury apresenta um homem que, ao perder tudo, decide vender o bem mais raro do mundo: <em>sonhos</em>. Uma jornada sobre o valor da vida, da coragem e da reconstrução interior.
-                </p>
-                <p className="text-[14px] leading-relaxed opacity-75 mt-3">
-                  Ao longo de sete capítulos contemplativos, o leitor é convidado a olhar para dentro e descobrir o vendedor de sonhos que vive em si.
+                <p className="text-[14px] leading-relaxed opacity-75 whitespace-pre-wrap">
+                  {bookDescription}
                 </p>
               </div>
 

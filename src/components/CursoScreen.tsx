@@ -1,4 +1,4 @@
-import { Link, useNavigate } from"react-router-dom";
+import { Link, useNavigate, useSearchParams } from"react-router-dom";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useLocation } from "react-router-dom";
@@ -7,6 +7,8 @@ import mod1 from"@/assets/trilha/modulo1.jpg";
 import mod2 from"@/assets/trilha/modulo2.jpg";
 import mod3 from"@/assets/trilha/modulo3.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useCmsCourse } from "@/hooks/use-cms-items";
+import { useMemo } from "react";
 
 const ink900 ="#111111";
 const ink600 ="#5A544E";
@@ -149,7 +151,30 @@ const CursoScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isEnterprise = location.pathname.startsWith('/enterprise');
-  
+  const [params] = useSearchParams();
+  const slug = params.get("slug");
+  const { course, modules: dbModules } = useCmsCourse(slug);
+
+  const modImgs = [mod1, mod2, mod3];
+  const courseTitle = course?.title || "Inteligência Emocional";
+  const courseDesc = course?.short_description || "Aprenda a governar pensamentos, emoções e reações de forma consciente.";
+  const courseLongDesc = course?.long_description || course?.short_description || "Uma jornada desenvolvida para fortalecer sua mente, desacelerar pensamentos acelerados e construir inteligência emocional no dia a dia.";
+
+  const displayModules: Mod[] = useMemo(() => {
+    if (!dbModules.length) return modulos;
+    return dbModules.map((m, i) => {
+      const totalMin = m.lessons.reduce((a, l) => a + (l.duration_minutes || 0), 0);
+      return {
+        n: i + 1,
+        title: m.title,
+        desc: m.description || "",
+        min: totalMin ? `${totalMin} min` : `${m.lessons.length} aulas`,
+        status: (i === 0 ? "current" : "locked") as Mod["status"],
+        img: modImgs[i % modImgs.length],
+      };
+    });
+  }, [dbModules]);
+
   const Layout = isEnterprise ? EnterpriseUserLayout : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
 
   return (
@@ -166,7 +191,7 @@ const CursoScreen = () => {
             <button onClick={() => navigate(-1)} aria-label="Voltar" className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#111] ring-1 ring-black/5 active:scale-95 transition" style={{ boxShadow:"0 2px 8px rgba(17,17,17,0.04)" }}>
               <ChevL/>
             </button>
-            <h1 className="text-[16px] text-[#111]" style={{ ...serif, fontWeight: 600 }}>Curso 1</h1>
+            <h1 className="text-[16px] text-[#111]" style={{ ...serif, fontWeight: 600 }}>{courseTitle}</h1>
             <button aria-label="Mais opções" className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#111] ring-1 ring-black/5 active:scale-95 transition" style={{ boxShadow:"0 2px 8px rgba(17,17,17,0.04)" }}>
               <Dots/>
             </button>
@@ -200,7 +225,7 @@ const CursoScreen = () => {
                 </div>
 
                 <h2 className={`mt-3 text-[40px] lg:text-[48px] leading-[1.02] text-[#111]`} style={{ ...serif, fontWeight: 500 }}>
-                  Inteligência Emocional
+                  {courseTitle}
                 </h2>
 
  {/* delicate underline */}
@@ -209,9 +234,9 @@ const CursoScreen = () => {
  <span className="block h-[1px] w-3 rounded-full bg-[#D8CFC4]" />
  </div>
 
- <p className="mt-4 text-[13px] lg:text-[16px] leading-[18px] lg:leading-relaxed text-[#666] max-w-[400px]">
- Aprenda a governar pensamentos, emoções e reações de forma consciente.
- </p>
+  <p className="mt-4 text-[13px] lg:text-[16px] leading-[18px] lg:leading-relaxed text-[#666] max-w-[400px]">
+  {courseDesc}
+  </p>
  </div>
  </section>
 
@@ -258,9 +283,9 @@ const CursoScreen = () => {
 
  {/* Description + sprig */}
  <section className="px-6 mt-5 relative">
- <p className="text-[13px] lg:text-[15px] leading-[18px] lg:leading-relaxed text-[#666] max-w-[600px]">
- Uma jornada desenvolvida para fortalecer sua mente, desacelerar pensamentos acelerados e construir inteligência emocional no dia a dia.
- </p>
+  <p className="text-[13px] lg:text-[15px] leading-[18px] lg:leading-relaxed text-[#666] max-w-[600px]">
+  {courseLongDesc}
+  </p>
  <svg className="absolute right-4 top-0 opacity-60" width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="#D8CFC4" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
  <path d="M10 54 Q30 30 54 12"/>
  <path d="M22 42 q-4 -10 6 -14"/>
@@ -293,9 +318,9 @@ const CursoScreen = () => {
  Ver todos <ChevR s={11}/>
  </Link>
  </div>
- <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 gap-2.5">
- {modulos.map((m) => <ModCard key={m.n} m={m} />)}
- </div>
+  <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 gap-2.5">
+  {displayModules.map((m) => <ModCard key={m.n} m={m} />)}
+  </div>
  </section>
 
  {/* Prova Final — clickable but visually pending */}
