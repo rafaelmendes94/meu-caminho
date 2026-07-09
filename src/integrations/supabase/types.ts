@@ -1280,6 +1280,41 @@ export type Database = {
           },
         ]
       }
+      organization_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          organization_id: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          organization_id: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          organization_id?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizational_dna_reports: {
         Row: {
           collaboration_score: number | null
@@ -1431,20 +1466,35 @@ export type Database = {
       organizations: {
         Row: {
           archived_at: string | null
+          city: string | null
           cnpj: string | null
+          commercial_risk: string | null
+          company_size: string | null
+          country: string | null
           created_at: string | null
           current_period_end: string | null
+          customer_success_owner: string | null
           deleted_at: string | null
           domain: string | null
+          grace_period_ends_at: string | null
           id: string
           internal_notes: string | null
+          internal_status: string | null
           licenses_total: number | null
           licenses_used: number | null
           logo_url: string | null
           mrr_cents: number | null
           name: string
+          next_contact_at: string | null
+          onboarding_status: string | null
           plan: string | null
+          responsible_email: string | null
+          responsible_name: string | null
+          responsible_phone: string | null
+          responsible_role: string | null
+          segment: string | null
           slug: string
+          state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_status:
@@ -1458,20 +1508,35 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          city?: string | null
           cnpj?: string | null
+          commercial_risk?: string | null
+          company_size?: string | null
+          country?: string | null
           created_at?: string | null
           current_period_end?: string | null
+          customer_success_owner?: string | null
           deleted_at?: string | null
           domain?: string | null
+          grace_period_ends_at?: string | null
           id?: string
           internal_notes?: string | null
+          internal_status?: string | null
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
           mrr_cents?: number | null
           name: string
+          next_contact_at?: string | null
+          onboarding_status?: string | null
           plan?: string | null
+          responsible_email?: string | null
+          responsible_name?: string | null
+          responsible_phone?: string | null
+          responsible_role?: string | null
+          segment?: string | null
           slug: string
+          state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?:
@@ -1485,20 +1550,35 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          city?: string | null
           cnpj?: string | null
+          commercial_risk?: string | null
+          company_size?: string | null
+          country?: string | null
           created_at?: string | null
           current_period_end?: string | null
+          customer_success_owner?: string | null
           deleted_at?: string | null
           domain?: string | null
+          grace_period_ends_at?: string | null
           id?: string
           internal_notes?: string | null
+          internal_status?: string | null
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
           mrr_cents?: number | null
           name?: string
+          next_contact_at?: string | null
+          onboarding_status?: string | null
           plan?: string | null
+          responsible_email?: string | null
+          responsible_name?: string | null
+          responsible_phone?: string | null
+          responsible_role?: string | null
+          segment?: string | null
           slug?: string
+          state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?:
@@ -2418,6 +2498,8 @@ export type Database = {
           licenses_used: number
           name: string
           plan: string
+          responsible_email: string
+          responsible_name: string
           slug: string
           subscription_status: string
           suspended_at: string
