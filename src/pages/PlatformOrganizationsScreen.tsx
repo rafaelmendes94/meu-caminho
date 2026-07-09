@@ -337,10 +337,24 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   const [flags, setFlags] = useState<Record<string, boolean>>(
     Object.fromEntries(RH_FLAG_KEYS.map((k) => [k, true]))
   );
+  const [slugTouched, setSlugTouched] = useState(false);
+
+  const slugify = (s: string) =>
+    s.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
 
   const save = async () => {
     if (!form.name || !form.slug) { toast.error("Nome e slug são obrigatórios."); setOpen("empresa"); return; }
     setSaving(true);
+    // Slug duplicado?
+    const { data: dup } = await supabase.from("organizations").select("id").eq("slug", form.slug).maybeSingle();
+    if (dup?.id) {
+      toast.error("Slug já em uso. Escolha outro.");
+      setSaving(false); setOpen("empresa"); return;
+    }
     const payload: any = {
       name: form.name, slug: form.slug,
       cnpj: form.cnpj || null, domain: form.domain || null, logo_url: form.logo_url || null,
@@ -361,7 +375,16 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
       onboarding_status: form.onboarding_status || null,
     };
     const { data, error } = await supabase.from("organizations").insert(payload).select("id").maybeSingle();
-    if (error || !data?.id) { toast.error(error?.message || "Falha ao criar."); setSaving(false); return; }
+    if (error || !data?.id) {
+      const msg = error?.message || "";
+      if (msg.includes("organizations_slug_key") || msg.toLowerCase().includes("duplicate")) {
+        toast.error("Slug já em uso. Escolha outro.");
+        setOpen("empresa");
+      } else {
+        toast.error(msg || "Falha ao criar.");
+      }
+      setSaving(false); return;
+    }
     const orgId = data.id as string;
 
     const settingsRows = RH_FLAG_KEYS.map((key) => ({
@@ -415,8 +438,13 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 
           {open==="empresa" && (
             <div className="grid grid-cols-2 gap-3">
-              <Input label="Nome *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-              <Input label="Slug *" value={form.slug} onChange={(v) => setForm({ ...form, slug: v.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} />
+              <Input label="Nome *" value={form.name} onChange={(v) => {
+                setForm((f) => ({ ...f, name: v, slug: slugTouched ? f.slug : slugify(v) }));
+              }} />
+              <Input label="Slug *" value={form.slug} onChange={(v) => {
+                setSlugTouched(true);
+                setForm((f) => ({ ...f, slug: slugify(v) }));
+              }} />
               <Input label="CNPJ" value={form.cnpj} onChange={(v) => setForm({ ...form, cnpj: v })} />
               <Input label="Domínio" value={form.domain} onChange={(v) => setForm({ ...form, domain: v })} placeholder="empresa.com.br" />
               <Input label="Logo (URL)" value={form.logo_url} onChange={(v) => setForm({ ...form, logo_url: v })} />
