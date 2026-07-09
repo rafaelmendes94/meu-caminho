@@ -2,6 +2,7 @@ import { Link, useLocation } from"react-router-dom";
 import certBg from"@/assets/trilha/certificado-bg.jpg";
 import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 const ink900 ="#111111";
 const ink700 ="#444444";
@@ -98,8 +99,8 @@ const journey = [
 ];
 
 const ConquistaScreen = () => {
-  const isEnterprise = useLocation().pathname.startsWith('/enterprise');
-  const userName = isEnterprise ? "Rafael" : "Juliana Martins";
+  useLocation();
+  const { name: userName } = useDisplayUser();
 
  return (
    <AppUserLayout>
