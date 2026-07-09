@@ -4,13 +4,14 @@ import { Mail, Check, ShieldCheck } from "lucide-react";
 import { Phone, SubHeader, card, serifFont } from "./Phone";
 import BottomNav from "../BottomNav";
 import { AppUserLayout } from "../layouts/AppUserLayout";
+import { useDisplayUser } from "@/hooks/use-display-user";
 
 
 
 const ChangeEmailScreen = () => {
   const nav = useNavigate();
-  const isEnterprise = useLocation().pathname.startsWith('/enterprise');
-  const [current] = useState(isEnterprise ? "rafael@enterprise.com" : "juliana@email.com");
+  useLocation();
+  const { email: current } = useDisplayUser();
   const [next, setNext] = useState("");
   const [pwd, setPwd] = useState("");
   const [done, setDone] = useState(false);
