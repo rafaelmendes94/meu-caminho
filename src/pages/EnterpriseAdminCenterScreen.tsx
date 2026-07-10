@@ -458,17 +458,13 @@ const EnterpriseAdminCenterScreen = () => {
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              {[
-                { label: "Compliance", val: "Ativo", icon: ShieldCheck },
-                { label: "Anonimização", val: "Ativa", icon: Lock },
-                { label: "Exportações", val: "Protegidas", icon: Upload },
-                { label: "Canal Direto", val: "Protegido", icon: MessageSquare },
-                { label: "SSO", val: "Conectado", icon: Key },
-                { label: "Domínio", val: "Validado", icon: Globe }
-              ].map((status, idx) => (
+              {orgStatus.length === 0 && (
+                <p className="text-[11px] text-zinc-400 italic col-span-full">Carregando status…</p>
+              )}
+              {orgStatus.map((status, idx) => (
                 <div key={idx} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-emerald-600">
-                    <CheckCircle2 className="w-4 h-4" />
+                  <div className={`flex items-center gap-2 ${status.ok ? "text-emerald-600" : "text-amber-600"}`}>
+                    {status.ok ? <CheckCircle2 className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
                     <span className="text-[10px] font-bold uppercase tracking-widest">{status.val}</span>
                   </div>
                   <div className="text-[10px] text-zinc-400 font-medium">{status.label}</div>
@@ -487,33 +483,44 @@ const EnterpriseAdminCenterScreen = () => {
               
               <div className="space-y-4">
                 <Sparkles className="w-8 h-8 text-[#F88A2B]" />
-                <p className="text-sm md:text-base text-[#0B0908] leading-relaxed font-medium">
-                  “A estrutura organizacional demonstra maturidade crescente em governança emocional, privacidade e inteligência coletiva.”
-                </p>
+                {latestInsight ? (
+                  <>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">
+                      Semana de {new Date(latestInsight.week_of).toLocaleDateString("pt-BR")}
+                    </p>
+                    <p className="text-sm md:text-base text-[#0B0908] leading-relaxed font-medium">
+                      {latestInsight.summary || latestInsight.title}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-zinc-500 italic">
+                    Nenhuma leitura estratégica disponível ainda. Gere um insight semanal para começar.
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-white/60">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-zinc-600 uppercase">Eficiência administrativa +12%</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Zap className="w-4 h-4 text-[#F88A2B]" />
-                  <span className="text-[10px] font-bold text-zinc-600 uppercase">Tempo de onboarding reduzido</span>
-                </div>
-              </div>
+              {latestInsight && (
+                <button
+                  onClick={() => navigate("/enterprise/rh/insights-semanais")}
+                  className="mt-4 text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] hover:underline"
+                >
+                  Ver insights semanais →
+                </button>
+              )}
             </div>
 
             <div className="space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">Próximas recomendações</h3>
               <div className="space-y-3">
-                {[
-                  "Revisar retenção trimestral",
-                  "Expandir onboarding Latam",
-                  "Atualizar admins regionais",
-                  "Fortalecer rituais organizacionais"
-                ].map((rec, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-50 flex items-center justify-between group cursor-pointer hover:border-[#F88A2B]/20 transition-all">
+                {(latestInsight?.recs.length ?? 0) === 0 && (
+                  <p className="text-[11px] text-zinc-400 italic">Nenhuma recomendação ativa da IA.</p>
+                )}
+                {(latestInsight?.recs ?? []).map((rec, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => navigate("/enterprise/rh/plano-acao")}
+                    className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-50 flex items-center justify-between group cursor-pointer hover:border-[#F88A2B]/20 transition-all"
+                  >
                     <span className="text-xs font-bold text-[#0B0908]">{rec}</span>
                     <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-[#F88A2B] transition-colors" />
                   </div>
