@@ -36,6 +36,18 @@ import {
 import { motion } from "framer-motion";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 
+function iconForEntity(entity?: string | null) {
+  switch (entity) {
+    case "profile": return Users;
+    case "department": return Building2;
+    case "unit": return Globe;
+    case "alert": return ShieldAlert;
+    case "action_plan": return CheckCircle2;
+    case "organizational_dna_report": return Dna;
+    default: return Activity;
+  }
+}
+
 const EnterpriseAdminCenterScreen = () => {
   const navigate = useNavigate();
   const { user, profile, organization } = useAuth();
