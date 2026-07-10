@@ -198,6 +198,9 @@ export default function EnterpriseRHDashboardScreen() {
 
   useEffect(() => { void load(); }, [organization?.id]);
 
+  // Live refresh of KPIs/alerts on the dashboard.
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
   const refreshAlerts = async () => {
     setRecomputing(true);
     const { error } = await supabase.functions.invoke("compute-basic-alerts");
