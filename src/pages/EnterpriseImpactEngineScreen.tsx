@@ -5,6 +5,7 @@ import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Measurement = {
   id: string;
@@ -171,13 +172,11 @@ export default function EnterpriseImpactEngineScreen() {
         )}
 
         {!loading && measurements.length === 0 && (
-          <div className="rounded-3xl bg-white p-10 border border-[#E5E0DA] text-center space-y-3">
-            <Activity className="w-8 h-8 mx-auto text-[#F88A2B]" />
-            <p className="text-[15px] font-bold text-[#111]">Nenhuma iniciativa medida ainda.</p>
-            <p className="text-[12px] text-[#666] max-w-md mx-auto">
-              Rode "Medir iniciativas recentes" ou clique em "Medir impacto" nas telas de Planos, Rituais ou Insights.
-            </p>
-          </div>
+          <EmptyState
+            icon={Activity}
+            title="Nenhuma iniciativa medida ainda"
+            description='Rode "Medir iniciativas recentes" ou clique em "Medir impacto" nas telas de Planos, Rituais ou Insights.'
+          />
         )}
 
         {/* Por tipo */}

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { EmptyState } from "@/components/ui/empty-state";
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -217,7 +218,11 @@ const EnterpriseAuditLogsScreen = () => {
           <h3 className="text-xl font-playfair font-semibold px-2">Atividade recente</h3>
           {loading && <p className="text-sm text-[#999] px-4">Carregando…</p>}
           {!loading && filteredLogs.length === 0 && (
-            <p className="text-sm text-[#999] px-4">Nenhum evento registrado ainda.</p>
+            <EmptyState
+              icon={ShieldCheck}
+              title="Nenhum evento registrado ainda"
+              description="Ações administrativas aparecerão aqui em tempo real."
+            />
           )}
           <div className="relative space-y-6 px-4">
             <div className="absolute left-7 top-4 bottom-4 w-0.5 bg-[#E5E0DA]/50" />
