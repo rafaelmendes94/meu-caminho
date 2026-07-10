@@ -18,6 +18,7 @@ import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useRealtime } from "@/hooks/useRealtime";
 
 type Summary = {
   avg_mood_30d: number | null;
@@ -199,7 +200,17 @@ export default function EnterpriseRHDashboardScreen() {
   useEffect(() => { void load(); }, [organization?.id]);
 
   // Live refresh of KPIs/alerts on the dashboard.
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  useRealtime(
+    `dashboard-${organization?.id ?? "none"}`,
+    organization?.id
+      ? [
+          { table: "alerts", filter: `organization_id=eq.${organization.id}` },
+          { table: "weekly_ai_insights", filter: `organization_id=eq.${organization.id}` },
+        ]
+      : [],
+    () => { void load(); },
+    [organization?.id]
+  );
 
   const refreshAlerts = async () => {
     setRecomputing(true);
