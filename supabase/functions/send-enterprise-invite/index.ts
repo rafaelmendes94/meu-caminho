@@ -38,6 +38,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { email, full_name, job_title, department, role, department_id, unit_id, manager_id } = body ?? {};
     if (!email) return json({ error: "email required" }, 400);
+    const normalizedEmail = String(email).toLowerCase().trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) return json({ error: "invalid_email" }, 400);
     const finalRole = VALID_ROLES.has(role) ? role : "employee";
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
@@ -50,6 +52,37 @@ Deno.serve(async (req) => {
     const roleList = (roles ?? []).map((r: { role: string }) => r.role);
     if (!roleList.includes("owner") && !roleList.includes("rh_admin")) return json({ error: "forbidden" }, 403);
 
+    // License precheck
+    const { data: org } = await admin
+      .from("organizations")
+      .select("licenses_total, licenses_used")
+      .eq("id", orgId)
+      .maybeSingle();
+    const total = org?.licenses_total ?? 0;
+    const used = org?.licenses_used ?? 0;
+    const { count: pendingCount } = await admin
+      .from("enterprise_invites")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", orgId)
+      .is("accepted_at", null)
+      .is("canceled_at", null)
+      .is("declined_at", null);
+    if (total > 0 && used + (pendingCount ?? 0) >= total) {
+      return json({ error: "license_limit_reached", licenses_total: total, licenses_used: used, pending: pendingCount ?? 0 }, 402);
+    }
+
+    // Dedupe: reject if there's an active pending invite for the same email
+    const { data: existing } = await admin
+      .from("enterprise_invites")
+      .select("id")
+      .eq("organization_id", orgId)
+      .eq("email", normalizedEmail)
+      .is("accepted_at", null)
+      .is("canceled_at", null)
+      .is("declined_at", null)
+      .maybeSingle();
+    if (existing) return json({ error: "invite_already_pending" }, 409);
+
     const token = randomToken();
     const token_hash = await sha256(token);
 
@@ -57,7 +90,7 @@ Deno.serve(async (req) => {
       .from("enterprise_invites")
       .insert({
         organization_id: orgId,
-        email: String(email).toLowerCase().trim(),
+        email: normalizedEmail,
         full_name: full_name ?? null,
         job_title: job_title ?? null,
         department: department ?? null,
