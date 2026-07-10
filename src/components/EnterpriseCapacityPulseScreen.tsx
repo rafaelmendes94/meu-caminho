@@ -1,14 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { 
-  BarChart3, 
-  LayoutDashboard, 
-  Zap
-} from "lucide-react";
-import { motion } from "framer-motion";
+import { BarChart3, LayoutDashboard, Zap, Clock, Users } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrgMinGroupSize } from "@/hooks/useOrgMinGroupSize";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type PulseRow = { dimension: string; avg_value: number | null; participants_count: number; response_count: number };
 
@@ -23,13 +20,35 @@ const DIMENSIONS: { key: string; label: string; status: string }[] = [
 const EnterpriseCapacityPulseScreen = () => {
   const navigate = useNavigate();
   const { organization } = useAuth();
+  const minGroup = useOrgMinGroupSize();
   const [rows, setRows] = useState<PulseRow[]>([]);
+  const [lastRun, setLastRun] = useState<{ at: string | null; participants: number; responses: number }>({
+    at: null,
+    participants: 0,
+    responses: 0,
+  });
 
   useEffect(() => {
     if (!organization?.id) return;
     void supabase
       .rpc("get_capacity_pulse", { _organization_id: organization.id, _days: 30 })
       .then(({ data }) => setRows((data as PulseRow[]) ?? []));
+    void (async () => {
+      const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+      const { data } = await supabase
+        .from("pulse_responses")
+        .select("user_id, responded_at")
+        .eq("organization_id", organization.id)
+        .gte("responded_at", since)
+        .order("responded_at", { ascending: false });
+      const list = (data ?? []) as Array<{ user_id: string; responded_at: string }>;
+      const users = new Set(list.map((r) => r.user_id));
+      setLastRun({
+        at: list[0]?.responded_at ?? null,
+        participants: users.size,
+        responses: list.length,
+      });
+    })();
   }, [organization?.id]);
 
   const byDim = new Map(rows.map((r) => [r.dimension, r]));
@@ -76,42 +95,43 @@ const EnterpriseCapacityPulseScreen = () => {
           ))}
         </section>
 
-        <p className="text-[11px] text-[#999] italic px-1">
-          Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.
-        </p>
-
-        <section className="bg-white rounded-[40px] p-10 border border-white/60 shadow-sm">
-          <h3 className="text-xl font-playfair italic mb-8">Fluxo de energia semanal</h3>
-          <div className="h-64 flex items-end justify-between gap-4 px-4 border-b border-[#F7F4F2] pb-2">
-            {[
-              { h: 60, p: 40, label: "SEG" },
-              { h: 45, p: 35, label: "TER" },
-              { h: 80, p: 70, label: "QUA" },
-              { h: 55, p: 45, label: "QUI" },
-              { h: 70, p: 60, label: "SEX" },
-              { h: 90, p: 85, label: "SÁB" },
-              { h: 65, p: 30, label: "DOM" }
-            ].map((item, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                <div className="w-full bg-[#F88A2B]/10 rounded-t-xl relative overflow-hidden group" style={{ height: `${item.h}%` }}>
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: "100%" }}
-                    transition={{ delay: 0.2 + i * 0.1, duration: 1 }}
-                    className="absolute bottom-0 w-full bg-[#F88A2B]/30 rounded-t-xl"
-                  />
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(item.p / item.h) * 100}%` }}
-                    transition={{ delay: 0.5 + i * 0.1, duration: 1.2 }}
-                    className="absolute bottom-0 w-full bg-[#F88A2B] rounded-t-xl shadow-[0_-4px_12px_rgba(248,138,43,0.2)]" 
-                  />
-                </div>
-                <span className="text-[9px] font-bold text-black/30 uppercase tracking-tighter">{item.label}</span>
-              </div>
-            ))}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-3xl bg-white border border-black/5 p-5">
+            <div className="flex items-center gap-2 text-[#F88A2B]">
+              <Clock className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Última coleta</span>
+            </div>
+            <p className="mt-3 text-[18px] font-bold text-[#111]">
+              {lastRun.at ? new Date(lastRun.at).toLocaleString("pt-BR") : "Ainda sem coletas"}
+            </p>
+          </div>
+          <div className="rounded-3xl bg-white border border-black/5 p-5">
+            <div className="flex items-center gap-2 text-[#F88A2B]">
+              <Users className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Participantes (30d)</span>
+            </div>
+            <p className="mt-3 text-[28px] font-extrabold text-[#111]">{lastRun.participants}</p>
+          </div>
+          <div className="rounded-3xl bg-white border border-black/5 p-5">
+            <div className="flex items-center gap-2 text-[#F88A2B]">
+              <Zap className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Respostas (30d)</span>
+            </div>
+            <p className="mt-3 text-[28px] font-extrabold text-[#111]">{lastRun.responses}</p>
           </div>
         </section>
+
+        <p className="text-[11px] text-[#999] italic px-1">
+          Indicadores exibidos apenas quando há amostra mínima de {minGroup} participantes. Dados individuais nunca são exibidos.
+        </p>
+
+        {rows.length === 0 && (
+          <EmptyState
+            icon={Zap}
+            title="Ainda sem amostra suficiente"
+            description={`O pulso só exibe indicadores quando há pelo menos ${minGroup} respostas por dimensão nos últimos 30 dias.`}
+          />
+        )}
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <EnterpriseRHButton 
