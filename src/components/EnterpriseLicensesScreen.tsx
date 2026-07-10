@@ -21,54 +21,70 @@ import {
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
+import { toast as sonner } from "sonner";
 
 const EnterpriseLicensesScreen = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { organization } = useAuth();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [distribution, setDistribution] = useState<Array<{ name: string; active: number }>>([]);
+  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; email: string; full_name: string | null; department: string | null; created_at: string }>>([]);
+  const [busyInvite, setBusyInvite] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = async () => {
     if (!organization?.id) return;
-    supabase
+    const { count } = await supabase
       .from("enterprise_invites")
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organization.id)
-      .is("accepted_at", null)
-      .then(({ count }) => setPendingCount(count ?? 0));
-  }, [organization?.id]);
+      .is("accepted_at", null).is("canceled_at", null).is("declined_at", null);
+    setPendingCount(count ?? 0);
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("departments(name)")
+      .eq("organization_id", organization.id)
+      .is("deleted_at", null);
+    const bucket: Record<string, number> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (profs as any[] ?? []).forEach((p) => {
+      const name = p.departments?.name ?? "Sem departamento";
+      bucket[name] = (bucket[name] ?? 0) + 1;
+    });
+    setDistribution(Object.entries(bucket).map(([name, active]) => ({ name, active })).sort((a, b) => b.active - a.active));
+    const { data: pends } = await supabase
+      .from("enterprise_invites")
+      .select("id, email, full_name, department, created_at")
+      .eq("organization_id", organization.id)
+      .is("accepted_at", null).is("canceled_at", null).is("declined_at", null)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setPendingInvites((pends as typeof pendingInvites) ?? []);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [organization?.id]);
 
   const total = organization?.licenses_total ?? 0;
   const used = organization?.licenses_used ?? 0;
   const available = Math.max(total - used, 0);
+  const usagePct = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
 
-  const handleCopyLink = () => {
-    toast({
-      title: "Link copiado",
-      description: "Link de convite pronto para compartilhar.",
-    });
+  const handleInviteAction = async (invite_id: string, action: "cancel" | "resend") => {
+    setBusyInvite(invite_id);
+    const { data, error } = await supabase.functions.invoke("manage-enterprise-invite", { body: { invite_id, action } });
+    setBusyInvite(null);
+    const err = (data as { error?: string } | null)?.error ?? error?.message;
+    if (err) { sonner.error(err); return; }
+    if (action === "resend") {
+      const link = (data as { invite_link?: string } | null)?.invite_link;
+      if (link) { navigator.clipboard.writeText(link).catch(() => {}); sonner.success("Convite reenviado. Link copiado."); }
+      else sonner.success("Convite reenviado.");
+    } else {
+      sonner.success("Convite cancelado.");
+    }
+    load();
   };
-
-  const handleResend = () => {
-    toast({
-      title: "Convite enviado",
-      description: "O lembrete foi enviado com sucesso.",
-    });
-  };
-
-  const departments = [
-    { name: "Comercial", active: 42, color: "bg-blue-400" },
-    { name: "Operações", active: 58, color: "bg-orange-400" },
-    { name: "Produto", active: 37, color: "bg-emerald-400" },
-    { name: "Atendimento", active: 29, color: "bg-purple-400" },
-    { name: "Tecnologia", active: 32, color: "bg-indigo-400" },
-  ];
-
-  const pendingInvites = [
-    { name: "Ana Costa", area: "Operações", status: "Pendente há 2 dias" },
-    { name: "Bruno Lima", area: "Produto", status: "Convite enviado" },
-    { name: "Carla Mendes", area: "Comercial", status: "Aguardando cadastro" },
-  ];
+  const maxDept = distribution.reduce((m, d) => Math.max(m, d.active), 0) || 1;
 
   return (
     <EnterpriseRHLayout title="Licenças">
