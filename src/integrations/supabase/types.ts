@@ -1156,6 +1156,7 @@ export type Database = {
       impact_measurements: {
         Row: {
           baseline_score: number | null
+          baseline_snapshot: Json
           confidence: number | null
           current_score: number | null
           evidence: Json
@@ -1164,11 +1165,13 @@ export type Database = {
           measured_at: string
           organization_id: string
           source_id: string
+          source_title: string | null
           source_type: string
           summary: string | null
         }
         Insert: {
           baseline_score?: number | null
+          baseline_snapshot?: Json
           confidence?: number | null
           current_score?: number | null
           evidence?: Json
@@ -1177,11 +1180,13 @@ export type Database = {
           measured_at?: string
           organization_id: string
           source_id: string
+          source_title?: string | null
           source_type: string
           summary?: string | null
         }
         Update: {
           baseline_score?: number | null
+          baseline_snapshot?: Json
           confidence?: number | null
           current_score?: number | null
           evidence?: Json
@@ -1190,6 +1195,7 @@ export type Database = {
           measured_at?: string
           organization_id?: string
           source_id?: string
+          source_title?: string | null
           source_type?: string
           summary?: string | null
         }
