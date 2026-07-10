@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -22,57 +22,103 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useRealtime } from "@/hooks/useRealtime";
+
+type LogRow = {
+  id: string;
+  action: string;
+  entity_type: string;
+  actor_user_id: string | null;
+  metadata: any;
+  created_at: string;
+};
+
+const ENTITY_CATEGORY: Record<string, { name: string; icon: any }> = {
+  profile: { name: "Colaboradores", icon: Users },
+  department: { name: "Departamentos", icon: Settings },
+  unit: { name: "Unidades", icon: Settings },
+  org_setting: { name: "Configurações", icon: Settings },
+  alert: { name: "Alertas", icon: AlertCircle },
+  dna_report: { name: "DNA Organizacional", icon: FileText },
+  action_plan: { name: "Planos de Ação", icon: FileText },
+  invite: { name: "Convites", icon: Users },
+  export: { name: "Exportações", icon: Download },
+  consent: { name: "Consentimentos", icon: Lock },
+  role: { name: "Permissões", icon: Key },
+};
 
 const EnterpriseAuditLogsScreen = () => {
   const navigate = useNavigate();
+  const { organization } = useAuth();
   const [activeFilter, setActiveFilter] = useState("Todos");
+  const [logs, setLogs] = useState<LogRow[]>([]);
+  const [actors, setActors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
 
-  const categories = [
-    { name: "Permissões", icon: Key, count: 18, desc: "Alterações de níveis de acesso" },
-    { name: "Convites", icon: Users, count: 42, desc: "Envio de acessos ao time" },
-    { name: "Integrações", icon: Share2, count: 5, desc: "Conexões externas e APIs" },
-    { name: "Exportações", icon: Download, count: 7, desc: "Relatórios e dados gerados" },
-    { name: "Privacidade", icon: Lock, count: 3, desc: "Ajustes de anonimização" },
-    { name: "Configurações", icon: Settings, count: 12, desc: "Mudanças organizacionais" }
-  ];
-
-  const recentActivity = [
-    { 
-      admin: "Marina Costa", 
-      action: "alterou permissões de liderança", 
-      time: "Hoje · 09:42", 
-      category: "Permissões",
-      icon: Key 
-    },
-    { 
-      admin: "Sistema", 
-      action: "Relatório executivo exportado", 
-      time: "Hoje · 08:17", 
-      category: "Exportações",
-      icon: Download 
-    },
-    { 
-      admin: "Admin RH", 
-      action: "Integração Slack conectada", 
-      time: "Ontem · 18:03", 
-      category: "Integrações",
-      icon: Share2 
-    },
-    { 
-      admin: "Marina Costa", 
-      action: "42 convites enviados para colaboradores", 
-      time: "Ontem · 15:12", 
-      category: "Convites",
-      icon: Users 
-    },
-    { 
-      admin: "Diretoria", 
-      action: "Política de anonimização atualizada", 
-      time: "Ontem · 10:40", 
-      category: "Privacidade",
-      icon: Lock 
+  const load = async () => {
+    if (!organization?.id) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from("organization_audit_logs")
+      .select("id,action,entity_type,actor_user_id,metadata,created_at")
+      .eq("organization_id", organization.id)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    const rows = (data ?? []) as LogRow[];
+    setLogs(rows);
+    const ids = Array.from(new Set(rows.map((r) => r.actor_user_id).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id,full_name").in("id", ids);
+      const map: Record<string, string> = {};
+      (profs ?? []).forEach((p: any) => { map[p.id] = p.full_name ?? "—"; });
+      setActors(map);
     }
-  ];
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [organization?.id]);
+  useRealtime(
+    "org_audit_logs",
+    organization?.id ? [{ table: "organization_audit_logs", filter: `organization_id=eq.${organization.id}` }] : [],
+    () => load(),
+    [organization?.id]
+  );
+
+  const categories = useMemo(() => {
+    const counts: Record<string, number> = {};
+    logs.forEach((l) => { counts[l.entity_type] = (counts[l.entity_type] ?? 0) + 1; });
+    return Object.entries(counts).map(([k, count]) => ({
+      key: k,
+      name: ENTITY_CATEGORY[k]?.name ?? k,
+      icon: ENTITY_CATEGORY[k]?.icon ?? Settings,
+      count,
+      desc: `${count} evento(s) registrado(s)`,
+    }));
+  }, [logs]);
+
+  const filterOptions = ["Todos", ...categories.map((c) => c.name)];
+
+  const startToday = new Date(); startToday.setHours(0,0,0,0);
+  const eventsToday = logs.filter((l) => new Date(l.created_at) >= startToday).length;
+  const permissionChanges = logs.filter((l) => l.entity_type === "role" || l.action.includes("role")).length;
+  const exportEvents = logs.filter((l) => l.entity_type === "export" || l.action.includes("export")).length;
+
+  const filteredLogs = activeFilter === "Todos"
+    ? logs
+    : logs.filter((l) => (ENTITY_CATEGORY[l.entity_type]?.name ?? l.entity_type) === activeFilter);
+
+  const fmt = (iso: string) => {
+    const d = new Date(iso);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dDay = new Date(d); dDay.setHours(0,0,0,0);
+    const diff = (today.getTime() - dDay.getTime()) / 86400000;
+    const time = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    if (diff === 0) return `Hoje · ${time}`;
+    if (diff === 1) return `Ontem · ${time}`;
+    return `${d.toLocaleDateString("pt-BR")} · ${time}`;
+  };
 
   return (
     <EnterpriseRHLayout title="Logs de auditoria">
@@ -123,9 +169,9 @@ const EnterpriseAuditLogsScreen = () => {
         {/* KPIs */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Eventos hoje", value: "42", icon: Clock },
-            { label: "Permissões", value: "18", icon: Key },
-            { label: "Exportações", value: "7", icon: Download },
+            { label: "Eventos hoje", value: String(eventsToday), icon: Clock },
+            { label: "Total registrado", value: String(logs.length), icon: History },
+            { label: "Exportações", value: String(exportEvents), icon: Download },
             { label: "Logs protegidos", value: "100%", icon: ShieldCheck }
           ].map((kpi, i) => (
             <motion.div 
@@ -150,7 +196,7 @@ const EnterpriseAuditLogsScreen = () => {
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-2 overflow-x-auto pb-2 no-scrollbar">
             <Filter className="w-4 h-4 text-[#0B0908]/30 mr-2 shrink-0" />
-            {["Todos", "Permissões", "Convites", "Integrações", "Exportações", "Privacidade"].map((filter) => (
+            {filterOptions.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
@@ -169,14 +215,18 @@ const EnterpriseAuditLogsScreen = () => {
         {/* Atividade Recente */}
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Atividade recente</h3>
+          {loading && <p className="text-sm text-[#999] px-4">Carregando…</p>}
+          {!loading && filteredLogs.length === 0 && (
+            <p className="text-sm text-[#999] px-4">Nenhum evento registrado ainda.</p>
+          )}
           <div className="relative space-y-6 px-4">
             <div className="absolute left-7 top-4 bottom-4 w-0.5 bg-[#E5E0DA]/50" />
-            {recentActivity.map((activity, i) => (
+            {filteredLogs.slice(0, 30).map((activity, i) => (
               <motion.div 
-                key={i}
+                key={activity.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: Math.min(i, 6) * 0.05 }}
                 className="relative flex items-start gap-6 group"
               >
                 <div className="w-8 h-8 rounded-full bg-white border-2 border-[#E5E0DA] flex items-center justify-center relative z-10 shadow-sm group-hover:border-[#F88A2B] transition-colors shrink-0">
@@ -184,11 +234,16 @@ const EnterpriseAuditLogsScreen = () => {
                 </div>
                 <div className="flex-1 bg-white/60 backdrop-blur-sm p-5 rounded-[1.5rem] border border-white shadow-sm space-y-2">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">{activity.category}</span>
-                    <span className="text-[10px] font-medium text-[#0B0908]/30">{activity.time}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">
+                      {ENTITY_CATEGORY[activity.entity_type]?.name ?? activity.entity_type}
+                    </span>
+                    <span className="text-[10px] font-medium text-[#0B0908]/30">{fmt(activity.created_at)}</span>
                   </div>
                   <p className="text-sm font-semibold leading-relaxed">
-                    <span className="text-[#0B0908]/40 font-medium">{activity.admin}</span> {activity.action}
+                    <span className="text-[#0B0908]/40 font-medium">
+                      {activity.actor_user_id ? (actors[activity.actor_user_id] ?? "Usuário") : "Sistema"}
+                    </span>{" "}
+                    {activity.action}
                   </p>
                 </div>
               </motion.div>
@@ -199,6 +254,9 @@ const EnterpriseAuditLogsScreen = () => {
         {/* Categorias de auditoria */}
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Categorias de auditoria</h3>
+          {categories.length === 0 && (
+            <p className="text-sm text-[#999] px-4">Sem categorias registradas.</p>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categories.map((cat, i) => (
               <motion.div 
