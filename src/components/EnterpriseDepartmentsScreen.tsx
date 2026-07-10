@@ -29,12 +29,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
+import { useOrgMinGroupSize } from "@/hooks/useOrgMinGroupSize";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
 
 interface Department {
   id: string;
   name: string;
-  code: string;
+  code: string | null;
   responsible: string;
+  leader_id: string | null;
   count: number;
   parent_id: string | null;
 }
@@ -42,33 +50,41 @@ interface Department {
 const EnterpriseDepartmentsScreen = () => {
   const navigate = useNavigate();
   const { organization } = useAuth();
-  
+  const minVolume = useOrgMinGroupSize();
+
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [profiles, setProfiles] = useState<Array<{ id: string; full_name: string | null }>>([]);
+  const [editing, setEditing] = useState<Department | null>(null);
 
   const [form, setForm] = useState({
     name: "",
     code: "",
-    responsible: "",
+    leader_id: "",
     count: "",
     parent_id: "",
   });
 
   const load = async () => {
     if (!organization?.id) return;
-    const [depsRes, countsRes] = await Promise.all([
-      supabase.from("departments").select("id,name,parent_id,leader_id").eq("organization_id", organization.id).order("name"),
+    const [depsRes, countsRes, profRes] = await Promise.all([
+      supabase.from("departments").select("id,name,code,parent_id,leader_id").eq("organization_id", organization.id).order("name"),
       supabase.from("profiles").select("department_id").eq("organization_id", organization.id),
+      supabase.from("profiles").select("id,full_name").eq("organization_id", organization.id).is("deleted_at", null).order("full_name"),
     ]);
     const counts = new Map<string, number>();
     (countsRes.data ?? []).forEach((p: { department_id: string | null }) => {
       if (p.department_id) counts.set(p.department_id, (counts.get(p.department_id) ?? 0) + 1);
     });
+    const profs = (profRes.data ?? []) as Array<{ id: string; full_name: string | null }>;
+    setProfiles(profs);
+    const nameById = new Map(profs.map(p => [p.id, p.full_name ?? "—"]));
     setDepartments(
-      (depsRes.data ?? []).map((d) => ({
+      (depsRes.data ?? []).map((d: any) => ({
         id: d.id,
         name: d.name,
-        code: d.name.substring(0, 3).toUpperCase(),
-        responsible: "—",
+        code: d.code ?? d.name.substring(0, 3).toUpperCase(),
+        responsible: d.leader_id ? (nameById.get(d.leader_id) ?? "—") : "—",
+        leader_id: d.leader_id,
         count: counts.get(d.id) ?? 0,
         parent_id: d.parent_id,
       })),
@@ -86,22 +102,37 @@ const EnterpriseDepartmentsScreen = () => {
     const { error } = await supabase.from("departments").insert({
       organization_id: organization.id,
       name: form.name,
+      code: form.code || null,
+      leader_id: form.leader_id || null,
       parent_id: form.parent_id || null,
     });
     if (error) return toast.error(error.message);
-    setForm({ name: "", code: "", responsible: "", count: "", parent_id: "" });
+    setForm({ name: "", code: "", leader_id: "", count: "", parent_id: "" });
     toast.success("Departamento adicionado.");
     load();
   };
 
   const handleRemove = async (id: string) => {
+    if (!confirm("Remover este departamento?")) return;
     const { error } = await supabase.from("departments").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Departamento removido.");
     load();
   };
 
-  const minVolume = 8;
+  const handleUpdate = async () => {
+    if (!editing) return;
+    const { error } = await supabase.from("departments").update({
+      name: editing.name,
+      code: editing.code || null,
+      leader_id: editing.leader_id || null,
+      parent_id: editing.parent_id || null,
+    }).eq("id", editing.id);
+    if (error) return toast.error(error.message);
+    toast.success("Departamento atualizado.");
+    setEditing(null);
+    load();
+  };
 
   return (
     <EnterpriseRHLayout title="Departamentos">
@@ -172,22 +203,37 @@ const EnterpriseDepartmentsScreen = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 ml-1">Responsável (opcional)</label>
-                <Input 
-                  placeholder="Nome do líder ou RH responsável" 
-                  value={form.responsible}
-                  onChange={e => setForm({...form, responsible: e.target.value})}
-                  className="rounded-2xl border-black/5 bg-white h-14 focus-visible:ring-[#F88A2B] font-medium"
-                />
+                <Select
+                  value={form.leader_id || "__none"}
+                  onValueChange={(v) => setForm({ ...form, leader_id: v === "__none" ? "" : v })}
+                >
+                  <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
+                    <SelectValue placeholder="Selecione um líder" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Sem líder</SelectItem>
+                    {profiles.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.full_name ?? "—"}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 ml-1">Número estimado de colaboradores</label>
-                <Input 
-                  placeholder="Ex: 35" 
-                  type="number"
-                  value={form.count}
-                  onChange={e => setForm({...form, count: e.target.value})}
-                  className="rounded-2xl border-black/5 bg-white h-14 focus-visible:ring-[#F88A2B] font-medium"
-                />
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 ml-1">Departamento pai (opcional)</label>
+                <Select
+                  value={form.parent_id || "__none"}
+                  onValueChange={(v) => setForm({ ...form, parent_id: v === "__none" ? "" : v })}
+                >
+                  <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
+                    <SelectValue placeholder="Nenhum" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Nenhum</SelectItem>
+                    {departments.map(d => (
+                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
@@ -223,7 +269,10 @@ const EnterpriseDepartmentsScreen = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl border-black/5">
-                      <DropdownMenuItem className="text-xs font-bold gap-2">
+                      <DropdownMenuItem
+                        onClick={() => setEditing(dept)}
+                        className="text-xs font-bold gap-2"
+                      >
                         <Edit2 className="w-3 h-3" /> Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem 
