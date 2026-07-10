@@ -27,6 +27,7 @@ import { useRealtime } from "@/hooks/useRealtime";
 
 type ReportRow = {
   id: string;
+  organization_id: string;
   protocol: string;
   subject: string;
   body: string;
