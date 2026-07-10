@@ -103,17 +103,33 @@ async function loadSuperAdminNotifications(): Promise<AdminNotification[]> {
 
 async function loadRhNotifications(orgId: string | null): Promise<AdminNotification[]> {
   if (!orgId) return [];
-  const { data } = await supabase.from("alerts")
-    .select("id,title,message,severity,created_at,action_url,status")
-    .eq("organization_id", orgId)
-    .order("created_at", { ascending: false })
-    .limit(20);
-  return (data || []).map((a: any) => ({
-    id: a.id, type: "alert", title: a.title || "Alerta",
+  const [{ data: alerts }, { data: notifs }] = await Promise.all([
+    supabase.from("alerts")
+      .select("id,title,message,severity,created_at,action_url,status")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase.from("notifications")
+      .select("id,type,title,body,action_url,read_at,created_at,metadata")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+  const out: AdminNotification[] = [];
+  (alerts || []).forEach((a: any) => out.push({
+    id: `alert-${a.id}`, type: "alert", title: a.title || "Alerta",
     message: a.message || "", severity: (a.severity as any) || "info",
-    route: a.action_url || "/enterprise/rh/central-admin",
+    route: a.action_url || "/enterprise/rh/alertas",
     created_at: a.created_at,
   }));
+  (notifs || []).forEach((n: any) => out.push({
+    id: `notif-${n.id}`, type: n.type || "info", title: n.title,
+    message: n.body || "", severity: (n.metadata?.severity as any) || "info",
+    route: n.action_url || "/enterprise/rh/central-admin",
+    created_at: n.created_at,
+  }));
+  out.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+  return out;
 }
 
 const HELP_ITEMS_SUPER = [
