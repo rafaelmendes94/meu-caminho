@@ -103,12 +103,10 @@ import EnterpriseActionPlanScreen from "./components/EnterpriseActionPlanScreen.
 import EnterpriseAdminIntegrationScreen from "./components/EnterpriseAdminIntegrationScreen.tsx";
 import EnterpriseBenchmarkScreen from "./components/EnterpriseBenchmarkScreen.tsx";
 import EnterpriseLeadershipOverviewScreen from "./components/EnterpriseLeadershipOverviewScreen.tsx";
-import EnterpriseImpactScreen from "./components/EnterpriseImpactScreen.tsx";
 import EnterpriseEmotionalMapScreen from "./components/EnterpriseEmotionalMapScreen.tsx";
 import EnterpriseLeadershipMessageScreen from "./components/EnterpriseLeadershipMessageScreen.tsx";
 import EnterpriseAIInsightsScreen from "./pages/EnterpriseAIInsightsScreen.tsx";
 import EnterpriseJourneyEvolutionScreen from "./components/EnterpriseJourneyEvolutionScreen.tsx";
-import EnterpriseRitualsScreen from "./components/EnterpriseRitualsScreen.tsx";
 import EnterpriseLeadershipHealthScreen from "./components/EnterpriseLeadershipHealthScreen.tsx";
 import EnterprisePermissionsScreen from "./components/EnterprisePermissionsScreen.tsx";
 import EnterpriseIntegrationsScreen from "./components/EnterpriseIntegrationsScreen.tsx";
@@ -149,10 +147,10 @@ import EnterpriseOrganizationalDNAScreen from "./pages/EnterpriseOrganizationalD
 import EnterpriseWeeklyInsightsScreen from "./pages/EnterpriseWeeklyInsightsScreen.tsx";
 import EnterpriseExecutiveCouncilScreen from "./pages/EnterpriseExecutiveCouncilScreen.tsx";
 import EnterpriseMultiAdminsScreen from "./pages/EnterpriseMultiAdminsScreen.tsx";
-import EnterpriseGuidedRitualsScreen from "./pages/EnterpriseGuidedRitualsScreen.tsx";
 import EnterpriseIntelligentRitualsScreen from "./pages/EnterpriseIntelligentRitualsScreen.tsx";
 import EnterpriseOrganizationalScoreScreen from "./pages/EnterpriseOrganizationalScoreScreen.tsx";
 import EnterpriseImpactEngineScreen from "./pages/EnterpriseImpactEngineScreen.tsx";
+import EnterpriseRitualParticipationsScreen from "./pages/EnterpriseRitualParticipationsScreen.tsx";
 import EnterpriseAdminCenterScreen from "./pages/EnterpriseAdminCenterScreen.tsx";
 import EnterpriseBillingScreen from "./pages/EnterpriseBillingScreen.tsx";
 import EnterpriseCheckoutPlanScreen from "./pages/EnterpriseCheckoutPlanScreen.tsx";
@@ -383,7 +381,7 @@ const App = () => (
           <Route path="/enterprise/rh/politicas" element={<RH><EnterprisePoliciesScreen /></RH>} />
           <Route path="/enterprise/rh/unidades" element={<RH><EnterpriseUnitsScreen /></RH>} />
           <Route path="/enterprise/rh/multiplos-admins" element={<RH><EnterpriseMultiAdminsScreen /></RH>} />
-          <Route path="/enterprise/rh/rituais/guiados" element={<RH><EnterpriseGuidedRitualsScreen /></RH>} />
+          <Route path="/enterprise/rh/rituais/guiados" element={<Navigate to="/enterprise/rh/rituais-inteligentes" replace />} />
           <Route path="/enterprise/rh/central-admin" element={<RH><EnterpriseAdminCenterScreen /></RH>} />
           <Route path="/enterprise/rh/billing" element={<RH><EnterpriseBillingScreen /></RH>} />
 
@@ -419,10 +417,11 @@ const App = () => (
           <Route path="/enterprise/rh/sos" element={<RH><EnterpriseRHReportsScreen /></RH>} />
           <Route path="/enterprise/rh/evolucao" element={<RH><EnterpriseJourneyEvolutionScreen /></RH>} />
           <Route path="/enterprise/rh/status" element={<RH><EnterpriseStatusHealthScreen /></RH>} />
-          <Route path="/enterprise/rh/rituais" element={<RH><EnterpriseRitualsScreen /></RH>} />
+          <Route path="/enterprise/rh/rituais" element={<Navigate to="/enterprise/rh/rituais-inteligentes" replace />} />
           <Route path="/enterprise/rh/rituais-inteligentes" element={<RH><EnterpriseIntelligentRitualsScreen /></RH>} />
+          <Route path="/enterprise/rh/rituais/participacoes" element={<RH><EnterpriseRitualParticipationsScreen /></RH>} />
           <Route path="/enterprise/rh/score-organizacional" element={<RH><EnterpriseOrganizationalScoreScreen /></RH>} />
-          <Route path="/enterprise/rituais" element={<Ent><EnterpriseRitualsScreen /></Ent>} />
+          <Route path="/enterprise/rituais" element={<Navigate to="/enterprise/rh/rituais-inteligentes" replace />} />
           <Route path="/enterprise/rh/saude-lideranca" element={<RH><EnterpriseLeadershipHealthScreen /></RH>} />
           <Route path="/enterprise/rh/navigation" element={<RH><EnterpriseNavigationSystemScreen /></RH>} />
           <Route path="/enterprise/rh/desktop" element={<RH><EnterpriseDesktopResponsiveScreen /></RH>} />
