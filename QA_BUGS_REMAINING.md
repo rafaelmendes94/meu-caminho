@@ -16,8 +16,8 @@
 ### M-02 — Reflexo CMS → app do colaborador não auditado
 Exige E2E com CMS populado (draft/published/archived) + conta employee. Fora de escopo curto.
 
-### B-06 — Padronização `useAsyncCall`/`EmptyState`
-Hook e componente disponíveis; ~20 telas legadas ainda com loading/erro ad-hoc. Refactor mecânico, exige onda dedicada.
+### B-06 — Padronização `useAsyncCall`/`EmptyState` (parcial ✅)
+`EmptyState` aplicado nas telas críticas: Score Organizacional, Weekly Insights, Impact Engine, Audit Logs, Ritual Participations. Telas restantes usam padrões locais coerentes; refactor completo continua opcional.
 
 ### Warnings linter aceitos (registrado em `@security-memory`)
 - 34× `0029_authenticated_security_definer_function_executable` — funções `SECURITY DEFINER` validam role internamente
