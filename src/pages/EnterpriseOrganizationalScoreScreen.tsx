@@ -4,6 +4,7 @@ import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseR
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type ScoreRow = {
   id: string;
@@ -116,13 +117,11 @@ export default function EnterpriseOrganizationalScoreScreen() {
         )}
 
         {!loading && !latest && (
-          <div className="rounded-3xl bg-white p-10 border border-[#E5E0DA] text-center space-y-3">
-            <Gauge className="w-8 h-8 mx-auto text-[#F88A2B]" />
-            <p className="text-[15px] font-bold text-[#111]">Nenhum score calculado ainda.</p>
-            <p className="text-[12px] text-[#666] max-w-md mx-auto">
-              Clique em "Atualizar score" para calcular o primeiro Score Organizacional™ com base nos dados dos últimos 30 dias.
-            </p>
-          </div>
+          <EmptyState
+            icon={Gauge}
+            title="Nenhum score calculado ainda"
+            description='Clique em "Atualizar score" para calcular o primeiro Score Organizacional™ com base nos dados dos últimos 30 dias.'
+          />
         )}
 
         {latest && (
