@@ -29,11 +29,60 @@ export default function OnboardingChatScreen() {
   const [generating, setGenerating] = useState(false);
   const [interviewId, setInterviewId] = useState<string | null>(null);
   const [userTurns, setUserTurns] = useState(0);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
+
+  const loadInterview = async () => {
+    if (!user) return;
+    setLoadingHistory(true);
+    setLoadError(null);
+    try {
+      const { data: iv, error: ivErr } = await supabase
+        .from("onboarding_interviews")
+        .select("id,status")
+        .eq("user_id", user.id)
+        .neq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (ivErr) throw ivErr;
+      if (!iv) {
+        setInterviewId(null);
+        setMessages([{ role: "assistant", content: INITIAL_ASSISTANT }]);
+        setUserTurns(0);
+        return;
+      }
+      setInterviewId(iv.id);
+      const { data: msgs, error: msgErr } = await supabase
+        .from("onboarding_messages")
+        .select("role,content,created_at")
+        .eq("interview_id", iv.id)
+        .order("created_at", { ascending: true });
+      if (msgErr) throw msgErr;
+      const loaded: Msg[] = (msgs ?? [])
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+      setMessages(
+        loaded.length > 0 ? loaded : [{ role: "assistant", content: INITIAL_ASSISTANT }]
+      );
+      setUserTurns(loaded.filter((m) => m.role === "user").length);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Falha ao carregar sua entrevista.";
+      setLoadError(msg);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadInterview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const send = async (finish = false) => {
     if (!input.trim() || sending) return;
@@ -46,12 +95,26 @@ export default function OnboardingChatScreen() {
         body: { interview_id: interviewId, message: content, finish },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      setInterviewId((data as any).interview_id);
+      const payload = data as { error?: string; interview_id?: string; assistant?: string } | null;
+      if (payload?.error) throw new Error(payload.error);
+      if (payload?.interview_id) setInterviewId(payload.interview_id);
       setUserTurns((n) => n + 1);
-      setMessages((m) => [...m, { role: "assistant", content: (data as any).assistant }]);
+      const assistant = (payload?.assistant ?? "").trim();
+      if (!assistant) throw new Error("empty_ai_response");
+      setMessages((m) => [...m, { role: "assistant", content: assistant }]);
     } catch (e: any) {
-      toast.error(e?.message || "Não foi possível enviar sua mensagem.");
+      const code = String(e?.message ?? "");
+      const map: Record<string, string> = {
+        rate_limited: "Muitas mensagens em pouco tempo. Aguarde alguns segundos e tente de novo.",
+        credits_exhausted: "Cota de IA temporariamente indisponível. Tente novamente em instantes.",
+        ai_error: "A IA não conseguiu responder agora. Tente novamente.",
+        empty_ai_response: "Não recebi uma resposta. Tente reenviar a mensagem.",
+        unauthorized: "Sua sessão expirou. Faça login novamente.",
+      };
+      // Restore the user message into the input so nothing is lost.
+      setMessages((m) => m.filter((_, i) => i !== m.length - 1));
+      setInput(content);
+      toast.error(map[code] ?? "Não foi possível enviar sua mensagem. Tente novamente.");
     } finally {
       setSending(false);
     }
@@ -78,6 +141,30 @@ export default function OnboardingChatScreen() {
 
   const canFinish = userTurns >= 4;
   const progress = Math.min(userTurns / DIMENSIONS.length, 1);
+
+  if (loadingHistory) {
+    return (
+      <main className="min-h-[100dvh] bg-[#F7F4F2] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-2 border-[#F88A2B]/20 border-t-[#F88A2B] animate-spin" />
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="min-h-[100dvh] bg-[#F7F4F2] flex items-center justify-center px-6">
+        <div className="max-w-md text-center space-y-4">
+          <p className="text-sm text-[#666]">{loadError}</p>
+          <button
+            onClick={() => void loadInterview()}
+            className="h-11 px-6 rounded-xl bg-[#F88A2B] text-white font-bold"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-[100dvh] bg-[#F7F4F2] font-display flex flex-col">
