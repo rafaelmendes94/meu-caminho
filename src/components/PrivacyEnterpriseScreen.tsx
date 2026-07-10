@@ -88,10 +88,10 @@ export default function PrivacyEnterpriseScreen() {
             </p>
             <div className="flex flex-wrap gap-4 pt-2">
               <button 
-                onClick={() => navigate("/enterprise")}
+                onClick={() => navigate("/enterprise/minha-privacidade")}
                 className="px-8 py-4 bg-[#F88A2B] text-white text-sm font-bold rounded-2xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all"
               >
-                Entendi meu Anonimato
+                Meus dados & LGPD
               </button>
               <button className="px-8 py-4 bg-white text-[#111] text-sm font-bold rounded-2xl border border-black/5 hover:bg-black/5 transition-all flex items-center gap-2">
                 Baixar Política Completa <FileText size={16} />
