@@ -8,24 +8,59 @@ import {
   AlertCircle,
   MessageSquare,
   CheckCircle2,
+  EyeOff,
   X
 } from "lucide-react";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export default function CanalDiretoMensagemScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, profile } = useAuth();
   const selectedReason = location.state?.reason || "Assunto sensível";
   
   const [message, setMessage] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [sending, setSending] = useState(false);
 
   const isFormValid = message.trim().length > 0 && agreed;
 
-  const handleSend = () => {
-    if (isFormValid) {
-      navigate('/enterprise/sos-rh/confirmado');
+  const handleSend = async () => {
+    if (!isFormValid || sending) return;
+    if (!user || !profile?.organization_id) {
+      toast.error("Faça login para enviar seu relato.");
+      return;
     }
+    setSending(true);
+    const { data: protoData, error: protoErr } = await supabase.rpc("generate_report_protocol");
+    if (protoErr || !protoData) {
+      setSending(false);
+      toast.error("Não foi possível gerar o protocolo.");
+      return;
+    }
+    const protocol = protoData as unknown as string;
+    const { error } = await supabase.from("reports").insert({
+      organization_id: profile.organization_id,
+      protocol,
+      category: selectedReason,
+      severity: "medium",
+      status: "open",
+      subject: selectedReason,
+      body: message.trim(),
+      is_anonymous: isAnonymous,
+      reporter_user_id: isAnonymous ? null : user.id,
+      reporter_department_id: isAnonymous ? null : (profile as any).department_id ?? null,
+    });
+    setSending(false);
+    if (error) {
+      toast.error("Não foi possível enviar seu relato.");
+      return;
+    }
+    navigate('/enterprise/sos-rh/confirmado', { state: { protocol, isAnonymous } });
   };
 
   return (
@@ -95,6 +130,25 @@ export default function CanalDiretoMensagemScreen() {
                     />
                   </div>
 
+                  {/* Anonymous toggle */}
+                  <button
+                    onClick={() => setIsAnonymous(!isAnonymous)}
+                    className="w-full flex items-center justify-between p-5 rounded-2xl bg-[#F8F9FA] border border-black/[0.03] hover:bg-[#F8F9FA]/80 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <EyeOff className={`h-5 w-5 ${isAnonymous ? "text-[#F88A2B]" : "text-[#999]"}`} />
+                      <div className="text-left">
+                        <div className="text-[14px] font-bold text-[#111]">Enviar anonimamente</div>
+                        <div className="text-[11px] text-[#999]">
+                          {isAnonymous ? "RH não verá sua identidade" : "RH poderá te responder pelo nome"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`h-6 w-11 rounded-full transition-all ${isAnonymous ? "bg-[#F88A2B]" : "bg-black/10"}`}>
+                      <div className={`h-5 w-5 rounded-full bg-white shadow mt-0.5 transition-transform ${isAnonymous ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+                    </div>
+                  </button>
+
                   {/* Agreement Checkbox */}
                   <button 
                     onClick={() => setAgreed(!agreed)}
@@ -138,13 +192,13 @@ export default function CanalDiretoMensagemScreen() {
               <div className="space-y-4 animate-fade-up" style={{ animationDelay: '300ms' }}>
                 <button
                   onClick={handleSend}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || sending}
                   className="w-full h-16 rounded-full flex items-center justify-center gap-3 text-white font-bold text-[16px] transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#F88A2B]/20"
                   style={{ 
                     background: "linear-gradient(180deg, #FF9D4D 0%, #F88A2B 100%)",
                   }}
                 >
-                  <span>Enviar Relato com Segurança</span>
+                  <span>{sending ? "Enviando…" : "Enviar Relato com Segurança"}</span>
                   <ChevronRight className="h-5 w-5" />
                 </button>
                 

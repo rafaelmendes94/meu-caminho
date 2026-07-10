@@ -115,6 +115,7 @@ import EnterpriseIntegrationsScreen from "./components/EnterpriseIntegrationsScr
 import EnterpriseNotificationsScreen from "./components/EnterpriseNotificationsScreen.tsx";
 import EnterpriseExportsScreen from "./components/EnterpriseExportsScreen.tsx";
 import EnterprisePrivacyCenterScreen from "./components/EnterprisePrivacyCenterScreen.tsx";
+import MyPrivacyScreen from "./pages/MyPrivacyScreen.tsx";
 import EnterpriseOnboardingScreen from "./components/EnterpriseOnboardingScreen.tsx";
 import EnterpriseEmptyStatesScreen from "./components/EnterpriseEmptyStatesScreen.tsx";
 import EnterpriseLoadingStatesScreen from "./components/EnterpriseLoadingStatesScreen.tsx";
@@ -313,6 +314,7 @@ const App = () => (
           <Route path="/enterprise/welcome" element={<EnterpriseWelcomeScreen />} />
           <Route path="/enterprise/privacidade" element={<PrivacyEnterpriseScreen />} />
           <Route path="/enterprise/privacy" element={<PrivacyEnterpriseScreen />} />
+          <Route path="/enterprise/minha-privacidade" element={<Auth><MyPrivacyScreen /></Auth>} />
           <Route path="/enterprise/convite/:token" element={<EnterpriseAcceptInvitePage />} />
           <Route path="/enterprise/convite" element={<EnterpriseInviteAcceptanceScreen />} />
           <Route path="/enterprise/setup" element={<Auth><EnterpriseSetupScreen /></Auth>} />

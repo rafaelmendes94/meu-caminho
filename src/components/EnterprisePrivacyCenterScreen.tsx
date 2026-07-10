@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ShieldCheck, 
@@ -19,22 +19,47 @@ import { Button } from "@/components/ui/button";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const EnterprisePrivacyCenterScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { organization, hasAnyRole } = useAuth();
   const isRH = location.pathname.startsWith('/enterprise/rh');
   const Layout = isRH ? EnterpriseRHLayout : EnterpriseUserLayout;
-  const [policies, setPolicies] = useState({
-    anonimizacao: true,
-    bloqueioGrupos: true,
-    iaAgregada: true,
-    canalDiretoSeparado: true,
-    exportacoesSemDados: true,
-  });
+  const canEdit = hasAnyRole(["owner", "rh_admin"]);
+  const [minGroup, setMinGroup] = useState<number>(5);
+  const [savingMin, setSavingMin] = useState(false);
 
-  const togglePolicy = (key: keyof typeof policies) => {
-    setPolicies(prev => ({ ...prev, [key]: !prev[key] }));
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      const { data } = await supabase
+        .from("organization_settings")
+        .select("value")
+        .eq("organization_id", organization.id)
+        .eq("key", "privacy_min_group_size")
+        .maybeSingle();
+      const v = (data as any)?.value;
+      const parsed = Number(v?.value ?? v ?? 5);
+      if (!Number.isNaN(parsed)) setMinGroup(parsed);
+    })();
+  }, [organization?.id]);
+
+  const saveMinGroup = async (next: number) => {
+    if (!organization?.id || !canEdit) return;
+    setSavingMin(true);
+    const { error } = await supabase
+      .from("organization_settings")
+      .upsert(
+        { organization_id: organization.id, key: "privacy_min_group_size", value: { value: next } as any },
+        { onConflict: "organization_id,key" }
+      );
+    setSavingMin(false);
+    if (error) toast.error("Não foi possível salvar o mínimo de grupo.");
+    else { setMinGroup(next); toast.success(`Mínimo de anonimato definido como ${next}.`); }
   };
 
   const whatNeverShows = [
@@ -180,7 +205,21 @@ const EnterprisePrivacyCenterScreen = () => {
                 <div className="flex items-center justify-between p-6 bg-white rounded-[24px] border border-black/5 shadow-sm">
                   <div className="flex flex-col">
                     <span className="text-[11px] text-[#999] uppercase font-bold tracking-wider mb-1">Regra de anonimato</span>
-                    <span className="text-xl font-bold text-[#111]">Mínimo 8 por grupo</span>
+                    <span className="text-xl font-bold text-[#111]">Mínimo {minGroup} por grupo</span>
+                    {canEdit && (
+                      <div className="flex items-center gap-2 mt-3">
+                        {[3, 5, 8, 10].map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => saveMinGroup(n)}
+                            disabled={savingMin}
+                            className={`h-8 px-3 rounded-full text-[11px] font-bold border transition-all ${minGroup === n ? "bg-[#F88A2B] text-white border-[#F88A2B]" : "bg-white text-[#666] border-black/10 hover:border-[#F88A2B]/40"}`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="h-12 w-12 rounded-2xl bg-[#F88A2B08] flex items-center justify-center">
                     <ShieldCheck className="h-6 w-6 text-[#F88A2B]" />
