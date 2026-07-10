@@ -314,11 +314,36 @@ const EnterpriseInviteEmployeesScreen = () => {
               </div>
               <div className="space-y-2 flex-grow">
                 <h4 className="font-bold text-[#0B0908]">Importar CSV</h4>
-                <p className="text-xs text-black/50 leading-relaxed">Envie uma lista de colaboradores para ativação em lote.</p>
+                <p className="text-xs text-black/50 leading-relaxed">Colunas: email, nome, departamento, cargo. Uma linha por colaborador.</p>
               </div>
-              <Button variant="outline" className="w-full rounded-xl border-[#0B0908]/10 text-[#0B0908] hover:bg-black/5 font-bold">
-                Importar arquivo
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvUpload(f); }}
+              />
+              <Button
+                variant="outline"
+                disabled={csvBusy}
+                onClick={() => csvInputRef.current?.click()}
+                className="w-full rounded-xl border-[#0B0908]/10 text-[#0B0908] hover:bg-black/5 font-bold disabled:opacity-50"
+              >
+                {csvBusy ? "Enviando..." : "Selecionar arquivo"}
               </Button>
+              {csvSummary && (
+                <div className="w-full text-left space-y-1 pt-2 border-t border-black/5 text-xs">
+                  <p className="font-bold text-green-700">{csvSummary.ok} enviado(s)</p>
+                  {csvSummary.failed.length > 0 && (
+                    <details className="text-red-700">
+                      <summary className="cursor-pointer font-bold">{csvSummary.failed.length} falha(s)</summary>
+                      <ul className="mt-1 space-y-0.5 max-h-32 overflow-auto">
+                        {csvSummary.failed.map((f, i) => (<li key={i} className="truncate">{f.email}: {f.error}</li>))}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Google Workspace */}
@@ -570,44 +595,60 @@ const EnterpriseInviteEmployeesScreen = () => {
               <Users className="w-5 h-5 text-[#F88A2B]" />
               <h3 className="font-playfair text-lg font-bold text-[#0B0908]">Lista de convites</h3>
             </div>
-            <span className="text-xs font-bold text-black/40 uppercase tracking-widest">3 Selecionados</span>
+            <span className="text-xs font-bold text-black/40 uppercase tracking-widest">{invites.length} Últimos</span>
           </div>
           
           <div className="bg-white border border-black/5 rounded-3xl shadow-sm overflow-hidden">
             <div className="divide-y divide-black/[0.03]">
-              {inviteList.map((person) => (
-                <div key={person.id} className="p-5 flex items-center justify-between hover:bg-white/40 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                      <AvatarFallback className="bg-gradient-to-br from-[#F88A2B]/20 to-[#F88A2B]/40 text-[#0B0908] font-bold">
-                        {person.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-0.5">
-                      <h4 className="font-bold text-[#0B0908]">{person.name}</h4>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-black/50 font-medium">{person.dept}</span>
-                        <span className="w-1 h-1 rounded-full bg-black/20" />
-                        <Badge variant="secondary" className={`text-[9px] uppercase tracking-tighter h-4 px-1.5 ${
-                          person.status === 'Aceito' ? 'bg-green-100 text-green-700 border-none' :
-                          person.status === 'Enviado' ? 'bg-blue-100 text-blue-700 border-none' :
-                          'bg-amber-100 text-amber-700 border-none'
-                        }`}>
-                          {person.status}
-                        </Badge>
+              {invites.length === 0 && (
+                <div className="p-8 text-center text-sm text-black/40">Nenhum convite ainda.</div>
+              )}
+              {invites.map((person) => {
+                const st = inviteStatusLabel(person);
+                const active = !person.accepted_at && !person.canceled_at && !person.declined_at;
+                const initials = (person.full_name ?? person.email).slice(0, 2).toUpperCase();
+                return (
+                  <div key={person.id} className="p-5 flex items-center justify-between hover:bg-white/40 transition-colors">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+                        <AvatarFallback className="bg-gradient-to-br from-[#F88A2B]/20 to-[#F88A2B]/40 text-[#0B0908] font-bold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-0.5 min-w-0">
+                        <h4 className="font-bold text-[#0B0908] truncate">{person.full_name ?? person.email}</h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-black/50 font-medium truncate">{person.department ?? person.email}</span>
+                          <span className="w-1 h-1 rounded-full bg-black/20" />
+                          <Badge variant="secondary" className={`text-[9px] uppercase tracking-tighter h-4 px-1.5 border-none ${st.tone}`}>
+                            {st.label}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
+                    {active && (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost" size="sm"
+                          disabled={busyInvite === person.id}
+                          onClick={() => handleInviteAction(person.id, "resend")}
+                          className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] hover:text-[#e0751a] hover:bg-[#F88A2B]/5 rounded-full px-4"
+                        >
+                          Reenviar
+                        </Button>
+                        <Button
+                          variant="ghost" size="sm"
+                          disabled={busyInvite === person.id}
+                          onClick={() => handleInviteAction(person.id, "cancel")}
+                          className="text-[10px] font-bold uppercase tracking-widest text-black/40 hover:text-red-600 hover:bg-red-50 rounded-full px-4"
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] hover:text-[#e0751a] hover:bg-[#F88A2B]/5 rounded-full px-4">
-                      Reenviar
-                    </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full text-black/20 hover:text-black/60">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
