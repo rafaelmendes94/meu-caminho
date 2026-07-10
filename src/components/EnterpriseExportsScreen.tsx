@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ShieldCheck, 
@@ -14,13 +14,53 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+function toCSV(rows: Record<string, any>[]): string {
+  if (!rows.length) return "";
+  const headers = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
+  const escape = (v: any) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const body = rows.map((r) => headers.map((h) => escape(r[h])).join(",")).join("\n");
+  return headers.join(",") + "\n" + body;
+}
+
+function download(filename: string, content: string, mime = "text/csv;charset=utf-8") {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const EnterpriseExportsScreen = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, organization } = useAuth();
   
   const [selectedFormat, setSelectedFormat] = useState("pdf");
   const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [generating, setGenerating] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+
+  const loadHistory = async () => {
+    if (!organization?.id) return;
+    const { data } = await supabase
+      .from("data_export_requests")
+      .select("id,status,requested_at,completed_at,error")
+      .eq("organization_id", organization.id)
+      .order("requested_at", { ascending: false })
+      .limit(15);
+    setHistory(data ?? []);
+  };
+  useEffect(() => { loadHistory(); /* eslint-disable-next-line */ }, [organization?.id]);
+
+  const periodDays = { week: 7, month: 30, quarter: 90, custom: 30 } as Record<string, number>;
 
   const formats = [
     {
@@ -60,12 +100,6 @@ const EnterpriseExportsScreen = () => {
     { id: "custom", label: "período personalizado" }
   ];
 
-  const history = [
-    { id: 1, name: "Relatório executivo", date: "Maio 2026", format: "PDF" },
-    { id: 2, name: "Board Report", date: "Abril 2026", format: "PDF" },
-    { id: 3, name: "CSV agregado", date: "Março 2026", format: "CSV" }
-  ];
-
   const includedItems = [
     "maturidade emocional coletiva",
     "adesão ao check-in",
@@ -76,12 +110,55 @@ const EnterpriseExportsScreen = () => {
     "proteção de anonimato"
   ];
 
-  const handleGenerate = () => {
-    toast({
-      title: "Processando exportação",
-      description: "Exportação preparada com segurança.",
-      duration: 3000,
-    });
+  const handleGenerate = async () => {
+    if (!user || !organization?.id || generating) return;
+    setGenerating(true);
+    const days = periodDays[selectedPeriod] ?? 30;
+    // Log request
+    const { data: req } = await supabase
+      .from("data_export_requests")
+      .insert({ user_id: user.id, organization_id: organization.id, status: "processing" })
+      .select("id")
+      .single();
+    try {
+      const [{ data: emap }, { data: pulse }, { data: weekly }] = await Promise.all([
+        supabase.rpc("get_emotional_map", { _organization_id: organization.id, _weeks: Math.ceil(days / 7) }),
+        supabase.rpc("get_pulse_aggregate", { _organization_id: organization.id, _days: days }),
+        supabase.rpc("get_weekly_checkin_aggregate", { _organization_id: organization.id }),
+      ]);
+      let filename = `enterprise-${selectedFormat}-${new Date().toISOString().slice(0,10)}.csv`;
+      let content = "";
+      if (selectedFormat === "csv") {
+        content = "# Emotional Map\n" + toCSV((emap ?? []) as any[]) + "\n\n# Pulse Aggregate\n" + toCSV((pulse ?? []) as any[]) + "\n\n# Weekly Checkins\n" + toCSV((weekly ?? []) as any[]);
+      } else {
+        // For PDF/Board/Slides: fallback to JSON structured export
+        filename = `enterprise-${selectedFormat}-${new Date().toISOString().slice(0,10)}.json`;
+        content = JSON.stringify({
+          organization: organization.name,
+          generated_at: new Date().toISOString(),
+          period_days: days,
+          format_requested: selectedFormat,
+          emotional_map: emap ?? [],
+          pulse: pulse ?? [],
+          weekly_checkins: weekly ?? [],
+        }, null, 2);
+      }
+      download(filename, content, selectedFormat === "csv" ? "text/csv;charset=utf-8" : "application/json");
+      if (req?.id) {
+        await supabase.from("data_export_requests").update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          file_size_bytes: content.length,
+        }).eq("id", req.id);
+      }
+      toast({ title: "Exportação gerada", description: `${filename} salvo com sucesso.` });
+      loadHistory();
+    } catch (e: any) {
+      if (req?.id) await supabase.from("data_export_requests").update({ status: "failed", error: e?.message ?? "erro" }).eq("id", req.id);
+      toast({ title: "Falha na exportação", description: e?.message ?? "Tente novamente.", variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -196,6 +273,9 @@ const EnterpriseExportsScreen = () => {
             <span className="text-xs text-gray-400 font-medium">Últimos 30 dias</span>
           </div>
           <div className="space-y-3">
+            {history.length === 0 && (
+              <p className="text-xs text-gray-400 px-1">Nenhuma exportação registrada ainda.</p>
+            )}
             {history.map((item) => (
               <div key={item.id} className="bg-white p-5 rounded-2xl flex items-center justify-between shadow-sm border border-transparent hover:border-orange-100 transition-all">
                 <div className="flex items-center gap-4">
@@ -203,16 +283,18 @@ const EnterpriseExportsScreen = () => {
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <h5 className="text-sm font-bold">{item.name}</h5>
+                    <h5 className="text-sm font-bold">Exportação #{String(item.id).slice(0, 8)}</h5>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px] text-gray-400 uppercase tracking-wider">{item.date}</span>
-                      <span className="text-[10px] text-orange-400 font-bold uppercase">{item.format}</span>
+                      <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+                        {new Date(item.requested_at).toLocaleString("pt-BR")}
+                      </span>
+                      <span className={`text-[10px] font-bold uppercase ${
+                        item.status === "completed" ? "text-emerald-500" :
+                        item.status === "failed" ? "text-red-500" : "text-orange-400"
+                      }`}>{item.status}</span>
                     </div>
                   </div>
                 </div>
-                <button className="p-2 hover:bg-orange-50 rounded-full text-gray-400 hover:text-[#F88A2B] transition-all">
-                  <Download className="w-4 h-4" />
-                </button>
               </div>
             ))}
           </div>
@@ -261,9 +343,10 @@ const EnterpriseExportsScreen = () => {
         <section className="space-y-4 pt-4">
           <button 
             onClick={handleGenerate}
+            disabled={generating}
             className="w-full h-16 bg-[#F88A2B] text-[#111] rounded-2xl font-bold text-sm shadow-lg shadow-orange-500/20 active:scale-95 transition-transform flex items-center justify-center gap-3"
           >
-            Gerar exportação
+            {generating ? "Gerando…" : "Gerar exportação"}
             <ArrowRight className="w-4 h-4" />
           </button>
           
