@@ -345,21 +345,20 @@ const EnterpriseEmployeeAdminScreen = () => {
         {/* Histórico administrativo */}
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Histórico administrativo</h3>
-          <div className="relative space-y-8 px-4">
-            <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-[#E5E0DA]" />
-            {[
-              { text: "Licença ativada", date: "12/03/2026", icon: ShieldCheck },
-              { text: "Conta criada e acesso realizado", date: "12/03/2026", icon: UserCircle2 },
-              { text: "Convite aceito pelo colaborador", date: "11/03/2026", icon: CheckCircle2 },
-              { text: "Convite enviado para o RH", date: "10/03/2026", icon: Mail }
-            ].map((item, idx) => (
-              <div key={idx} className="relative flex items-center gap-6">
-                <div className="w-5 h-5 rounded-full bg-white border-2 border-[#E5E0DA] flex items-center justify-center relative z-10 shadow-sm">
+          <div className="relative space-y-4 px-4">
+            {history.length === 0 && (
+              <p className="text-sm text-[#0B0908]/40 py-4">Sem eventos auditados ainda.</p>
+            )}
+            {history.map((h) => (
+              <div key={h.id} className="flex items-center gap-4">
+                <div className="w-5 h-5 rounded-full bg-white border-2 border-[#E5E0DA] flex items-center justify-center shadow-sm">
                   <div className="w-1.5 h-1.5 bg-[#F88A2B] rounded-full" />
                 </div>
-                <div className="flex-1 flex justify-between items-center bg-black/[0.03]0 p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <span className="text-sm font-semibold">{item.text}</span>
-                  <span className="text-[10px] font-bold text-[#0B0908]/30">{item.date}</span>
+                <div className="flex-1 flex justify-between items-center bg-white p-4 rounded-2xl border border-black/5 shadow-sm">
+                  <span className="text-sm font-semibold">{h.action}</span>
+                  <span className="text-[10px] font-bold text-[#0B0908]/40">
+                    {new Date(h.created_at).toLocaleString("pt-BR")}
+                  </span>
                 </div>
               </div>
             ))}
@@ -370,17 +369,34 @@ const EnterpriseEmployeeAdminScreen = () => {
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Ações de gestão</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {adminActions.map((action, i) => (
-              <button 
-                key={i}
-                className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all group shadow-sm"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#0B0908]/40 group-hover:text-[#F88A2B] transition-colors">
-                  <action.icon className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-[#0B0908]/60 group-hover:text-[#0B0908]">{action.title}</span>
+            {!deleted && form.status === "active" && (
+              <button onClick={() => setActive(false)} disabled={busyAction === "status"} className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]"><LogOut className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-[#0B0908]">Desativar</span>
               </button>
-            ))}
+            )}
+            {!deleted && form.status !== "active" && (
+              <button onClick={() => setActive(true)} disabled={busyAction === "status"} className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]"><RefreshCw className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-[#0B0908]">Reativar</span>
+              </button>
+            )}
+            {!deleted && (
+              <button onClick={softDelete} disabled={busyAction === "delete"} className="bg-white border border-red-200 p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:bg-red-50 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600"><Lock className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-red-700">Excluir</span>
+              </button>
+            )}
+            {deleted && (
+              <button onClick={restore} disabled={busyAction === "restore"} className="bg-white border border-green-200 p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:bg-green-50 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-700"><RefreshCw className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-green-700">Restaurar</span>
+              </button>
+            )}
+            <button onClick={() => setEditing(true)} className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]"><Edit2 className="w-6 h-6" /></div>
+              <span className="text-sm font-bold text-[#0B0908]">Editar cargo/depto/gestor</span>
+            </button>
           </div>
         </section>
 
