@@ -65,7 +65,7 @@ const EnterpriseAdminCenterScreen = () => {
             .eq("organization_id", organization.id),
           supabase
             .from("organization_contracts")
-            .select("licenses_total, licenses_used, status")
+            .select("licenses_total, status")
             .eq("organization_id", organization.id)
             .maybeSingle(),
           supabase
@@ -81,8 +81,8 @@ const EnterpriseAdminCenterScreen = () => {
         ]);
 
       const licenseTxt =
-        contract?.licenses_total
-          ? `${contract.licenses_used ?? 0}/${contract.licenses_total}`
+        contract && "licenses_total" in contract && contract.licenses_total
+          ? `${emp ?? 0}/${contract.licenses_total}`
           : "sem contrato";
 
       let consentsPct = "—";
