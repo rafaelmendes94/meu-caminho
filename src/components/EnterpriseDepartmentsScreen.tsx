@@ -359,6 +359,51 @@ const EnterpriseDepartmentsScreen = () => {
             Estrutura Corporativa Premium
           </p>
         </footer>
+
+        {/* Edit Dialog */}
+        <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+          <DialogContent className="rounded-3xl">
+            <DialogHeader>
+              <DialogTitle>Editar departamento</DialogTitle>
+            </DialogHeader>
+            {editing && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">Nome</label>
+                  <Input value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} className="rounded-2xl h-12" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">Código</label>
+                  <Input value={editing.code ?? ""} onChange={e => setEditing({ ...editing, code: e.target.value })} className="rounded-2xl h-12" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">Líder</label>
+                  <Select value={editing.leader_id ?? "__none"} onValueChange={(v) => setEditing({ ...editing, leader_id: v === "__none" ? null : v })}>
+                    <SelectTrigger className="rounded-2xl h-12"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Sem líder</SelectItem>
+                      {profiles.map(p => <SelectItem key={p.id} value={p.id}>{p.full_name ?? "—"}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">Departamento pai</label>
+                  <Select value={editing.parent_id ?? "__none"} onValueChange={(v) => setEditing({ ...editing, parent_id: v === "__none" ? null : v })}>
+                    <SelectTrigger className="rounded-2xl h-12"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Nenhum</SelectItem>
+                      {departments.filter(d => d.id !== editing.id).map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setEditing(null)}>Cancelar</Button>
+              <Button onClick={handleUpdate} className="bg-[#F88A2B] hover:bg-[#e0751a] text-[#111]">Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </EnterpriseRHLayout>
   );
