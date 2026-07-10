@@ -105,7 +105,6 @@ import EnterpriseBenchmarkScreen from "./components/EnterpriseBenchmarkScreen.ts
 import EnterpriseLeadershipOverviewScreen from "./components/EnterpriseLeadershipOverviewScreen.tsx";
 import EnterpriseEmotionalMapScreen from "./components/EnterpriseEmotionalMapScreen.tsx";
 import EnterpriseLeadershipMessageScreen from "./components/EnterpriseLeadershipMessageScreen.tsx";
-import EnterpriseAIInsightsScreen from "./pages/EnterpriseAIInsightsScreen.tsx";
 import EnterpriseJourneyEvolutionScreen from "./components/EnterpriseJourneyEvolutionScreen.tsx";
 import EnterpriseLeadershipHealthScreen from "./components/EnterpriseLeadershipHealthScreen.tsx";
 import EnterprisePermissionsScreen from "./components/EnterprisePermissionsScreen.tsx";
@@ -411,7 +410,7 @@ const App = () => (
           <Route path="/enterprise/rh/impacto" element={<RH><EnterpriseImpactEngineScreen /></RH>} />
           <Route path="/enterprise/rh/mapa-emocional" element={<RH><EnterpriseEmotionalMapScreen /></RH>} />
           <Route path="/enterprise/rh/comunicados" element={<RH><EnterpriseLeadershipMessageScreen /></RH>} />
-          <Route path="/enterprise/rh/insights-ia" element={<RH><EnterpriseAIInsightsScreen /></RH>} />
+          <Route path="/enterprise/rh/insights-ia" element={<Navigate to="/enterprise/rh/insights-semanais" replace />} />
           <Route path="/enterprise/rh/denuncias" element={<RH><EnterpriseRHReportsScreen /></RH>} />
           <Route path="/enterprise/rh/denuncias/:id" element={<RH><EnterpriseRHReportDetailScreen /></RH>} />
           <Route path="/enterprise/rh/sos" element={<RH><EnterpriseRHReportsScreen /></RH>} />
