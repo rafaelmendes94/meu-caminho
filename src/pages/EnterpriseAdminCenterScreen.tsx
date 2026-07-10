@@ -60,6 +60,13 @@ const EnterpriseAdminCenterScreen = () => {
   const [recentActivity, setRecentActivity] = useState<
     Array<{ title: string; date: string; icon: any }>
   >([]);
+  const [latestInsight, setLatestInsight] = useState<{
+    title: string;
+    summary: string | null;
+    recs: string[];
+    week_of: string;
+  } | null>(null);
+  const [orgStatus, setOrgStatus] = useState<Array<{ label: string; val: string; ok: boolean; icon: any }>>([]);
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -117,6 +124,81 @@ const EnterpriseAdminCenterScreen = () => {
           icon: iconForEntity(l.entity_type),
         }))
       );
+
+      // B-04: leitura estratégica real (última insight semanal)
+      const { data: insight } = await supabase
+        .from("weekly_ai_insights")
+        .select("title, summary, recommended_actions, week_of")
+        .eq("organization_id", organization.id)
+        .order("generated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (insight) {
+        const rawRecs = (insight as any).recommended_actions;
+        const recs = Array.isArray(rawRecs)
+          ? rawRecs
+              .map((r: any) => (typeof r === "string" ? r : r?.title || r?.action || ""))
+              .filter(Boolean)
+              .slice(0, 4)
+          : [];
+        setLatestInsight({
+          title: (insight as any).title,
+          summary: (insight as any).summary,
+          recs,
+          week_of: (insight as any).week_of,
+        });
+      } else {
+        setLatestInsight(null);
+      }
+
+      // B-05: status organizacional real
+      const { data: settings } = await supabase
+        .from("organization_settings")
+        .select("privacy_min_group_size, checkin_frequency, direct_channel")
+        .eq("organization_id", organization.id)
+        .maybeSingle();
+      const org = organization as any;
+      const hasDomain = !!org?.domain;
+      const hasSlug = !!org?.slug;
+      const anonOk = (settings?.privacy_min_group_size ?? 5) >= 5;
+      setOrgStatus([
+        {
+          label: "Compliance",
+          val: contract?.status === "active" ? "Ativo" : contract?.status || "Sem contrato",
+          ok: contract?.status === "active",
+          icon: ShieldCheck,
+        },
+        {
+          label: `Anonimização (k≥${settings?.privacy_min_group_size ?? 5})`,
+          val: anonOk ? "Ativa" : "Abaixo do mínimo",
+          ok: anonOk,
+          icon: Lock,
+        },
+        {
+          label: "Canal Direto",
+          val: (settings?.direct_channel ?? true) ? "Ativo" : "Desativado",
+          ok: (settings?.direct_channel ?? true),
+          icon: MessageSquare,
+        },
+        {
+          label: "Domínio",
+          val: hasDomain ? "Validado" : "Não configurado",
+          ok: hasDomain,
+          icon: Globe,
+        },
+        {
+          label: "Identidade pública",
+          val: hasSlug ? "Configurada" : "Não configurada",
+          ok: hasSlug,
+          icon: Key,
+        },
+        {
+          label: "Auditoria",
+          val: (logs?.length ?? 0) > 0 ? "Registrando" : "Sem atividade",
+          ok: (logs?.length ?? 0) > 0,
+          icon: History,
+        },
+      ]);
     })();
   }, [organization?.id]);
 
