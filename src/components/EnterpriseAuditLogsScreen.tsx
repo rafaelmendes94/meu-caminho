@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { EmptyState } from "@/components/ui/empty-state";
 import { 
   ArrowLeft, 
   ShieldCheck, 
