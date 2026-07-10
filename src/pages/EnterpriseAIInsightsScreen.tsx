@@ -4,5 +4,5 @@ import { Navigate } from "react-router-dom";
 // weekly insights screen (EnterpriseWeeklyInsightsScreen), backed by
 // the weekly_ai_insights table.
 export default function EnterpriseAIInsightsScreen() {
-  return <Navigate to="/enterprise/rh/insights" replace />;
+  return <Navigate to="/enterprise/rh/insights-semanais" replace />;
 }
