@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 import { ChevronRight, ChevronDown, Users, RefreshCw, ShieldCheck, BarChart3 } from "lucide-react";
+import { useOrgMinGroupSize } from "@/hooks/useOrgMinGroupSize";
 
 type Node = {
   profile_id: string;
@@ -114,6 +115,7 @@ function NodeRow({
 export default function EnterpriseOrgChartScreen() {
   const { organization } = useAuth();
   const { toast } = useToast();
+  const minGroup = useOrgMinGroupSize();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -230,7 +232,7 @@ export default function EnterpriseOrgChartScreen() {
                         <Metric label="Comunicação" value={fmt(indicators.pulse_communication)} />
                         <Metric label="Recuperação" value={fmt(indicators.pulse_recovery)} />
                       </div>
-                      {indicators.participants_count < 5 && (
+                      {indicators.participants_count < minGroup && (
                         <p className="text-[11px] text-[#F88A2B] italic">
                           Amostra insuficiente para exibição segura.
                         </p>
@@ -246,7 +248,7 @@ export default function EnterpriseOrgChartScreen() {
         </div>
 
         <p className="text-[11px] text-[#999] italic text-center pt-4">
-          Indicadores por equipe são exibidos apenas com amostra mínima de 5 participantes. O RH nunca acessa respostas individuais.
+          Indicadores por equipe são exibidos apenas com amostra mínima de {minGroup} participantes. O RH nunca acessa respostas individuais.
         </p>
       </div>
     </EnterpriseRHLayout>

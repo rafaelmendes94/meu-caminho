@@ -814,6 +814,7 @@ export type Database = {
       }
       departments: {
         Row: {
+          code: string | null
           created_at: string
           id: string
           leader_id: string | null
@@ -823,6 +824,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          code?: string | null
           created_at?: string
           id?: string
           leader_id?: string | null
@@ -832,6 +834,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          code?: string | null
           created_at?: string
           id?: string
           leader_id?: string | null

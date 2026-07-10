@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useOrgMinGroupSize } from "@/hooks/useOrgMinGroupSize";
 import { 
   ShieldCheck, 
   TrendingDown, 
@@ -38,14 +42,40 @@ export default function EnterpriseDepartmentDetailScreen() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
-  
-  // In a real app, we'd fetch data based on ID. Mocking "Operações" for now.
-  const deptName = "Operações";
+  const { organization } = useAuth();
+  const minGroup = useOrgMinGroupSize();
+  const [deptName, setDeptName] = useState<string>("Carregando…");
+  const [memberCount, setMemberCount] = useState<number>(0);
+  const [leaderName, setLeaderName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!id || !organization?.id) return;
+      setLoading(true);
+      const [depRes, membersRes] = await Promise.all([
+        supabase.from("departments").select("name,leader_id").eq("id", id).maybeSingle(),
+        supabase.from("profiles").select("id").eq("department_id", id).is("deleted_at", null),
+      ]);
+      if (!alive) return;
+      setDeptName(depRes.data?.name ?? "Departamento");
+      setMemberCount((membersRes.data ?? []).length);
+      if (depRes.data?.leader_id) {
+        const { data: leader } = await supabase.from("profiles").select("full_name").eq("id", depRes.data.leader_id).maybeSingle();
+        if (alive) setLeaderName(leader?.full_name ?? null);
+      }
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [id, organization?.id]);
+
+  const belowThreshold = memberCount > 0 && memberCount < minGroup;
 
   const handleGeneratePlan = () => {
     toast({
-      title: "Plano de ação sugerido criado.",
-      description: "As recomendações foram enviadas para o seu e-mail corporativo.",
+      title: "Plano de ação será gerado em breve.",
+      description: "A geração automática de planos entra no próximo release do módulo.",
     });
   };
 
@@ -62,18 +92,22 @@ export default function EnterpriseDepartmentDetailScreen() {
             
             <div className="relative z-10">
               <h2 className="text-[26px] leading-tight font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Uma área sob pressão merece uma leitura mais cuidadosa.
+                {deptName}
               </h2>
               
               <p className="text-[14px] leading-relaxed text-[#666] mb-8 max-w-[300px]">
-                Os indicadores abaixo representam sinais coletivos do grupo, nunca dados individuais.
+                {leaderName ? `Líder: ${leaderName}. ` : ""}
+                {loading ? "Carregando dados…" :
+                  belowThreshold
+                    ? `Este departamento tem apenas ${memberCount} colaboradores — abaixo do mínimo (${minGroup}) para exibir recortes agregados.`
+                    : `${memberCount} colaboradores. Indicadores agregados abaixo, sem nenhum dado individual.`}
               </p>
 
               <div className="grid grid-cols-2 gap-y-8 gap-x-4">
-                <KPIItem label="Equilíbrio" value="2,9" sub="/ 5" />
-                <KPIItem label="Sobrecarga" value="67%" />
-                <KPIItem label="Clareza" value="46%" />
-                <KPIItem label="Adesão" value="83%" />
+                <KPIItem label="Colaboradores" value={String(memberCount)} />
+                <KPIItem label="Líder" value={leaderName ?? "—"} />
+                <KPIItem label="Mín. grupo" value={String(minGroup)} sub="pessoas" />
+                <KPIItem label="Status" value={belowThreshold ? "Protegido" : "Elegível"} />
               </div>
             </div>
           </div>
