@@ -18,23 +18,43 @@ import {
   Flag,
   Inbox,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
-import { getReportById, enterpriseReports } from "@/data/enterpriseReports";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { useRealtime } from "@/hooks/useRealtime";
+
+type ReportRow = {
+  id: string;
+  protocol: string;
+  subject: string;
+  body: string;
+  category: string;
+  severity: string;
+  status: string;
+  is_anonymous: boolean;
+  created_at: string;
+  resolved_at: string | null;
+};
+type MessageRow = { id: string; body: string; author_role: string; created_at: string };
 
 const statusLabel: Record<string, string> = {
-  new: "Novo",
-  read: "Em análise",
-  replied: "Respondido",
+  open: "Aberto",
+  in_progress: "Em análise",
+  resolved: "Resolvido",
+  archived: "Arquivado",
 };
 
-const priorityStyles: Record<string, string> = {
+const severityStyles: Record<string, string> = {
   high: "bg-red-50 text-red-600",
   medium: "bg-amber-50 text-amber-700",
   low: "bg-emerald-50 text-emerald-700",
+  critical: "bg-red-100 text-red-700",
 };
 
-const priorityLabel: Record<string, string> = {
+const severityLabel: Record<string, string> = {
+  critical: "Crítica",
   high: "Alta prioridade",
   medium: "Média prioridade",
   low: "Baixa prioridade",
@@ -42,9 +62,78 @@ const priorityLabel: Record<string, string> = {
 
 export default function EnterpriseRHReportDetailScreen() {
   const navigate = useNavigate();
+  const { user, organization } = useAuth();
   const { id } = useParams<{ id: string }>();
-  const report = getReportById(id || "");
+  const [report, setReport] = useState<ReportRow | null>(null);
+  const [messages, setMessages] = useState<MessageRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const load = async () => {
+    if (!id || !organization?.id) return;
+    setLoading(true);
+    const [{ data: r }, { data: msgs }] = await Promise.all([
+      supabase.from("reports").select("*").eq("id", id).maybeSingle(),
+      supabase.from("report_messages").select("id,body,author_role,created_at").eq("report_id", id).order("created_at"),
+    ]);
+    setReport(r as ReportRow | null);
+    setMessages((msgs ?? []) as MessageRow[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, organization?.id]);
+
+  useRealtime(
+    "rh_report_detail",
+    id
+      ? [
+          { table: "report_messages", filter: `report_id=eq.${id}` },
+          { table: "reports", filter: `id=eq.${id}` },
+        ]
+      : [],
+    () => load(),
+    [id]
+  );
+
+  const setStatus = async (status: string) => {
+    if (!report) return;
+    const patch: any = { status };
+    if (status === "resolved") patch.resolved_at = new Date().toISOString();
+    const { error } = await supabase.from("reports").update(patch).eq("id", report.id);
+    if (error) toast.error("Não foi possível atualizar o status.");
+    else toast.success(`Marcado como ${statusLabel[status] ?? status}.`);
+  };
+
+  const sendReply = async () => {
+    if (!reply.trim() || !report || !user || sending) return;
+    setSending(true);
+    const { error } = await supabase.from("report_messages").insert({
+      report_id: report.id,
+      organization_id: report.organization_id as any,
+      author_user_id: user.id,
+      author_role: "rh",
+      body: reply.trim(),
+    } as any);
+    if (error) {
+      toast.error("Não foi possível enviar a resposta.");
+    } else {
+      setReply("");
+      if (report.status === "open") await setStatus("in_progress");
+    }
+    setSending(false);
+  };
+
+  if (loading) {
+    return (
+      <EnterpriseRHLayout title="Carregando…">
+        <div className="p-16 text-center text-sm text-[#999]">Carregando relato…</div>
+      </EnterpriseRHLayout>
+    );
+  }
 
   if (!report) {
     return (
@@ -74,12 +163,12 @@ export default function EnterpriseRHReportDetailScreen() {
     );
   }
 
-  const currentIndex = enterpriseReports.findIndex((r) => r.id === report.id);
-  const prev = enterpriseReports[currentIndex - 1];
-  const next = enterpriseReports[currentIndex + 1];
+  const created = new Date(report.created_at);
+  const dateStr = created.toLocaleDateString("pt-BR");
+  const timeStr = created.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <EnterpriseRHLayout title={`Relato ${report.id}`}>
+    <EnterpriseRHLayout title={`Relato ${report.protocol}`}>
       <div className="space-y-8 animate-fade-in">
         {/* Breadcrumb / Back */}
         <button
@@ -106,12 +195,12 @@ export default function EnterpriseRHReportDetailScreen() {
                 </div>
                 <span className="text-[#AAA]">•</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#666]">
-                  {report.id}
+                  {report.protocol}
                 </span>
                 <span className="text-[#AAA]">•</span>
                 <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#666]">
                   <Clock className="h-3 w-3" />
-                  {report.date} às {report.time}
+                  {dateStr} às {timeStr}
                 </div>
               </div>
 
@@ -119,20 +208,20 @@ export default function EnterpriseRHReportDetailScreen() {
                 className="text-[28px] md:text-[40px] leading-tight font-bold"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                {report.reason}
+                {report.subject}
               </h2>
 
               <div className="flex flex-wrap items-center gap-2">
                 <div
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${priorityStyles[report.priority]}`}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${severityStyles[report.severity] ?? "bg-black/5 text-[#666]"}`}
                 >
                   <AlertTriangle className="h-3 w-3" />
-                  {priorityLabel[report.priority]}
+                  {severityLabel[report.severity] ?? report.severity}
                 </div>
                 <div className="px-3 py-1.5 rounded-full bg-black/5 backdrop-blur-md text-[#111] text-[10px] font-bold uppercase tracking-widest border border-black/5">
-                  {statusLabel[report.status]}
+                  {statusLabel[report.status] ?? report.status}
                 </div>
-                {report.isAnonymous && (
+                {report.is_anonymous && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 backdrop-blur-md text-[#111] text-[10px] font-bold uppercase tracking-widest border border-black/5">
                     <EyeOff className="h-3 w-3" />
                     Identidade protegida
@@ -144,16 +233,11 @@ export default function EnterpriseRHReportDetailScreen() {
         </section>
 
         {/* Meta Info */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
             { icon: Tag, label: "Categoria", value: report.category },
-            { icon: Building2, label: "Departamento", value: report.department },
-            { icon: Radio, label: "Canal", value: report.channel },
-            {
-              icon: Paperclip,
-              label: "Anexos",
-              value: report.attachments > 0 ? `${report.attachments} arquivo(s)` : "Nenhum",
-            },
+            { icon: Radio, label: "Canal", value: "Direto RH" },
+            { icon: EyeOff, label: "Identidade", value: report.is_anonymous ? "Anônimo" : "Identificado" },
           ].map(({ icon: Icon, label, value }) => (
             <div
               key={label}
@@ -180,24 +264,24 @@ export default function EnterpriseRHReportDetailScreen() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-1">
                 Mensagem recebida
               </div>
-              <div className="text-[13px] font-bold text-[#111]">Colaborador anônimo</div>
+              <div className="text-[13px] font-bold text-[#111]">{report.is_anonymous ? "Colaborador anônimo" : "Colaborador identificado"}</div>
             </div>
           </div>
           <blockquote className="text-[16px] md:text-[18px] text-[#222] leading-relaxed italic border-l-4 border-[#F88A2B] pl-6">
-            "{report.message}"
+            "{report.body}"
           </blockquote>
         </section>
 
         {/* Actions */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            { icon: CheckCircle2, label: "Marcar como resolvido" },
-            { icon: Forward, label: "Encaminhar caso" },
-            { icon: Flag, label: "Sinalizar urgência" },
-            { icon: Archive, label: "Arquivar" },
-          ].map(({ icon: Icon, label }) => (
+            { icon: CheckCircle2, label: "Marcar como resolvido", action: () => setStatus("resolved") },
+            { icon: Flag, label: "Em análise", action: () => setStatus("in_progress") },
+            { icon: Archive, label: "Arquivar", action: () => setStatus("archived") },
+          ].map(({ icon: Icon, label, action }) => (
             <button
               key={label}
+              onClick={action}
               className="h-14 rounded-2xl bg-white border border-white/60 shadow-sm hover:bg-gradient-to-br from-[#F7F4F2] to-[#EFEAE5] border border-[#E5E0DA] text-[#111] hover:text-[#111] hover:border-[#0B0908] transition-all flex items-center justify-center gap-2 text-[12px] font-bold text-[#111] px-4"
             >
               <Icon className="h-4 w-4" />
@@ -213,11 +297,14 @@ export default function EnterpriseRHReportDetailScreen() {
               className="text-[22px] font-bold text-[#111] mb-2"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
-              Responder pelo canal anônimo
+              {report.is_anonymous
+                ? "Responder pelo canal anônimo"
+                : "Responder ao colaborador"}
             </h3>
             <p className="text-[13px] text-[#666] leading-relaxed">
-              Sua resposta chega ao colaborador sem expor a identidade dele. O conteúdo é registrado
-              no histórico do relato.
+              {report.is_anonymous
+                ? "Este relato é anônimo — o colaborador não é visível no fluxo. A resposta fica registrada no histórico do caso."
+                : "Sua resposta será enviada ao colaborador e ficará registrada no histórico do caso."}
             </p>
           </div>
           <textarea
@@ -230,14 +317,15 @@ export default function EnterpriseRHReportDetailScreen() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[11px] text-[#999] font-medium">
               <ShieldCheck className="h-4 w-4 text-[#F88A2B]" />
-              Mensagem criptografada de ponta a ponta
+              Registrada no histórico do caso
             </div>
             <button
-              disabled={!reply.trim()}
+              disabled={!reply.trim() || sending}
+              onClick={sendReply}
               className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-[#F88A2B] text-[#111] text-[13px] font-bold hover:bg-[#e07a1f] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Send className="h-4 w-4" />
-              Enviar resposta
+              {sending ? "Enviando…" : "Enviar resposta"}
             </button>
           </div>
         </section>
@@ -252,56 +340,26 @@ export default function EnterpriseRHReportDetailScreen() {
               Histórico do caso
             </h3>
             <span className="text-[11px] font-bold uppercase tracking-widest text-[#999]">
-              {report.timeline.length} evento(s)
+              {messages.length} mensagem(ns)
             </span>
           </div>
-          <ol className="relative border-l border-[#EFEAE5] ml-3 space-y-6">
-            {report.timeline.map((event, idx) => (
-              <li key={idx} className="pl-6 relative">
-                <div className="absolute -left-[7px] top-1 h-3.5 w-3.5 rounded-full bg-[#F88A2B] ring-4 ring-[#F88A2B]/10" />
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-1">
-                  {event.date} • {event.time}
-                </div>
-                <div className="text-[14px] font-bold text-[#111] mb-1">{event.title}</div>
-                <p className="text-[13px] text-[#666] leading-relaxed">{event.description}</p>
-              </li>
-            ))}
-          </ol>
+          {messages.length === 0 ? (
+            <p className="text-[13px] text-[#999]">Nenhuma resposta ainda.</p>
+          ) : (
+            <ol className="relative border-l border-[#EFEAE5] ml-3 space-y-6">
+              {messages.map((m) => (
+                <li key={m.id} className="pl-6 relative">
+                  <div className="absolute -left-[7px] top-1 h-3.5 w-3.5 rounded-full bg-[#F88A2B] ring-4 ring-[#F88A2B]/10" />
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-1">
+                    {new Date(m.created_at).toLocaleString("pt-BR")} • {m.author_role === "rh" ? "RH" : "Colaborador"}
+                  </div>
+                  <p className="text-[13px] text-[#333] leading-relaxed whitespace-pre-wrap">{m.body}</p>
+                </li>
+              ))}
+            </ol>
+          )}
         </section>
 
-        {/* Navigation between reports */}
-        <section className="flex flex-col md:flex-row gap-3">
-          <button
-            disabled={!prev}
-            onClick={() => prev && navigate(`/enterprise/rh/denuncias/${prev.id}`)}
-            className="flex-1 h-16 rounded-2xl bg-white border border-white/60 shadow-sm px-5 flex items-center justify-between gap-3 text-left hover:bg-[#FAF7F4] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft className="h-4 w-4 text-[#F88A2B] shrink-0" />
-            <div className="flex-1">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-[#999]">
-                Relato anterior
-              </div>
-              <div className="text-[12px] font-bold text-[#111] truncate">
-                {prev ? prev.reason : "Nenhum"}
-              </div>
-            </div>
-          </button>
-          <button
-            disabled={!next}
-            onClick={() => next && navigate(`/enterprise/rh/denuncias/${next.id}`)}
-            className="flex-1 h-16 rounded-2xl bg-white border border-white/60 shadow-sm px-5 flex items-center justify-between gap-3 text-right hover:bg-[#FAF7F4] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <div className="flex-1">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-[#999]">
-                Próximo relato
-              </div>
-              <div className="text-[12px] font-bold text-[#111] truncate">
-                {next ? next.reason : "Nenhum"}
-              </div>
-            </div>
-            <ArrowLeft className="h-4 w-4 text-[#F88A2B] rotate-180 shrink-0" />
-          </button>
-        </section>
       </div>
     </EnterpriseRHLayout>
   );
