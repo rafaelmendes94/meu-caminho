@@ -535,6 +535,37 @@ const EnterpriseUnitsScreen = () => {
         </section>
       </div>
     </div>
+
+    <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+      <DialogContent className="rounded-3xl">
+        <DialogHeader>
+          <DialogTitle>Editar unidade</DialogTitle>
+        </DialogHeader>
+        {editing && (
+          <div className="space-y-4">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 mb-2 block">Nome</label>
+              <input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 text-sm" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 mb-2 block">Endereço / cidade</label>
+              <input value={editing.address ?? ""} onChange={(e) => setEditing({ ...editing, address: e.target.value })}
+                className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 text-sm" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 mb-2 block">Fuso horário</label>
+              <input value={editing.timezone ?? ""} onChange={(e) => setEditing({ ...editing, timezone: e.target.value })}
+                className="w-full px-5 py-3.5 bg-white rounded-2xl border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 text-sm" />
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          <button onClick={() => setEditing(null)} className="px-6 py-3 text-sm font-bold text-[#0B0908]/60">Cancelar</button>
+          <button onClick={handleUpdate} className="px-6 py-3 bg-[#F88A2B] text-white font-bold uppercase tracking-widest rounded-2xl text-xs">Salvar</button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </EnterpriseRHLayout>
   );
 };
