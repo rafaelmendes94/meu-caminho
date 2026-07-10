@@ -187,6 +187,56 @@ export type Database = {
           },
         ]
       }
+      consent_events: {
+        Row: {
+          action: string
+          consent_type: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          metadata: Json
+          organization_id: string | null
+          source: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          action: string
+          consent_type: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json
+          organization_id?: string | null
+          source?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          action?: string
+          consent_type?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json
+          organization_id?: string | null
+          source?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_authors: {
         Row: {
           created_at: string
@@ -671,6 +721,97 @@ export type Database = {
           },
         ]
       }
+      data_deletion_requests: {
+        Row: {
+          canceled_at: string | null
+          completed_at: string | null
+          id: string
+          organization_id: string | null
+          reason: string | null
+          requested_at: string
+          scheduled_for: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          completed_at?: string | null
+          id?: string
+          organization_id?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          canceled_at?: string | null
+          completed_at?: string | null
+          id?: string
+          organization_id?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_deletion_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_export_requests: {
+        Row: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_path: string | null
+          file_size_bytes: number | null
+          id: string
+          organization_id: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          organization_id?: string | null
+          requested_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          error?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          organization_id?: string | null
+          requested_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_export_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string
@@ -835,7 +976,10 @@ export type Database = {
       enterprise_invites: {
         Row: {
           accepted_at: string | null
+          canceled_at: string | null
+          canceled_by: string | null
           created_at: string
+          declined_at: string | null
           department: string | null
           department_id: string | null
           email: string
@@ -844,8 +988,10 @@ export type Database = {
           id: string
           invited_by: string | null
           job_title: string | null
+          last_resent_at: string | null
           manager_id: string | null
           organization_id: string
+          resent_count: number
           role: Database["public"]["Enums"]["app_role"]
           token_hash: string
           unit_id: string | null
@@ -853,7 +999,10 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          canceled_at?: string | null
+          canceled_by?: string | null
           created_at?: string
+          declined_at?: string | null
           department?: string | null
           department_id?: string | null
           email: string
@@ -862,8 +1011,10 @@ export type Database = {
           id?: string
           invited_by?: string | null
           job_title?: string | null
+          last_resent_at?: string | null
           manager_id?: string | null
           organization_id: string
+          resent_count?: number
           role?: Database["public"]["Enums"]["app_role"]
           token_hash: string
           unit_id?: string | null
@@ -871,7 +1022,10 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          canceled_at?: string | null
+          canceled_by?: string | null
           created_at?: string
+          declined_at?: string | null
           department?: string | null
           department_id?: string | null
           email?: string
@@ -880,8 +1034,10 @@ export type Database = {
           id?: string
           invited_by?: string | null
           job_title?: string | null
+          last_resent_at?: string | null
           manager_id?: string | null
           organization_id?: string
+          resent_count?: number
           role?: Database["public"]["Enums"]["app_role"]
           token_hash?: string
           unit_id?: string | null
@@ -1273,6 +1429,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "org_chart_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+          organization_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_audit_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1991,6 +2194,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          deleted_at: string | null
           department: string | null
           department_id: string | null
           display_name: string | null
@@ -2008,6 +2212,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           department?: string | null
           department_id?: string | null
           display_name?: string | null
@@ -2025,6 +2230,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           department?: string | null
           department_id?: string | null
           display_name?: string | null
@@ -2180,6 +2386,133 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      report_messages: {
+        Row: {
+          author_role: string
+          author_user_id: string | null
+          body: string
+          created_at: string
+          id: string
+          organization_id: string
+          report_id: string
+        }
+        Insert: {
+          author_role: string
+          author_user_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          report_id: string
+        }
+        Update: {
+          author_role?: string
+          author_user_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_messages_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          assigned_to: string | null
+          body: string
+          category: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          metadata: Json
+          organization_id: string
+          protocol: string
+          reporter_department_id: string | null
+          reporter_unit_id: string | null
+          reporter_user_id: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          body: string
+          category: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          metadata?: Json
+          organization_id: string
+          protocol: string
+          reporter_department_id?: string | null
+          reporter_unit_id?: string | null
+          reporter_user_id?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          metadata?: Json
+          organization_id?: string
+          protocol?: string
+          reporter_department_id?: string | null
+          reporter_unit_id?: string | null
+          reporter_user_id?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_department_id_fkey"
+            columns: ["reporter_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_unit_id_fkey"
+            columns: ["reporter_unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ritual_participations: {
         Row: {
@@ -2579,6 +2912,7 @@ export type Database = {
         Returns: Json
       }
       current_organization_id: { Args: never; Returns: string }
+      generate_report_protocol: { Args: never; Returns: string }
       get_ai_costs: {
         Args: { _days?: number }
         Returns: {
@@ -2624,6 +2958,10 @@ export type Database = {
       get_executive_context: {
         Args: { _organization_id: string }
         Returns: Json
+      }
+      get_org_min_group_size: {
+        Args: { _organization_id: string }
+        Returns: number
       }
       get_platform_analytics: { Args: { _days?: number }; Returns: Json }
       get_platform_dashboard_summary: { Args: never; Returns: Json }
