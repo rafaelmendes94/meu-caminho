@@ -180,10 +180,10 @@ const EnterpriseUnitsScreen = () => {
         {/* KPIs Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {[
-            { label: "Unidades ativas", value: "12", icon: Building2 },
-            { label: "Regiões organizacionais", value: "5", icon: Globe },
-            { label: "Colaboradores distribuídos", value: "842", icon: Users },
-            { label: "Implantação média", value: "91%", icon: Activity },
+            { label: "Unidades ativas", value: String(units.length), icon: Building2 },
+            { label: "Regiões organizacionais", value: String(regions), icon: Globe },
+            { label: "Colaboradores distribuídos", value: String(totalEmployees), icon: Users },
+            { label: "Ocupação média", value: `${avgOccupancy}%`, icon: Activity },
           ].map((kpi, idx) => (
             <div key={idx} className="bg-white p-6 rounded-[2rem] shadow-sm border border-black/5 hover:shadow-md transition-all group">
               <div className="w-10 h-10 bg-[#F7F4F2] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
