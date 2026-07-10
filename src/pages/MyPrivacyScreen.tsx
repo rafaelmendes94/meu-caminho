@@ -47,7 +47,7 @@ export default function MyPrivacyScreen() {
         supabase.from("emotional_checkins").select("*").eq("user_id", user.id),
         supabase.from("pulse_responses").select("*").eq("user_id", user.id),
         supabase.from("privacy_consents").select("*").eq("user_id", user.id),
-        supabase.from("support_tickets").select("*").eq("user_id", user.id),
+        supabase.from("support_tickets").select("*").eq("opened_by", user.id),
       ]);
       const payload = {
         exported_at: new Date().toISOString(),
