@@ -5,6 +5,7 @@ import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseR
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useRealtime } from "@/hooks/useRealtime";
 
 type Insight = {
   id: string;
@@ -71,6 +72,15 @@ export default function EnterpriseWeeklyInsightsScreen() {
   };
 
   useEffect(() => { void load(); }, [organization?.id]);
+
+  useRealtime(
+    `weekly-insights-${organization?.id ?? "none"}`,
+    organization?.id
+      ? [{ table: "weekly_ai_insights", filter: `organization_id=eq.${organization.id}` }]
+      : [],
+    () => { void load(); },
+    [organization?.id]
+  );
 
   const generate = async () => {
     setGenerating(true);

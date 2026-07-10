@@ -18,6 +18,7 @@ import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useRealtime } from "@/hooks/useRealtime";
 
 type Priority = "low" | "medium" | "high" | "critical";
 type PlanStatus = "draft" | "active" | "paused" | "completed" | "canceled";
@@ -124,6 +125,18 @@ export default function EnterpriseActionPlanScreen() {
   };
 
   useEffect(() => { void load(); }, [organization?.id]);
+
+  useRealtime(
+    `action-plans-${organization?.id ?? "none"}`,
+    organization?.id
+      ? [
+          { table: "action_plans", filter: `organization_id=eq.${organization.id}` },
+          { table: "action_plan_tasks" },
+        ]
+      : [],
+    () => { void load(); },
+    [organization?.id]
+  );
 
   const createManual = async () => {
     if (!organization?.id || !manualTitle.trim()) return;

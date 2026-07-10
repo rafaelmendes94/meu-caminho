@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 import { ChevronRight, ChevronDown, Users, RefreshCw, ShieldCheck, BarChart3 } from "lucide-react";
 import { useOrgMinGroupSize } from "@/hooks/useOrgMinGroupSize";
+import { useRealtime } from "@/hooks/useRealtime";
 
 type Node = {
   profile_id: string;
@@ -132,6 +133,19 @@ export default function EnterpriseOrgChartScreen() {
   };
 
   useEffect(() => { void load(); }, [organization?.id]);
+
+  useRealtime(
+    `orgchart-${organization?.id ?? "none"}`,
+    organization?.id
+      ? [
+          { table: "profiles", filter: `organization_id=eq.${organization.id}` },
+          { table: "departments", filter: `organization_id=eq.${organization.id}` },
+          { table: "units", filter: `organization_id=eq.${organization.id}` },
+        ]
+      : [],
+    () => { void load(); },
+    [organization?.id]
+  );
 
   const tree = useMemo(() => buildTree(nodes), [nodes]);
   const selectedNode = useMemo(() => nodes.find((n) => n.profile_id === selectedId) ?? null, [nodes, selectedId]);

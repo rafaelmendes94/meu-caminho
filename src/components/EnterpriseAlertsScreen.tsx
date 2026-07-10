@@ -19,6 +19,7 @@ import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useRealtime } from "@/hooks/useRealtime";
 
 type Alert = {
   id: string;
@@ -183,6 +184,18 @@ export default function EnterpriseAlertsScreen() {
   };
 
   useEffect(() => { void load(); }, [organization?.id]);
+
+  useRealtime(
+    `alerts-${organization?.id ?? "none"}`,
+    organization?.id
+      ? [
+          { table: "alerts", filter: `organization_id=eq.${organization.id}` },
+          { table: "predictive_signals", filter: `organization_id=eq.${organization.id}` },
+        ]
+      : [],
+    () => { void load(); },
+    [organization?.id]
+  );
 
   const ack = async (id: string) => {
     const { error } = await supabase
