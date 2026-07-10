@@ -25,33 +25,43 @@ import {
   Star
 } from "lucide-react";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+
+type UnitRow = { id: string; name: string; type: string; address: string | null; timezone: string | null; employees: number; status: string };
 
 const EnterpriseUnitsScreen = () => {
   const navigate = useNavigate();
   const { organization } = useAuth();
   const [showToast, setShowToast] = useState(false);
-  const [formData, setFormData] = useState({ name: "", address: "" });
-  const [units, setUnits] = useState<Array<{ id: string; name: string; type: string; employees: number; status: string; indicator: string; statusColor: string }>>([]);
+  const [formData, setFormData] = useState({ name: "", address: "", timezone: "America/Sao_Paulo" });
+  const [units, setUnits] = useState<UnitRow[]>([]);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<UnitRow | null>(null);
+  const [totalEmployees, setTotalEmployees] = useState(0);
 
   const load = async () => {
     if (!organization?.id) return;
     const [unitsRes, profilesRes] = await Promise.all([
-      supabase.from("units").select("id,name,address").eq("organization_id", organization.id).order("name"),
-      supabase.from("profiles").select("unit_id").eq("organization_id", organization.id),
+      supabase.from("units").select("id,name,address,timezone").eq("organization_id", organization.id).order("name"),
+      supabase.from("profiles").select("unit_id").eq("organization_id", organization.id).is("deleted_at", null),
     ]);
     const counts = new Map<string, number>();
     (profilesRes.data ?? []).forEach((p: { unit_id: string | null }) => {
       if (p.unit_id) counts.set(p.unit_id, (counts.get(p.unit_id) ?? 0) + 1);
     });
+    setTotalEmployees((profilesRes.data ?? []).length);
     setUnits(
-      (unitsRes.data ?? []).map((u: { id: string; name: string; address: string | null }) => ({
+      (unitsRes.data ?? []).map((u: any) => ({
         id: u.id,
         name: u.name,
         type: u.address ?? "Unidade",
+        address: u.address,
+        timezone: u.timezone,
         employees: counts.get(u.id) ?? 0,
         status: "Ativa",
-        indicator: "Sinais coletivos em construção",
-        statusColor: "bg-emerald-500",
       })),
     );
   };
@@ -65,13 +75,39 @@ const EnterpriseUnitsScreen = () => {
       organization_id: organization.id,
       name: formData.name,
       address: formData.address || null,
+      timezone: formData.timezone || "America/Sao_Paulo",
     });
-    if (error) return;
-    setFormData({ name: "", address: "" });
+    if (error) { toast.error(error.message); return; }
+    setFormData({ name: "", address: "", timezone: "America/Sao_Paulo" });
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
     load();
   };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Remover esta unidade? Colaboradores serão desvinculados.")) return;
+    const { error } = await supabase.from("units").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Unidade removida.");
+    load();
+  };
+
+  const handleUpdate = async () => {
+    if (!editing) return;
+    const { error } = await supabase.from("units").update({
+      name: editing.name,
+      address: editing.address || null,
+      timezone: editing.timezone || "America/Sao_Paulo",
+    }).eq("id", editing.id);
+    if (error) return toast.error(error.message);
+    toast.success("Unidade atualizada.");
+    setEditing(null);
+    load();
+  };
+
+  const filteredUnits = units.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
+  const regions = new Set(units.map(u => u.address).filter(Boolean)).size;
+  const avgOccupancy = units.length && totalEmployees ? Math.round((totalEmployees / (units.length * 100)) * 100) : 0;
 
   return (
     <EnterpriseRHLayout title="Unidades">
@@ -176,12 +212,19 @@ const EnterpriseUnitsScreen = () => {
                   <input 
                     type="text" 
                     placeholder="Buscar unidade..." 
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                     className="pl-10 pr-4 py-2 bg-white rounded-xl text-sm border border-black/5 focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/20 w-48 sm:w-64 transition-all"
                   />
                 </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
-                {units.map((unit) => (
+                {filteredUnits.length === 0 && (
+                  <div className="sm:col-span-2 bg-white p-8 rounded-3xl border border-black/5 text-center text-sm text-[#0B0908]/50">
+                    {units.length === 0 ? "Nenhuma unidade cadastrada. Adicione uma no formulário ao lado." : "Nenhuma unidade encontrada."}
+                  </div>
+                )}
+                {filteredUnits.map((unit) => (
                   <div key={unit.id} className="bg-white p-6 rounded-[2rem] border border-black/5 hover:shadow-xl transition-all group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#F88A2B]/5 blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#F88A2B]/10 transition-colors" />
                     
@@ -209,20 +252,26 @@ const EnterpriseUnitsScreen = () => {
                       <div className="p-3 bg-[#F7F4F2] rounded-xl border border-black/5">
                         <div className="flex items-center gap-2 mb-1">
                           <Activity className="w-3.5 h-3.5 text-[#F88A2B]" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">Indicador</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40">Fuso</span>
                         </div>
                         <p className="text-xs font-medium text-[#0B0908]">
-                          {unit.indicator}
+                          {unit.timezone ?? "America/Sao_Paulo"}
                         </p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <button className="py-2.5 px-4 bg-[#0B0908] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-[#F88A2B] transition-colors shadow-lg shadow-black/10">
-                        Acessar
+                      <button
+                        onClick={() => setEditing(unit)}
+                        className="py-2.5 px-4 bg-[#0B0908] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-[#F88A2B] transition-colors shadow-lg shadow-black/10"
+                      >
+                        Editar
                       </button>
-                      <button className="py-2.5 px-4 bg-[#F7F4F2] text-[#0B0908] text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-white border border-black/5 transition-colors">
-                        Insights
+                      <button
+                        onClick={() => handleDelete(unit.id)}
+                        className="py-2.5 px-4 bg-[#F7F4F2] text-red-600 text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-red-50 border border-black/5 transition-colors"
+                      >
+                        Remover
                       </button>
                     </div>
                   </div>
