@@ -52,7 +52,7 @@ const EnterpriseBenchmarkScreen = () => {
   ];
 
   return (
-    <EnterpriseRHLayout title="Benchmark emocional">
+    <EnterpriseRHLayout title="Comparativo interno por segmento">
       <div className="space-y-8 animate-fade-in">
         {/* HERO CARD */}
         <section>
@@ -62,14 +62,14 @@ const EnterpriseBenchmarkScreen = () => {
               <div className="flex items-center gap-2 mb-2">
                 <div className="bg-[#F88A2B]/20 px-3 py-1 rounded-full border border-[#F88A2B]/30 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#F88A2B]" />
-                  <span className="text-[10px] font-bold text-[#F88A2B] uppercase tracking-wider">Dados coletivos</span>
+                  <span className="text-[10px] font-bold text-[#F88A2B] uppercase tracking-wider">Dados coletivos internos</span>
                 </div>
               </div>
               <h2 className="text-3xl font-playfair text-[#111] leading-tight">
                 O equilíbrio emocional também constrói cultura.
               </h2>
               <p className="text-[#F7F4F2]/70 text-sm leading-relaxed max-w-[90%]">
-                Compare a evolução coletiva da empresa com padrões organizacionais saudáveis de clareza, equilíbrio e sustentabilidade emocional.
+                Compare a evolução dos segmentos internos da própria organização em clareza, equilíbrio e sustentabilidade emocional. Não é benchmark de mercado.
               </p>
               
               <div className="pt-4 border-t border-black/5 mt-6">
@@ -164,7 +164,7 @@ const EnterpriseBenchmarkScreen = () => {
 
                 <div className="space-y-2 pt-2 border-t border-[#0B0908]/5">
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-[#0B0908]/40 uppercase tracking-wider font-bold">Benchmark saudável</span>
+                    <span className="text-[#0B0908]/40 uppercase tracking-wider font-bold">Referência interna</span>
                     <span className="font-bold text-[#0B0908]/80">{item.benchmark}{item.unit}</span>
                   </div>
                   <div className="h-1.5 w-full bg-[#F7F4F2] rounded-full overflow-hidden">
@@ -294,7 +294,7 @@ const EnterpriseBenchmarkScreen = () => {
         {/* FOOTER */}
         <footer className="text-center py-6">
           <p className="text-[10px] text-[#0B0908]/40 uppercase tracking-widest leading-relaxed max-w-[80%] mx-auto">
-            Todos os benchmarks utilizam apenas tendências coletivas agregadas e protegidas por anonimização.
+            Comparativo interno agregado e anonimizado. Não representa benchmark de mercado ou entre organizações.
           </p>
         </footer>
       </div>
