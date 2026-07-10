@@ -126,10 +126,10 @@ export default function EnterpriseTeamManagementScreen() {
               </p>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-12 bg-white border border-black/5 rounded-[32px] p-6 shadow-sm">
-                <KPICard label="Convidados" value={stats ? String(stats.invited) : "142"} />
-                <KPICard label="Ativos" value={stats ? String(stats.active) : "118"} colorClass="text-[#F88A2B]" />
-                <KPICard label="Pendentes" value={stats ? String(stats.pending) : "19"} />
-                <KPICard label="Removidos" value="0" />
+                <KPICard label="Convidados" value={stats ? String(stats.invited) : "—"} />
+                <KPICard label="Ativos" value={stats ? String(stats.active) : "—"} colorClass="text-[#F88A2B]" />
+                <KPICard label="Pendentes" value={stats ? String(stats.pending) : "—"} />
+                <KPICard label="Removidos" value={stats ? String(stats.removed) : "—"} />
               </div>
             </div>
           </div>
