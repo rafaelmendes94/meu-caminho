@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRealtime } from "@/hooks/useRealtime";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Insight = {
   id: string;
@@ -179,13 +180,11 @@ export default function EnterpriseWeeklyInsightsScreen() {
         )}
 
         {!loading && insights.length === 0 && !generating && (
-          <div className="rounded-3xl bg-white p-10 border border-white/60 text-center space-y-3">
-            <Sparkles className="w-8 h-8 mx-auto text-[#F88A2B]" />
-            <p className="text-[15px] font-bold text-[#111]">Nenhum insight gerado ainda.</p>
-            <p className="text-[12px] text-[#666] max-w-md mx-auto">
-              Clique em "Gerar insights agora" para produzir o primeiro briefing semanal com base nos dados agregados.
-            </p>
-          </div>
+          <EmptyState
+            icon={Sparkles}
+            title="Nenhum insight gerado ainda"
+            description='Clique em "Gerar insights agora" para produzir o primeiro briefing semanal com base nos dados agregados.'
+          />
         )}
 
         {generating && (
