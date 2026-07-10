@@ -169,14 +169,14 @@ const EnterpriseLicensesScreen = () => {
           <div className="bg-white border border-[#E5E0DA] rounded-[2.5rem] p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold">Uso atual da capacidade</h3>
-              <span className="text-sm font-bold text-[#F88A2B]">79% utilizado</span>
+              <span className="text-sm font-bold text-[#F88A2B]">{usagePct}% utilizado</span>
             </div>
             
             <div className="space-y-3">
               <div className="h-4 w-full bg-[#F7F4F2] rounded-full overflow-hidden p-1 border border-[#E5E0DA]">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: "79%" }}
+                  animate={{ width: `${usagePct}%` }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   className="h-full bg-gradient-to-r from-[#F88A2B] to-[#FBBF24] rounded-full shadow-[0_0_15px_rgba(248,138,43,0.3)] relative"
                 >
@@ -184,8 +184,8 @@ const EnterpriseLicensesScreen = () => {
                 </motion.div>
               </div>
               <div className="flex justify-between items-center text-[11px] font-bold text-[#0B0908]/40 uppercase tracking-widest px-1">
-                <span>198 colaboradores ativos</span>
-                <span>250 licenças totais</span>
+                <span>{used} colaboradores ativos</span>
+                <span>{total} licenças totais</span>
               </div>
             </div>
           </div>
@@ -194,8 +194,11 @@ const EnterpriseLicensesScreen = () => {
         {/* Distribuição por área */}
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Distribuição por área</h3>
+          {distribution.length === 0 && (
+            <p className="text-sm text-[#0B0908]/40 px-2">Sem colaboradores cadastrados ainda.</p>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {departments.map((dept, i) => (
+            {distribution.map((dept, i) => (
               <motion.div 
                 key={dept.name}
                 initial={{ opacity: 0, x: -10 }}
@@ -209,8 +212,8 @@ const EnterpriseLicensesScreen = () => {
                 </div>
                 <div className="h-1.5 w-full bg-[#F7F4F2] rounded-full overflow-hidden">
                   <div 
-                    className={`h-full ${dept.color} transition-all duration-1000`} 
-                    style={{ width: `${(dept.active / 60) * 100}%` }}
+                    className="h-full bg-[#F88A2B] transition-all duration-1000"
+                    style={{ width: `${(dept.active / maxDept) * 100}%` }}
                   />
                 </div>
               </motion.div>
@@ -222,13 +225,16 @@ const EnterpriseLicensesScreen = () => {
         <section className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <h3 className="text-xl font-playfair font-semibold">Convites aguardando ativação</h3>
-            <span className="text-xs font-bold text-[#F88A2B] uppercase tracking-widest">21 pendentes</span>
+            <span className="text-xs font-bold text-[#F88A2B] uppercase tracking-widest">{pendingCount ?? 0} pendentes</span>
           </div>
 
           <div className="space-y-3">
+            {pendingInvites.length === 0 && (
+              <p className="text-sm text-[#0B0908]/40 px-2">Nenhum convite pendente.</p>
+            )}
             {pendingInvites.map((invite, i) => (
               <motion.div 
-                key={invite.name}
+                key={invite.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
@@ -239,28 +245,31 @@ const EnterpriseLicensesScreen = () => {
                     <Users className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="font-bold text-base">{invite.name}</p>
+                    <p className="font-bold text-base">{invite.full_name ?? invite.email}</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#0B0908]/40">{invite.area}</span>
+                      <span className="text-xs text-[#0B0908]/40">{invite.department ?? invite.email}</span>
                       <span className="w-1 h-1 bg-[#E5E0DA] rounded-full" />
-                      <span className="text-[10px] font-bold text-[#F88A2B] uppercase tracking-tighter">{invite.status}</span>
+                      <span className="text-[10px] font-bold text-[#F88A2B] uppercase tracking-tighter">
+                        Enviado {new Date(invite.created_at).toLocaleDateString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
-                    onClick={handleResend}
+                    onClick={() => handleInviteAction(invite.id, "resend")}
+                    disabled={busyInvite === invite.id}
                     className="p-3 rounded-xl bg-white border border-[#E5E0DA] text-[#0B0908]/60 hover:text-[#F88A2B] hover:border-[#F88A2B]/20 transition-all shadow-sm"
+                    title="Reenviar convite"
                   >
                     <Send className="w-4 h-4" />
                   </button>
-                  <button 
-                    onClick={handleCopyLink}
-                    className="p-3 rounded-xl bg-white border border-[#E5E0DA] text-[#0B0908]/60 hover:text-[#0B0908] transition-all shadow-sm"
+                  <button
+                    onClick={() => handleInviteAction(invite.id, "cancel")}
+                    disabled={busyInvite === invite.id}
+                    className="p-3 rounded-xl bg-white border border-[#E5E0DA] text-[#0B0908]/60 hover:text-red-400 hover:border-red-100 transition-all shadow-sm"
+                    title="Cancelar convite"
                   >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button className="p-3 rounded-xl bg-white border border-[#E5E0DA] text-[#0B0908]/60 hover:text-red-400 hover:border-red-100 transition-all shadow-sm">
                     <XCircle className="w-4 h-4" />
                   </button>
                 </div>
