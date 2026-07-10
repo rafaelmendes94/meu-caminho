@@ -45,13 +45,28 @@ const EnterprisePrivacyConsentScreen = () => {
       return;
     }
     setSaving(true);
+    const version = "v1.1";
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
     const { error } = await supabase.from("privacy_consents").insert({
       user_id: user.id,
       organization_id: profile?.organization_id ?? null,
       consent_type: "enterprise_privacy",
-      version: "v1.0",
-      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+      version,
+      user_agent: ua,
     });
+    // Granular event trail: one row per toggle acknowledged
+    const events = (Object.keys(consents) as (keyof typeof consents)[])
+      .filter((k) => consents[k])
+      .map((k) => ({
+        user_id: user.id,
+        organization_id: profile?.organization_id ?? null,
+        consent_type: `enterprise_privacy.${k}`,
+        action: "grant",
+        version,
+        source: "onboarding",
+        user_agent: ua,
+      }));
+    if (events.length) await supabase.from("consent_events").insert(events);
     setSaving(false);
     if (error) {
       toast.error("Não foi possível registrar seu consentimento.");
