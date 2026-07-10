@@ -28,6 +28,8 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (invErr || !invite) return json({ error: "invalid_token" }, 404);
     if (invite.accepted_at) return json({ error: "already_accepted" }, 409);
+    if (invite.canceled_at) return json({ error: "canceled" }, 410);
+    if (invite.declined_at) return json({ error: "declined" }, 410);
     if (new Date(invite.expires_at).getTime() < Date.now()) return json({ error: "expired" }, 410);
 
     // Try to create user; if already exists we fetch id

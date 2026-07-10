@@ -45,15 +45,28 @@ const EnterpriseEmployeeAdminScreen = () => {
   const [managers, setManagers] = useState<Array<{ id: string; full_name: string | null }>>([]);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [history, setHistory] = useState<Array<{ id: string; action: string; created_at: string; metadata: Record<string, unknown> | null }>>([]);
+  const [rolesList, setRolesList] = useState<string[]>([]);
+  const [pendingInvite, setPendingInvite] = useState<{ id: string; email: string } | null>(null);
+  const [deleted, setDeleted] = useState(false);
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("—");
 
   useEffect(() => {
     if (!id || !organization?.id) return;
     (async () => {
-      const [p, d, u, m] = await Promise.all([
+      const [p, d, u, m, hist, roles] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
         supabase.from("departments").select("id,name").eq("organization_id", organization.id).order("name"),
         supabase.from("units").select("id,name").eq("organization_id", organization.id).order("name"),
         supabase.from("profiles").select("id, full_name").eq("organization_id", organization.id).order("full_name"),
+        supabase.from("organization_audit_logs")
+          .select("id, action, created_at, metadata")
+          .eq("organization_id", organization.id)
+          .eq("entity_id", id)
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase.from("user_roles").select("role").eq("user_id", id).eq("organization_id", organization.id),
       ]);
       // deno-lint-ignore no-explicit-any
       const prof: any = p.data;
@@ -66,9 +79,27 @@ const EnterpriseEmployeeAdminScreen = () => {
         status: prof.status ?? "active",
         hired_at: prof.hired_at ?? "",
       });
+      setDeleted(!!prof?.deleted_at);
       setDepartments((d.data as typeof departments) ?? []);
       setUnits((u.data as typeof units) ?? []);
       setManagers(((m.data as typeof managers) ?? []).filter((x) => x.id !== id));
+      setHistory((hist.data as typeof history) ?? []);
+      setRolesList(((roles.data as Array<{ role: string }>) ?? []).map((r) => r.role));
+      // Try to find email via active invite for same user
+      const { data: inv } = await supabase.from("enterprise_invites")
+        .select("id, email")
+        .eq("organization_id", organization.id)
+        .not("accepted_at", "is", null)
+        .order("accepted_at", { ascending: false })
+        .limit(50);
+      // fallback: latest pending invite for this profile via full_name match — not reliable, so we skip email
+      const { data: pending } = await supabase.from("enterprise_invites")
+        .select("id, email, manager_id")
+        .eq("organization_id", organization.id)
+        .is("accepted_at", null).is("canceled_at", null).is("declined_at", null)
+        .limit(50);
+      // no direct link — leave email as "—"; if invite has manager_id/dept matching this user, we could use it
+      void inv; void pending;
     })();
   }, [id, organization?.id]);
 
@@ -89,25 +120,45 @@ const EnterpriseEmployeeAdminScreen = () => {
     else { toast({ title: "Perfil atualizado" }); setEditing(false); }
   };
 
+  const setActive = async (activate: boolean) => {
+    if (!id) return;
+    setBusyAction("status");
+    const { error } = await supabase.from("profiles").update({ status: activate ? "active" : "inactive" }).eq("id", id);
+    setBusyAction(null);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else { toast({ title: activate ? "Colaborador reativado" : "Colaborador desativado" }); setForm((f) => ({ ...f, status: activate ? "active" : "inactive" })); }
+  };
+
+  const softDelete = async () => {
+    if (!id) return;
+    if (!confirm("Excluir este colaborador? Ele deixará de aparecer nas listas ativas. Esta ação pode ser auditada.")) return;
+    setBusyAction("delete");
+    const { error } = await supabase.from("profiles").update({ deleted_at: new Date().toISOString(), status: "inactive" }).eq("id", id);
+    setBusyAction(null);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else { toast({ title: "Colaborador excluído" }); setDeleted(true); }
+  };
+
+  const restore = async () => {
+    if (!id) return;
+    setBusyAction("restore");
+    const { error } = await supabase.from("profiles").update({ deleted_at: null, status: "active" }).eq("id", id);
+    setBusyAction(null);
+    if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
+    else { toast({ title: "Colaborador restaurado" }); setDeleted(false); }
+  };
+
   // Mock data for the employee
   const employee = {
     name: form.full_name || "—",
-    email: "—",
+    email,
     department: departments.find((d) => d.id === form.department_id)?.name ?? "—",
     role: form.job_title || "—",
     manager: managers.find((m) => m.id === form.manager_id)?.full_name ?? "—",
     activationDate: form.hired_at || "—",
-    status: "Ativo",
-    licenseStatus: "Premium Enterprise"
+    status: deleted ? "Excluído" : (form.status === "active" ? "Ativo" : form.status === "inactive" ? "Inativo" : form.status),
+    licenseStatus: rolesList.length > 0 ? rolesList.join(", ") : "Sem papel",
   };
-
-  const adminActions = [
-    { title: "Reenviar convite", icon: Mail },
-    { title: "Resetar acesso", icon: RefreshCw },
-    { title: "Alterar departamento", icon: Building2 },
-    { title: "Liberar licença", icon: Lock },
-    { title: "Desativar conta", icon: LogOut }
-  ];
 
   return (
     <EnterpriseRHLayout title="Administração de colaboradores">
@@ -294,21 +345,20 @@ const EnterpriseEmployeeAdminScreen = () => {
         {/* Histórico administrativo */}
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Histórico administrativo</h3>
-          <div className="relative space-y-8 px-4">
-            <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-[#E5E0DA]" />
-            {[
-              { text: "Licença ativada", date: "12/03/2026", icon: ShieldCheck },
-              { text: "Conta criada e acesso realizado", date: "12/03/2026", icon: UserCircle2 },
-              { text: "Convite aceito pelo colaborador", date: "11/03/2026", icon: CheckCircle2 },
-              { text: "Convite enviado para o RH", date: "10/03/2026", icon: Mail }
-            ].map((item, idx) => (
-              <div key={idx} className="relative flex items-center gap-6">
-                <div className="w-5 h-5 rounded-full bg-white border-2 border-[#E5E0DA] flex items-center justify-center relative z-10 shadow-sm">
+          <div className="relative space-y-4 px-4">
+            {history.length === 0 && (
+              <p className="text-sm text-[#0B0908]/40 py-4">Sem eventos auditados ainda.</p>
+            )}
+            {history.map((h) => (
+              <div key={h.id} className="flex items-center gap-4">
+                <div className="w-5 h-5 rounded-full bg-white border-2 border-[#E5E0DA] flex items-center justify-center shadow-sm">
                   <div className="w-1.5 h-1.5 bg-[#F88A2B] rounded-full" />
                 </div>
-                <div className="flex-1 flex justify-between items-center bg-black/[0.03]0 p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <span className="text-sm font-semibold">{item.text}</span>
-                  <span className="text-[10px] font-bold text-[#0B0908]/30">{item.date}</span>
+                <div className="flex-1 flex justify-between items-center bg-white p-4 rounded-2xl border border-black/5 shadow-sm">
+                  <span className="text-sm font-semibold">{h.action}</span>
+                  <span className="text-[10px] font-bold text-[#0B0908]/40">
+                    {new Date(h.created_at).toLocaleString("pt-BR")}
+                  </span>
                 </div>
               </div>
             ))}
@@ -319,17 +369,34 @@ const EnterpriseEmployeeAdminScreen = () => {
         <section className="space-y-6">
           <h3 className="text-xl font-playfair font-semibold px-2">Ações de gestão</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {adminActions.map((action, i) => (
-              <button 
-                key={i}
-                className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all group shadow-sm"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#0B0908]/40 group-hover:text-[#F88A2B] transition-colors">
-                  <action.icon className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-[#0B0908]/60 group-hover:text-[#0B0908]">{action.title}</span>
+            {!deleted && form.status === "active" && (
+              <button onClick={() => setActive(false)} disabled={busyAction === "status"} className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]"><LogOut className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-[#0B0908]">Desativar</span>
               </button>
-            ))}
+            )}
+            {!deleted && form.status !== "active" && (
+              <button onClick={() => setActive(true)} disabled={busyAction === "status"} className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]"><RefreshCw className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-[#0B0908]">Reativar</span>
+              </button>
+            )}
+            {!deleted && (
+              <button onClick={softDelete} disabled={busyAction === "delete"} className="bg-white border border-red-200 p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:bg-red-50 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600"><Lock className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-red-700">Excluir</span>
+              </button>
+            )}
+            {deleted && (
+              <button onClick={restore} disabled={busyAction === "restore"} className="bg-white border border-green-200 p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:bg-green-50 transition-all shadow-sm disabled:opacity-50">
+                <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-700"><RefreshCw className="w-6 h-6" /></div>
+                <span className="text-sm font-bold text-green-700">Restaurar</span>
+              </button>
+            )}
+            <button onClick={() => setEditing(true)} className="bg-white border border-[#E5E0DA] p-6 rounded-[2rem] flex flex-col items-center gap-4 hover:border-[#F88A2B]/40 hover:bg-[#F88A2B]/5 transition-all shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]"><Edit2 className="w-6 h-6" /></div>
+              <span className="text-sm font-bold text-[#0B0908]">Editar cargo/depto/gestor</span>
+            </button>
           </div>
         </section>
 
