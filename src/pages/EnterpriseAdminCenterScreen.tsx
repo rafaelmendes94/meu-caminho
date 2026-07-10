@@ -151,16 +151,25 @@ const EnterpriseAdminCenterScreen = () => {
         setLatestInsight(null);
       }
 
-      // B-05: status organizacional real
-      const { data: settings } = await supabase
-        .from("organization_settings")
-        .select("privacy_min_group_size, checkin_frequency, direct_channel")
-        .eq("organization_id", organization.id)
-        .maybeSingle();
+      // B-05: status organizacional real (settings é k/v)
+      const [{ data: settingsRows }, { data: minGroupData }] = await Promise.all([
+        supabase
+          .from("organization_settings")
+          .select("key, value")
+          .eq("organization_id", organization.id)
+          .in("key", ["direct_channel", "privacy_min_group_size"]),
+        supabase.rpc("get_org_min_group_size", { _organization_id: organization.id }),
+      ]);
+      const settingsMap = new Map(
+        (settingsRows ?? []).map((r: any) => [r.key, r.value])
+      );
+      const directChannel = settingsMap.get("direct_channel");
+      const directChannelOn = directChannel === undefined || directChannel === true || directChannel === "true";
+      const minGroup = (minGroupData as number | null) ?? 5;
       const org = organization as any;
       const hasDomain = !!org?.domain;
       const hasSlug = !!org?.slug;
-      const anonOk = (settings?.privacy_min_group_size ?? 5) >= 5;
+      const anonOk = minGroup >= 5;
       setOrgStatus([
         {
           label: "Compliance",
@@ -169,15 +178,15 @@ const EnterpriseAdminCenterScreen = () => {
           icon: ShieldCheck,
         },
         {
-          label: `Anonimização (k≥${settings?.privacy_min_group_size ?? 5})`,
+          label: `Anonimização (k≥${minGroup})`,
           val: anonOk ? "Ativa" : "Abaixo do mínimo",
           ok: anonOk,
           icon: Lock,
         },
         {
           label: "Canal Direto",
-          val: (settings?.direct_channel ?? true) ? "Ativo" : "Desativado",
-          ok: (settings?.direct_channel ?? true),
+          val: directChannelOn ? "Ativo" : "Desativado",
+          ok: directChannelOn,
           icon: MessageSquare,
         },
         {
