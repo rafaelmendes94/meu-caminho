@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ArrowLeft, 
   Bell, 
@@ -36,19 +38,88 @@ import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 
 const EnterpriseAdminCenterScreen = () => {
   const navigate = useNavigate();
+  const { user, profile, organization } = useAuth();
+  const [kpiValues, setKpiValues] = useState({
+    activeEmployees: "—",
+    units: "—",
+    licenseUsage: "—",
+    compliance: "—",
+  });
+  const [recentActivity, setRecentActivity] = useState<
+    Array<{ title: string; date: string; icon: any }>
+  >([]);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    void (async () => {
+      const [{ count: emp }, { count: unt }, { data: contract }, { data: logs }, { data: consents }] =
+        await Promise.all([
+          supabase
+            .from("profiles")
+            .select("id", { count: "exact", head: true })
+            .eq("organization_id", organization.id)
+            .is("deleted_at", null),
+          supabase
+            .from("units")
+            .select("id", { count: "exact", head: true })
+            .eq("organization_id", organization.id),
+          supabase
+            .from("organization_contracts")
+            .select("licenses_total, licenses_used, status")
+            .eq("organization_id", organization.id)
+            .maybeSingle(),
+          supabase
+            .from("organization_audit_logs")
+            .select("action, entity_type, created_at, actor_name")
+            .eq("organization_id", organization.id)
+            .order("created_at", { ascending: false })
+            .limit(6),
+          supabase
+            .from("consent_events")
+            .select("id, event_type")
+            .eq("organization_id", organization.id),
+        ]);
+
+      const licenseTxt =
+        contract?.licenses_total
+          ? `${contract.licenses_used ?? 0}/${contract.licenses_total}`
+          : "sem contrato";
+
+      let consentsPct = "—";
+      if (consents && consents.length > 0) {
+        const granted = consents.filter((c: any) => c.event_type === "granted").length;
+        consentsPct = `${Math.round((granted / consents.length) * 100)}%`;
+      }
+
+      setKpiValues({
+        activeEmployees: String(emp ?? 0),
+        units: String(unt ?? 0),
+        licenseUsage: licenseTxt,
+        compliance: consentsPct,
+      });
+
+      setRecentActivity(
+        (logs ?? []).map((l: any) => ({
+          title: `${l.actor_name ?? "Sistema"} · ${l.entity_type} ${l.action}`,
+          date: new Date(l.created_at).toLocaleString("pt-BR"),
+          icon: iconForEntity(l.entity_type),
+        }))
+      );
+    })();
+  }, [organization?.id]);
 
   const kpis = [
-    { label: "Colaboradores ativos", value: "812", icon: Users },
-    { label: "Organizações vinculadas", value: "4", icon: Building2 },
-    { label: "Consentimentos válidos", value: "98%", icon: FileCheck },
-    { label: "Compliance ativo", value: "100%", icon: ShieldCheck },
+    { label: "Colaboradores ativos", value: kpiValues.activeEmployees, icon: Users },
+    { label: "Unidades", value: kpiValues.units, icon: Building2 },
+    { label: "Licenças em uso", value: kpiValues.licenseUsage, icon: FileCheck },
+    { label: "Consentimentos válidos", value: kpiValues.compliance, icon: ShieldCheck },
   ];
 
   const governanceCards = [
     {
-      title: "Organizações",
-      desc: "Gerencie empresas, holdings e estruturas independentes.",
-      path: "/enterprise/rh/organizacoes",
+      title: "Dados da empresa",
+      desc: "Configure identidade, contatos e preferências organizacionais.",
+      path: "/enterprise/rh/configuracoes",
       icon: Building2
     },
     {
@@ -91,7 +162,7 @@ const EnterpriseAdminCenterScreen = () => {
 
   const privacyCards = [
     { title: "Compliance Enterprise", path: "/enterprise/rh/compliance", icon: ShieldCheck },
-    { title: "Consentimentos", path: "/enterprise/rh/consentimentos", icon: FileCheck },
+    { title: "Privacy Center", path: "/enterprise/rh/privacidade", icon: FileCheck },
     { title: "Retenção de dados", path: "/enterprise/rh/retencao-dados", icon: Database },
     { title: "Políticas", path: "/enterprise/rh/politicas", icon: Lock },
     { title: "Canal Direto RH", path: "/enterprise/sos-rh", icon: MessageSquare },
@@ -101,22 +172,13 @@ const EnterpriseAdminCenterScreen = () => {
 
   const operationCards = [
     { title: "Billing", desc: "Gestão financeira", icon: CreditCard, path: "/enterprise/rh/billing" },
-    { title: "Licenças", desc: "Controle de planos", icon: FileCheck },
-    { title: "Convites", desc: "Gestão de acessos", icon: UserPlus },
-    { title: "Importação", desc: "Dados de colaboradores", icon: Upload },
-    { title: "SSO", desc: "Login corporativo", icon: Key },
-    { title: "Domínio", desc: "Validação oficial", icon: Globe },
-    { title: "Integrações", desc: "Ecossistema tech", icon: Puzzle },
-    { title: "Suporte", desc: "Cuidado direto", icon: HelpCircle },
-  ];
-
-  const recentActivity = [
-    { title: "Política Enterprise atualizada", date: "Há 2 horas", icon: ShieldCheck },
-    { title: "Novo admin regional adicionado", date: "Há 5 horas", icon: UserPlus },
-    { title: "Organização Latam criada", date: "Ontem", icon: Building2 },
-    { title: "Consentimentos atualizados", date: "Há 2 dias", icon: FileCheck },
-    { title: "Exportação executiva gerada", date: "Há 3 dias", icon: Upload },
-    { title: "Integração Google Workspace", date: "Há 1 semana", icon: Puzzle },
+    { title: "Licenças", desc: "Controle de planos", icon: FileCheck, path: "/enterprise/rh/equipe/licencas" },
+    { title: "Convites", desc: "Gestão de acessos", icon: UserPlus, path: "/enterprise/rh/equipe/convidar" },
+    { title: "Importação", desc: "Dados de colaboradores", icon: Upload, path: "/enterprise/rh/equipe/importar" },
+    { title: "Domínio", desc: "Validação oficial", icon: Globe, path: "/enterprise/rh/dominio" },
+    { title: "Integrações", desc: "Ecossistema tech", icon: Puzzle, path: "/enterprise/rh/integracao" },
+    { title: "Notificações", desc: "Alertas do sistema", icon: Bell, path: "/enterprise/rh/notificacoes" },
+    { title: "Suporte", desc: "Cuidado direto", icon: HelpCircle, path: "/enterprise/rh/suporte" },
   ];
 
   return (
@@ -125,19 +187,15 @@ const EnterpriseAdminCenterScreen = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&h=200&auto=format&fit=crop" 
-                  alt="Marina Costa" 
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-[#F88A2B]/10 flex items-center justify-center text-[#F88A2B] font-bold">
+                {(profile?.full_name ?? user?.email ?? "?").slice(0, 1).toUpperCase()}
               </div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
             </div>
             <div>
               <div className="text-xs font-bold text-[#F88A2B] uppercase tracking-wider">Enterprise Active</div>
-              <h2 className="font-bold text-sm">Marina Costa</h2>
-              <p className="text-[10px] text-zinc-400">Diretora de RH Enterprise</p>
+              <h2 className="font-bold text-sm">{profile?.full_name ?? user?.email ?? "—"}</h2>
+              <p className="text-[10px] text-zinc-400">{organization?.name ?? "Enterprise"}</p>
             </div>
           </div>
           
@@ -361,9 +419,12 @@ const EnterpriseAdminCenterScreen = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">Atividade recente</h3>
             <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-zinc-100 space-y-8">
+              {recentActivity.length === 0 && (
+                <p className="text-[12px] text-zinc-400 italic">Nenhuma ação administrativa registrada ainda.</p>
+              )}
               {recentActivity.map((item, idx) => (
                 <div key={idx} className="flex gap-6 relative">
                   {idx !== recentActivity.length - 1 && <div className="absolute left-[15px] top-10 w-[1px] h-12 bg-zinc-100" />}
@@ -375,7 +436,7 @@ const EnterpriseAdminCenterScreen = () => {
                       <p className="text-sm font-bold text-[#0B0908]">{item.title}</p>
                       <span className="text-[10px] text-zinc-400 font-medium">{item.date}</span>
                     </div>
-                    <p className="text-xs text-zinc-500">Ação registrada via painel de governança central.</p>
+                    <p className="text-xs text-zinc-500">Registrada em organization_audit_logs.</p>
                   </div>
                 </div>
               ))}
