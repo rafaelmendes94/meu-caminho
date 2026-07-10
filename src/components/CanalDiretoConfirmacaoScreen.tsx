@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   CheckCircle2, 
   ShieldCheck, 
@@ -14,6 +14,9 @@ import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 
 export default function CanalDiretoConfirmacaoScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const protocol = (location.state as any)?.protocol as string | undefined;
+  const isAnonymous = (location.state as any)?.isAnonymous as boolean | undefined;
 
   return (
     <EnterpriseUserLayout title="Confirmação de Envio">
@@ -59,8 +62,16 @@ export default function CanalDiretoConfirmacaoScreen() {
 
                   <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#8FB17D10] border border-[#8FB17D15]">
                     <ShieldCheck className="h-4 w-4 text-[#8FB17D]" />
-                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8FB17D]">Protocolo Criptografado</span>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8FB17D]">
+                      Protocolo {protocol ?? "gerado"}
+                    </span>
                   </div>
+                  {protocol && (
+                    <div className="mt-2 text-[12px] text-[#666] font-medium">
+                      Guarde este número para acompanhar o caso.{" "}
+                      {isAnonymous ? "Envio anônimo — RH não verá sua identidade." : "Envio identificado."}
+                    </div>
+                  )}
                 </div>
               </section>
 
