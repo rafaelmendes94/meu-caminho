@@ -27,7 +27,7 @@ export default function EnterpriseRitualParticipationsScreen() {
     setLoading(true);
     const { data: rituals } = await supabase
       .from("intelligent_rituals")
-      .select("id, name, ritual_type")
+      .select("id, title, ritual_type")
       .eq("organization_id", organization.id);
 
     if (!rituals?.length) {
@@ -58,7 +58,7 @@ export default function EnterpriseRitualParticipationsScreen() {
         const g = grouped[r.id] ?? { p: 0, c: 0, sum: 0, n: 0 };
         return {
           ritual_id: r.id,
-          ritual_name: r.name,
+          ritual_name: r.title,
           ritual_type: r.ritual_type,
           participants: g.p,
           completed: g.c,
