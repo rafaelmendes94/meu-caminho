@@ -202,7 +202,7 @@ export default function ThemedLibraryScreen() {
               <Sparkles size={14} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] tracking-[0.28em] uppercase mb-1" style={{ color: active.hue.accent }}>Recomendação Cury IA</div>
+              <div className="text-[10px] tracking-[0.28em] uppercase mb-1" style={{ color: active.hue.accent }}>Recomendação da IA</div>
               <p className="text-[13px] leading-relaxed opacity-80">Para o seu momento atual, comecemos por <em style={serif}>{books[0].t}</em>. É o ponto de partida ideal nesta jornada de {active.label.toLowerCase()}.</p>
               <Link to="/cury-digital/chat" className="text-[11px] mt-3 inline-flex items-center gap-1" style={{ color: active.hue.accent }}>
                 Conversar com a IA <ChevronRight size={12} />
