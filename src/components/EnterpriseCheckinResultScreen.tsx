@@ -72,7 +72,7 @@ export default function EnterpriseCheckinResultScreen() {
     if (!last) {
       return {
         text: "Perceber já é o primeiro passo para reorganizar a mente.",
-        author: "Dr. Augusto Cury",
+        author: "REFLEXÃO",
       };
     }
     const dims = [
@@ -86,7 +86,7 @@ export default function EnterpriseCheckinResultScreen() {
       energy: "Às vezes, parar para descansar é a forma mais rápida de avançar.",
       stress_inv: "Você não precisa carregar tudo hoje. Respire, e devolva ao tempo o que é do tempo.",
     };
-    return { text: map[worst], author: "Dr. Augusto Cury" };
+    return { text: map[worst], author: "REFLEXÃO" };
   })();
 
   return (
