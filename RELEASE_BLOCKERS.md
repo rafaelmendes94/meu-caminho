@@ -28,11 +28,11 @@ Tabela `ai_usage_daily` (PK user+data+função, RLS service_role, leitura admin)
 ### BLK-07 — Onboarding wizard sem persistência ✅ RESOLVIDO
 Adicionadas colunas `organizations.onboarding_step` e `organizations.onboarding_data` (jsonb). Wizard carrega progresso ao montar e faz autosave debounced (400ms) de step + formData + checklist. Ao finalizar marca `onboarding_status='completed'`.
 
-### BLK-08 — Convites: email transacional não verificado
-`send-enterprise-invite` chama enqueue mas domínio `notify.*` não checado neste ciclo. **Ação:** rodar `email_domain--check_email_domain_status` e enviar 1 teste. **Est.:** 15min + propagação DNS.
+### BLK-08 — Convites: email transacional (aguardando domínio)
+Cliente ainda não possui domínio próprio. Envio real de e-mails de convite continua bloqueado até que o domínio seja configurado em Cloud → Emails. Sem impacto no restante do MVP (convite gera link válido via UI).
 
-### BLK-09 — Módulos por organização (feature toggle)
-Passo E2E #4 pede "configurar módulos". Não existe tabela `organization_features` nem UI. **Est.:** 2h.
+### BLK-09 — Módulos por organização (feature toggle) ✅ RESOLVIDO
+Infra completa: (a) `organization_settings` já armazena flags `rh_*`, (b) UI de edição em `PlatformOrganizationDetailScreen` (aba RH), (c) hook `useOrgFeatures` (cache 60s) e componente `<FeatureGate feature=... redirect />` para gatear rotas/UI em runtime. Aplicar em telas específicas conforme necessidade sem novo trabalho de backend.
 
 ## 🟡 Médios
 
