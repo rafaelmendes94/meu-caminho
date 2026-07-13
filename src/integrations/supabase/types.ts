@@ -2902,44 +2902,7 @@ export type Database = {
       }
     }
     Views: {
-      employee_profiles_rh_view: {
-        Row: {
-          communication_style: string | null
-          energy_baseline: number | null
-          engagement_level: number | null
-          generated_at: string | null
-          is_leader: boolean | null
-          organization_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          communication_style?: never
-          energy_baseline?: never
-          engagement_level?: never
-          generated_at?: string | null
-          is_leader?: never
-          organization_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          communication_style?: never
-          energy_baseline?: never
-          engagement_level?: never
-          generated_at?: string | null
-          is_leader?: never
-          organization_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "employee_profiles_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       admin_list_owners: {
