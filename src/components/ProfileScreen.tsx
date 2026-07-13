@@ -1,5 +1,5 @@
 import { Link, useLocation } from"react-router-dom";
-import { ChevronLeft, Flame, Sparkles, Mail, MapPin, Calendar, User, BookOpen, Activity, Clock } from"lucide-react";
+import { ChevronLeft, Sparkles, Mail, User } from"lucide-react";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useDisplayUser } from "@/hooks/use-display-user";
@@ -93,37 +93,6 @@ const ProfileScreen = () => {
   </div>
   <h2 style={serif} className="text-[24px] text-[#111] mt-3 leading-tight">{userName}</h2>
   <p className="text-[12px] text-[#8A8A8A] mt-1">Sua jornada de evolução continua</p>
-
-  <div className="mt-4 grid grid-cols-3 gap-2 w-full">
- {[
- { v:"12", l:"dias seguidos", c:"#F88A2B", bg:"#FDECDA", I: Flame },
- { v:"Nível 3", l:"em evolução", c:"#9B8AC9", bg:"#EFEAF7", I: Sparkles },
- { v:"35%", l:"concluído", c:"#8FB17D", bg:"#E3ECDD", I: Activity },
- ].map((s) => (
- <div key={s.l} className="rounded-2xl py-2.5 px-1" style={{ background: s.bg }}>
- <s.I size={14} className="mx-auto mb-1" color={s.c} />
- <p style={serif} className="text-[14px] text-[#111] leading-none">{s.v}</p>
- <p className="text-[9px] text-[#666] mt-1">{s.l}</p>
- </div>
- ))}
- </div>
- </div>
-
- <p className="text-[10.5px] font-semibold tracking-[0.18em] text-[#B58A5A] px-2 mb-2.5 mt-7">RESUMO DA JORNADA</p>
- <div className="grid grid-cols-3 gap-2.5">
- {[
- { v:"47", l:"Aulas concluídas", I: BookOpen, c:"#F88A2B", bg:"#FDECDA" },
- { v:"23", l:"Exercícios", I: Activity, c:"#8FB17D", bg:"#E3ECDD" },
- { v:"14h", l:"Tempo total", I: Clock, c:"#9B8AC9", bg:"#EFEAF7" },
- ].map((c) => (
- <div key={c.l} className="rounded-3xl bg-white/75 backdrop-blur-sm border border-white/60 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.08)] p-3.5">
- <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2" style={{ background: c.bg }}>
- <c.I size={16} color={c.c} />
- </div>
- <p style={serif} className="text-[18px] text-[#111] leading-none">{c.v}</p>
- <p className="text-[10px] text-[#8A8A8A] mt-1 leading-tight">{c.l}</p>
- </div>
- ))}
  </div>
 
  <p className="text-[10.5px] font-semibold tracking-[0.18em] text-[#B58A5A] px-2 mb-2.5 mt-7">SOBRE VOCÊ</p>
@@ -131,8 +100,6 @@ const ProfileScreen = () => {
   {[
   { I: User, l:"Nome", v: userName },
   { I: Mail, l:"E-mail", v: userEmail },
- { I: Calendar, l:"Nascimento", v:"12 mar 1990" },
- { I: MapPin, l:"Localização", v:"São Paulo, BR" },
  ].map((r) => (
  <div key={r.l} className="flex items-center gap-3.5 py-3.5">
  <div className="w-9 h-9 rounded-xl bg-[#F6EFE8] flex items-center justify-center">
@@ -146,10 +113,9 @@ const ProfileScreen = () => {
  ))}
  </div>
 
- <button className="mt-5 w-full rounded-full py-3.5 text-[13px] font-semibold text-white shadow-[0_8px_22px_-10px_rgba(248,138,43,0.6)]"
- style={{ background:"linear-gradient(180deg, #FF9D4D 0%, #F88A2B 100%)" }}>
- Editar perfil
- </button>
+ <p className="mt-5 text-center text-[11px] text-[#999]">
+ Edição de perfil e estatísticas de jornada serão liberadas em breve.
+ </p>
  </div>
   </Frame>
    </LayoutComponent>
