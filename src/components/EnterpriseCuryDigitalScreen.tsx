@@ -52,7 +52,7 @@ export default function EnterpriseCuryDigitalScreen() {
   };
 
   return (
-    <EnterpriseUserLayout title="Cury Digital IA">
+    <EnterpriseUserLayout title="Conversa com IA">
       <div className="animate-fade-in space-y-8 lg:space-y-12 pb-20 lg:pb-0">
         
         {/* Hero Section - Clean and Premium */}
@@ -70,13 +70,13 @@ export default function EnterpriseCuryDigitalScreen() {
                 </div>
                 
                 <h2 className="text-[42px] lg:text-[64px] font-bold leading-[1.05] mb-6 tracking-tight text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Cury Digital <span className="text-[#F88A2B] relative inline-block">IA
+                  Conversa com <span className="text-[#F88A2B] relative inline-block">IA
                     <span className="absolute bottom-2 left-0 w-full h-1 bg-[#F88A2B]/20 rounded-full blur-sm" />
                   </span>
                 </h2>
                 
                 <p className="text-[17px] lg:text-[21px] text-[#666] font-medium leading-relaxed max-w-[500px]">
-                  O suporte emocional que você precisa, inspirado no método do Dr. Augusto Cury, disponível 24h para seus desafios.
+                  Um espaço confidencial para organizar pensamentos e receber apoio emocional a qualquer momento.
                 </p>
               </div>
               
@@ -86,7 +86,7 @@ export default function EnterpriseCuryDigitalScreen() {
                   onClick={() => handleStartChat()}
                   className="relative w-full lg:w-[280px] h-16 lg:h-20 rounded-[20px] bg-[#F88A2B] text-[#111] font-[900] text-[17px] tracking-wide transition-all hover:translate-y-[-2px] hover:shadow-[0_20px_40px_rgba(248,138,43,0.25)] active:scale-[0.97] flex items-center justify-center gap-4 shrink-0 overflow-hidden"
                 >
-                  <span className="relative z-10">Falar com Cury IA</span>
+                  <span className="relative z-10">Iniciar conversa</span>
                   <MessageSquare className="h-5 w-5 fill-[#111]/10 relative z-10" />
                 </button>
               </div>
@@ -100,7 +100,7 @@ export default function EnterpriseCuryDigitalScreen() {
             {[
               { icon: <ShieldCheck className="h-5 w-5 text-[#F88A2B]" />, label: "Privacidade", value: "Totalmente Seguro" },
               { icon: <Lock className="h-5 w-5 text-[#F88A2B]" />, label: "Criptografia", value: "Conversas Privadas", gradient: true },
-              { icon: <Brain className="h-5 w-5 text-[#F88A2B]" />, label: "Método", value: "Dr. Augusto Cury" }
+              { icon: <Brain className="h-5 w-5 text-[#F88A2B]" />, label: "Suporte", value: "Assistente IA" }
             ].map((item, i) => (
               <div 
                 key={i}
