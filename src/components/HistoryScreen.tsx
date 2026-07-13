@@ -23,16 +23,7 @@ type Item = {
   to?: string;
 };
 
-const allActivities: Item[] = [
-  { id: "1", type: "aula", title: "Respiração consciente", meta: "Curso · Aula 3", when: "Hoje", time: "09:42", duration: "12m", to: "/aula" },
-  { id: "2", type: "chat", title: "Conversa sobre ansiedade", meta: "Cury IA", when: "Hoje", time: "08:10", to: "/cury-digital/chat" },
-  { id: "3", type: "leitura", title: "Ansiedade — capítulo 4", meta: "Biblioteca", when: "Ontem", time: "22:18", to: "/biblioteca/leitor" },
-  { id: "4", type: "audio", title: "Mente serena — meditação", meta: "Áudio · 12 min", when: "Ontem", time: "21:05", duration: "12m", to: "/player/audio" },
-  { id: "5", type: "conquista", title: "7 dias seguidos!", meta: "Conquista desbloqueada", when: "13/06", time: "07:32", to: "/conquista" },
-  { id: "6", type: "aula", title: "Limites saudáveis", meta: "Curso · Aula 2", when: "12/06", time: "19:48", duration: "15m", to: "/aula" },
-  { id: "7", type: "leitura", title: "Inteligência emocional — cap. 1", meta: "Biblioteca", when: "11/06", time: "18:00", to: "/biblioteca/leitor" },
-  { id: "8", type: "chat", title: "Reflexão sobre relações", meta: "Cury IA", when: "10/06", time: "20:22", to: "/cury-digital/chat" },
-];
+const allActivities: Item[] = [];
 
 const tabs = ["Tudo", "Aulas", "Áudios", "Leituras", "IA", "Conquistas"] as const;
 const filterMap: Record<typeof tabs[number], Item["type"][] | null> = {
