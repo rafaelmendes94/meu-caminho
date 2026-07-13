@@ -33,24 +33,8 @@ const Brain = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" 
 const Lotus = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={lilac} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="2"/><path d="M12 12c2 3 2 6 0 9-2-3-2-6 0-9z"/><path d="M4 14c3-1 6 0 8 3-3 1-6 0-8-3z"/><path d="M20 14c-3-1-6 0-8 3 3 1 6 0 8-3z"/></svg>;
 const Heart = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={brand} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>;
 
-const insights = [
- { Icon: Brain, iconBg: sageBg, title:"Mais clareza mental", text:"Você demonstra mais consciência sobre seus pensamentos e emoções." },
- { Icon: Lotus, iconBg:"#EFEAF7", title:"Redução da ansiedade", text:"Você está lidando melhor com a ansiedade e os pensamentos acelerados." },
- { Icon: Heart, iconBg:"#FBE9D5", title:"Respostas conscientes", text:"Você tem reagido com mais calma e equilíbrio nas situações do dia a dia." },
-];
-
-// Emo small icons
-const Cloud = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C28B3A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16h10a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1A4 4 0 0 0 7 16z"/><path d="M10 19l-1 2M14 19l-1 2"/></svg>;
-const Sun = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={brand} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/></svg>;
-const LotusS = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={lilac} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4c2 3 2 6 0 9-2-3-2-6 0-9z"/><path d="M4 13c3-1 6 0 8 3-3 1-6 0-8-3z"/><path d="M20 13c-3-1-6 0-8 3 3 1 6 0 8-3z"/></svg>;
-const Group = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={brand} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 19c1-3 4-4 6-4s5 1 6 4"/><path d="M14 19c1-2 3-3 5-3"/></svg>;
-
-const emos = [
- { Icon: Cloud, iconBg:"#FBE9D5", label:"Ansiedade", before:"Alta", now:"Moderada", pct: 55 },
- { Icon: Sun, iconBg:"#FDECDA", label:"Clareza mental", before:"Baixa", now:"Melhorando", pct: 65 },
- { Icon: LotusS, iconBg:"#EFEAF7", label:"Autocontrole", before:"Instável", now:"Consistente", pct: 78 },
- { Icon: Group, iconBg:"#FDECDA", label:"Relações", before:"Desgastadas", now:"Mais saudáveis", pct: 60 },
-];
+// Insights e evolução emocional são gerados a partir das respostas do usuário
+// (feature FEATURE-B14-01). Até isso existir, exibimos apenas mensagens neutras.
 
 const ResultadoProvaScreen = () => {
   const location = useLocation();
