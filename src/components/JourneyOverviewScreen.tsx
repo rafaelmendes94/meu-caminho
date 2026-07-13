@@ -245,20 +245,19 @@ const JourneyOverviewScreen = () => {
  style={{ boxShadow:"0 6px 22px rgba(17,17,17,0.05), inset 0 0 0 1px rgba(17,17,17,0.04)" }}
  >
  <div className="flex justify-between gap-1">
- <Checkpoint c={{ Icon: () => <MountainIcon color={green} />, bg: sage, label:"MARCO ZERO", sub:"Ponto de partida", date:"08/04/2025" }} />
- <Checkpoint c={{ Icon: SunMtnIcon, bg:"#FFE3CC", label:"VOCÊ AGORA", sub:"Em evolução", date:"35% da jornada", active: true }} />
- <Checkpoint c={{ Icon: () => <FlagIcon color={purple} />, bg:"#EFE9F8", label:"PRÓXIMA EVOLUÇÃO", sub:"Seu melhor futuro", date:"100% da jornada" }} />
+ <Checkpoint c={{ Icon: () => <MountainIcon color={green} />, bg: sage, label:"MARCO ZERO", sub:"Ponto de partida", date:"—" }} />
+ <Checkpoint c={{ Icon: SunMtnIcon, bg:"#FFE3CC", label:"VOCÊ AGORA", sub:"Iniciando", date:"—", active: true }} />
+ <Checkpoint c={{ Icon: () => <FlagIcon color={purple} />, bg:"#EFE9F8", label:"PRÓXIMA EVOLUÇÃO", sub:"Seu melhor futuro", date:"—" }} />
  </div>
  {/* progress line */}
  <div className="relative mt-5 lg:mt-8 mx-4 h-2 rounded-full" style={{ background:"#F1ECE6" }}>
  <div
  className="absolute left-0 top-0 h-full rounded-full"
- style={{ width:"35%", background:"linear-gradient(90deg, #8FB17D 0%, #F88A2B 100%)", boxShadow:"0 0 16px rgba(248,138,43,0.5)" }}
+ style={{ width:"0%", background:"linear-gradient(90deg, #8FB17D 0%, #F88A2B 100%)" }}
  />
- {/* current dot */}
  <span
- className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 w-4 h-4 rounded-full bg-white transition-all duration-1000"
- style={{ left:"35%", boxShadow:"0 0 0 4px #F88A2B, 0 0 0 8px rgba(248,138,43,0.2), 0 6px 16px rgba(248,138,43,0.4)" }}
+ className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 w-4 h-4 rounded-full bg-white"
+ style={{ left:"0%", boxShadow:"0 0 0 4px #F88A2B, 0 0 0 8px rgba(248,138,43,0.2), 0 6px 16px rgba(248,138,43,0.4)" }}
  />
  </div>
  </div>
