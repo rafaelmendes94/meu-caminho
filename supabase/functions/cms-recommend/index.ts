@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { enforceRateLimit } from "../_shared/rate_limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,6 +46,13 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return json({ error: "unauthorized" }, 401);
 
     const admin = createClient(supabaseUrl, serviceKey);
+
+    const rl = await enforceRateLimit(
+      admin,
+      { userId: userData.user.id, functionName: "cms-recommend", kind: "chat" },
+      corsHeaders,
+    );
+    if (!rl.allowed) return rl.response!;
 
     const body = await req.json().catch(() => ({}));
     const mood: string = String(body?.mood ?? "").slice(0, 120);
