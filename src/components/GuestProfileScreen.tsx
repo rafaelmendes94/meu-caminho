@@ -62,7 +62,7 @@ export default function GuestProfileScreen() {
  {/* hero copy */}
  <div className="absolute bottom-0 left-0 right-0 px-6 pb-7 z-20 text-white">
  <p className="text-[10px] uppercase tracking-[0.28em] text-white/75">Convidado especial</p>
- <h1 style={serif} className="mt-2 text-[32px] leading-[1] italic" style={{ color:"#FFD7B0" }}>
+ <h1 className="mt-2 text-[32px] leading-[1] italic" style={{ ...serif, color:"#FFD7B0" }}>
  Em breve
  </h1>
  <div className="mt-2 flex items-center gap-2 text-white/85 text-[12px]">
