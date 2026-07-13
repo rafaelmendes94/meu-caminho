@@ -4,23 +4,9 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
 const sans = { fontFamily: "'Inter', system-ui, sans-serif" };
 
-const inProgress = [
-  { t: "O vendedor de sonhos", a: "Augusto Cury", chap: "Cap. 04 · O território dos sonhos", pct: 0.62, c1: "#3A2818", c2: "#7B5E3B" },
-  { t: "Ansiedade — Como enfrentar o mal do século", a: "Augusto Cury", chap: "Cap. 02 · A mente em silêncio", pct: 0.34, c1: "#1F2A2E", c2: "#4A6B6F" },
-  { t: "O Código da Inteligência", a: "Augusto Cury", chap: "Cap. 01 · As janelas da mente", pct: 0.12, c1: "#2A1B2E", c2: "#6B4A7B" },
-];
-
-const lastChapters = [
-  { b: "O vendedor de sonhos", c: "Cap. 04", t: "O território dos sonhos", time: "há 2h" },
-  { b: "Ansiedade", c: "Cap. 02", t: "A mente em silêncio", time: "ontem" },
-  { b: "O vendedor de sonhos", c: "Cap. 03", t: "A coragem da entrega", time: "3 dias atrás" },
-];
-
-const quotes = [
-  { q: "A coragem não é a ausência do medo, mas a decisão de seguir apesar dele.", b: "O vendedor de sonhos" },
-  { q: "Quem sabe esperar, encontra no tempo o seu maior aliado.", b: "Ansiedade" },
-  { q: "Uma mente livre é um céu sem fronteiras.", b: "O Código da Inteligência" },
-];
+const inProgress: { t: string; a: string; chap: string; pct: number; c1: string; c2: string }[] = [];
+const lastChapters: { b: string; c: string; t: string; time: string }[] = [];
+const quotes: { q: string; b: string }[] = [];
 
 const Icon = {
   Back: () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>),
@@ -62,6 +48,7 @@ export default function MyReadingScreen() {
         </div>
 
         {/* continue card — current book */}
+        {current ? (
         <Link to="/biblioteca/leitor" className="fade-up block rounded-3xl p-5 mb-10 relative overflow-hidden" style={{ background: "linear-gradient(160deg, #1B130D 0%, #2A1D12 100%)", color: "#F4E7CE" }}>
           <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full" style={{ background: "radial-gradient(closest-side, rgba(248,176,90,0.3), transparent 70%)" }} />
           <div className="flex gap-4 relative">
@@ -85,13 +72,18 @@ export default function MyReadingScreen() {
             </div>
           </div>
         </Link>
+        ) : (
+          <div className="fade-up rounded-3xl p-6 mb-10 text-center text-[12px] opacity-70" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
+            Você ainda não iniciou uma leitura.
+          </div>
+        )}
 
         {/* stats inline */}
         <div className="grid grid-cols-3 gap-3 mb-10">
           {[
-            { v: "3", l: "em andamento" },
-            { v: "11", l: "marcações" },
-            { v: "5h 20m", l: "esta semana" },
+            { v: String(inProgress.length), l: "em andamento" },
+            { v: "—", l: "marcações" },
+            { v: "—", l: "esta semana" },
           ].map((s, i) => (
             <div key={i} className="text-center fade-up" style={{ animationDelay: `${i * 0.05}s` }}>
               <div className="text-[20px]" style={serif}>{s.v}</div>
@@ -133,17 +125,17 @@ export default function MyReadingScreen() {
           <Link to="/biblioteca/salvos" className="rounded-2xl p-4" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
             <div className="w-9 h-9 rounded-full grid place-items-center mb-3" style={{ background: "rgba(248,176,90,0.18)", color: "#9A6B2C" }}><Icon.Bookmark /></div>
             <div className="text-[14px] mb-0.5" style={serif}>Marcações</div>
-            <div className="text-[11px] opacity-55">11 trechos salvos</div>
+            <div className="text-[11px] opacity-55">Seus trechos salvos</div>
           </Link>
           <Link to="/biblioteca/salvos" className="rounded-2xl p-4" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
             <div className="w-9 h-9 rounded-full grid place-items-center mb-3" style={{ background: "rgba(248,176,90,0.18)", color: "#9A6B2C" }}><Icon.Note /></div>
             <div className="text-[14px] mb-0.5" style={serif}>Reflexões</div>
-            <div className="text-[11px] opacity-55">7 notas pessoais</div>
+            <div className="text-[11px] opacity-55">Notas pessoais</div>
           </Link>
           <Link to="/biblioteca/progresso-leitura" className="rounded-2xl p-4" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
             <div className="w-9 h-9 rounded-full grid place-items-center mb-3" style={{ background: "rgba(248,176,90,0.18)", color: "#9A6B2C" }}><Icon.Clock /></div>
             <div className="text-[14px] mb-0.5" style={serif}>Progresso</div>
-            <div className="text-[11px] opacity-55">12 dias seguidos</div>
+            <div className="text-[11px] opacity-55">Sua jornada</div>
           </Link>
           <Link to="/biblioteca/capitulos" className="rounded-2xl p-4" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
             <div className="w-9 h-9 rounded-full grid place-items-center mb-3" style={{ background: "rgba(248,176,90,0.18)", color: "#9A6B2C" }}><Icon.Quote /></div>
@@ -153,7 +145,7 @@ export default function MyReadingScreen() {
         </div>
 
         {/* saved quotes */}
-        <div className="fade-up mb-10">
+        {quotes.length > 0 && (<div className="fade-up mb-10">
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-[18px]" style={serif}>Frases salvas</h2>
             <Link to="/biblioteca/salvos" className="text-[11px] opacity-60 flex items-center gap-1">Ver todas <Icon.Chevron /></Link>
@@ -167,10 +159,10 @@ export default function MyReadingScreen() {
               </div>
             ))}
           </div>
-        </div>
+        </div>)}
 
         {/* recent chapters */}
-        <div className="fade-up">
+        {lastChapters.length > 0 && (<div className="fade-up">
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-[18px]" style={serif}>Últimos capítulos</h2>
           </div>
@@ -186,7 +178,7 @@ export default function MyReadingScreen() {
               </Link>
             ))}
           </div>
-        </div>
+        </div>)}
       </div>
 
       {/* floating CTA */}
