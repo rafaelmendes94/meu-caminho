@@ -283,6 +283,11 @@ const HistoryScreen = () => {
                   </motion.div>
                 );
               })}
+              {filtered.length === 0 && (
+                <div className="text-center py-10 text-[12.5px] text-[#999]">
+                  Nenhuma atividade ainda.
+                </div>
+              )}
             </div>
           </div>
         </div>
