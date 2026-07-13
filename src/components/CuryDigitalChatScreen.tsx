@@ -64,7 +64,7 @@ const CuryDigitalChatScreen = () => {
         <div className="flex items-center gap-3">
           <Orb s={32}/>
           <div>
-            <p className="text-[14px] font-bold text-ink900 leading-tight">Cury Digital</p>
+            <p className="text-[14px] font-bold text-ink900 leading-tight">Conversa com IA</p>
             <div className="flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-sage"/>
               <p className="text-[10px] text-ink600 font-medium">Online</p>
@@ -83,7 +83,7 @@ const CuryDigitalChatScreen = () => {
             <Orb s={56}/>
             <div className="space-y-1 max-w-md">
               <h3 className="text-[18px] lg:text-[22px] font-bold text-ink900" style={serif}>
-                O Cury Digital está sendo preparado.
+                A conversa com a IA está sendo preparada.
               </h3>
               <p className="text-[13px] lg:text-[14px] text-ink600 leading-relaxed">
                 A conversa com a IA será liberada em breve. Enquanto isso, use os recursos abaixo para cuidar da sua mente.
@@ -124,7 +124,7 @@ const CuryDigitalChatScreen = () => {
                 <SendIcon size={20} style={{ color: 'white' }} />
               </button>
             </div>
-            <p className="mt-2 text-center text-[11px] text-[#999]">A conversa com o Cury Digital será liberada em breve.</p>
+            <p className="mt-2 text-center text-[11px] text-[#999]">A conversa com a IA será liberada em breve.</p>
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@ const CuryDigitalChatScreen = () => {
   );
 
   return (
-    <Layout title="Chat com Cury Digital">
+    <Layout title="Conversa com IA">
       <main className={`h-full w-full ${isEnterprise ? 'lg:p-0 bg-[#F7F4F2]' : 'h-screen flex items-center justify-center bg-[#F7F4F2] overflow-hidden'}`}>
         <div className={`relative w-full h-full overflow-hidden flex ${isEnterprise ? 'h-[calc(100vh-80px)]' : 'h-[100dvh] flex-col'}`}>
           {isEnterprise && (
@@ -148,7 +148,7 @@ const CuryDigitalChatScreen = () => {
                 <div className="p-6 rounded-2xl bg-white border border-dashed border-black/10 text-center">
                   <MessageSquare size={18} className="text-ink500 mx-auto mb-2" />
                   <p className="text-[13px] font-bold text-ink900">Nenhuma conversa ainda</p>
-                  <p className="text-[11px] text-ink600 mt-1">Suas sessões com o Cury Digital aparecerão aqui.</p>
+                  <p className="text-[11px] text-ink600 mt-1">Suas sessões com a IA aparecerão aqui.</p>
                 </div>
               </div>
             </div>
@@ -160,7 +160,7 @@ const CuryDigitalChatScreen = () => {
                 <div className="flex items-center gap-4">
                   <Orb s={44}/>
                   <div className="text-left">
-                    <h3 className="text-lg font-bold text-ink900">Cury Digital</h3>
+                    <h3 className="text-lg font-bold text-ink900">Conversa com IA</h3>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-sage animate-pulse"/>
                       <p className="text-[12px] text-ink600 font-medium">IA Mentor — Pronto para ajudar</p>

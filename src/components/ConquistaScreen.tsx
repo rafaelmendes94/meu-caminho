@@ -165,8 +165,8 @@ const ConquistaScreen = () => {
  <span className="block w-1.5 h-1.5 rotate-45" style={{ background: gold }}/>
  <span className="block w-12 h-px" style={{ background: goldSoft }}/>
  </div>
- <p className="mt-3 text-[9px] tracking-[0.24em] font-semibold" style={{ color: gold }}>TRILHA CONCLUÍDA</p>
- <p style={serif} className="mt-0.5 text-[16px] text-[#111]">Inteligência Emocional</p>
+  <p className="mt-3 text-[9px] tracking-[0.24em] font-semibold" style={{ color: gold }}>TRILHA CONCLUÍDA</p>
+  <p style={serif} className="mt-0.5 text-[16px] text-[#111]">—</p>
 
   <div className="mt-3 grid grid-cols-2 gap-2 text-center">
   <div>
@@ -179,12 +179,11 @@ const ConquistaScreen = () => {
   </div>
   </div>
 
- {/* signature */}
- <div className="mt-4 flex flex-col items-center">
- <p className="text-[26px] leading-none" style={{ ...script, color:"#3a2a14" }}>Augusto Cury</p>
- <span className="mt-1 block w-32 h-px" style={{ background: goldSoft }}/>
- <p className="mt-1 text-[8.5px] tracking-[0.28em] font-semibold" style={{ color: gold }}>AUGUSTO CURY</p>
- </div>
+  {/* Assinatura removida — será populada com o mentor real da trilha via CMS */}
+  <div className="mt-4 flex flex-col items-center">
+  <span className="mt-1 block w-32 h-px" style={{ background: goldSoft }}/>
+  <p className="mt-1 text-[8.5px] tracking-[0.28em] font-semibold" style={{ color: gold }}>ASSINATURA DO MENTOR</p>
+  </div>
 
  {/* Seal */}
  <div className="absolute right-1 bottom-1" style={{ filter:"drop-shadow(0 6px 10px rgba(217,174,83,0.35))" }}>
