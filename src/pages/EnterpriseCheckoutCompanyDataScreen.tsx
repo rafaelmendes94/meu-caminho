@@ -92,7 +92,7 @@ const EnterpriseCheckoutCompanyDataScreen = () => {
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleInputChange}
-                    placeholder="Ex: Augusto Cury Institucional"
+                    placeholder="Ex: Nome da sua empresa"
                     className="rounded-2xl border-[#0B0908]/5 h-12 bg-white focus:border-[#F88A2B] focus:ring-[#F88A2B]/20 transition-all"
                   />
                 </div>

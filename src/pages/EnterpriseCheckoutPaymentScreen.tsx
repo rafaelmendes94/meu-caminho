@@ -206,7 +206,7 @@ const EnterpriseCheckoutPaymentScreen = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-white/40">Valor mensal</span>
-                    <span className="font-medium">R$ 7.250</span>
+                    <span className="font-medium">Sob consulta</span>
                   </div>
                 </div>
 
@@ -214,7 +214,7 @@ const EnterpriseCheckoutPaymentScreen = () => {
                   <div className="flex justify-between items-end">
                     <span className="text-white/60 font-medium text-xs">Total mensal</span>
                     <div className="text-right">
-                      <span className="text-3xl font-playfair font-bold text-[#F88A2B]">R$ 7.250</span>
+                      <span className="text-3xl font-playfair font-bold text-[#F88A2B]">Sob consulta</span>
                       <span className="text-[10px] text-white/40 block uppercase tracking-widest">Cobrança Mensal</span>
                     </div>
                   </div>
@@ -275,7 +275,7 @@ const EnterpriseCheckoutPaymentScreen = () => {
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/40 mb-6">O que está incluído</h4>
               <div className="grid grid-cols-1 gap-3">
                 {[
-                  "Cury Digital Enterprise",
+                  "IA de apoio emocional",
                   "Check-ins emocionais",
                   "Dashboard RH completo",
                   "Insights de IA",

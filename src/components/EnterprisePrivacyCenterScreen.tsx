@@ -64,7 +64,7 @@ const EnterprisePrivacyCenterScreen = () => {
 
   const whatNeverShows = [
     "Respostas individuais do check-in",
-    "Conversas privadas com Cury Digital",
+    "Conversas privadas com a IA",
     "Resultado emocional pessoal",
     "Trilha individual do colaborador",
     "Histórico emocional individual",
