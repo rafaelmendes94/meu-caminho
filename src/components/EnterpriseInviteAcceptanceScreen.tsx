@@ -126,7 +126,7 @@ const EnterpriseInviteAcceptanceScreen = () => {
               { icon: <Activity className="w-5 h-5" />, label: "Trilhas emocionais" },
               { icon: <Brain className="w-5 h-5" />, label: "Exercícios mentais" },
               { icon: <Heart className="w-5 h-5" />, label: "Check-ins diários" },
-              { icon: <Sparkles className="w-5 h-5" />, label: "Cury Digital IA" },
+              { icon: <Sparkles className="w-5 h-5" />, label: "Conversa com IA" },
               { icon: <ShieldCheck className="w-5 h-5" />, label: "Equilíbrio" },
               { icon: <Zap className="w-5 h-5" />, label: "Recuperação" }
             ].map((item, idx) => (
