@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BarChart3, Building2, CreditCard, Wallet, Sparkles,
   Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap,
   Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings, Package,
-  ChevronDown, ChevronsLeft, ChevronsRight,
+  ChevronDown, ChevronsLeft, ChevronsRight, Brain, MessageSquare, Dna, CalendarClock, ListChecks, Wand2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AdminTopbar from "@/components/admin/AdminTopbar";
@@ -56,6 +56,21 @@ const groups: NavGroup[] = [
       { to: "/admin/content/collections", label: "Coleções", icon: Layers },
       { to: "/admin/content/tags", label: "Tags", icon: Tags },
       { to: "/admin/content/imports", label: "Importações", icon: Import },
+    ],
+  },
+  {
+    key: "ai",
+    label: "Inteligência Artificial",
+    icon: Brain,
+    collapsible: true,
+    items: [
+      { to: "/admin/ai", label: "Visão Geral", icon: LayoutDashboard },
+      { to: "/admin/ai/conselho-executivo", label: "Conselho Executivo", icon: MessageSquare },
+      { to: "/admin/ai/dna-organizacional", label: "DNA Organizacional", icon: Dna },
+      { to: "/admin/ai/insights-semanais", label: "Insights Semanais", icon: CalendarClock },
+      { to: "/admin/ai/planos-acao", label: "Planos de Ação", icon: ListChecks },
+      { to: "/admin/ai/rituais-inteligentes", label: "Rituais Inteligentes", icon: Sparkles },
+      { to: "/admin/ai/recomendacoes", label: "Recomendações", icon: Wand2 },
     ],
   },
   {
