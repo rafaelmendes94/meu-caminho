@@ -432,14 +432,9 @@ const PostCard = ({ post, isEnterprise }: { post: Post; isEnterprise?: boolean }
 /* ───────────── Notifications ───────────── */
 
 type Notif = { id: string; icon:"inspire" |"reflect" |"book" |"ia" |"audio"; title: string; body: string; when: string; unread: boolean; to: string };
-const notifications: Notif[] = [
- { id:"n1", icon:"ia", title:"Cury IA preparou algo para você", body:"Uma trilha emocional foi sugerida para sua manhã.", when:"agora", unread: true, to:"/cury-digital/sugestao" },
- { id:"n2", icon:"book", title:"Novo capítulo liberado", body:"Ansiedade — capítulo 4 já está disponível.", when:"há 2h", unread: true, to:"/biblioteca/detalhe" },
- { id:"n3", icon:"inspire", title:"Sua reflexão inspirou 1.2k pessoas", body:"“A mente tranquila vê soluções...”", when:"há 5h", unread: true, to:"/feed/leitura" },
- { id:"n4", icon:"audio", title:"Meditação guiada disponível", body:"Respiração consciente — 5 min.", when:"ontem", unread: false, to:"/player/audio" },
- { id:"n5", icon:"reflect", title:"Augusto Cury respondeu sua reflexão", body:"“Que bonito perceber isso em você...”", when:"ontem", unread: false, to:"/feed" },
- { id:"n6", icon:"book", title:"Continue de onde parou", body:"Mente Serena — Cap. 1 (12 min restantes).", when:"12/06", unread: false, to:"/player/audiolivro" },
-];
+// Notificações reais vêm da tabela `notifications` (ver NotificacoesScreen).
+// Aqui mantemos apenas um array vazio para o dropdown quick-view.
+const notifications: Notif[] = [];
 const notifIcon = (i: Notif["icon"]) => {
  const m = {
  inspire: { I: Heart, c: brand, bg:"#F6E8D6" },
