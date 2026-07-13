@@ -47,11 +47,11 @@ type Mat = {
 };
 
 const materiais: Mat[] = [
- { type:"PDF REFLEXIVO", typeColor: sage, TypeIcon: () => <FileIco c={sage}/>, title:"Exercícios reflexivos", desc:"Atividades práticas para identificar e transformar pensamentos acelerados.", meta:"1,8 MB", status:"downloaded", img: matPdf },
- { type:"ÁUDIO GUIADO", typeColor: brand, TypeIcon: () => <Headphone c={brand}/>, title:"Respiração e presença", desc:"Áudio guiado para acalmar a mente e recuperar o foco.", meta:"12 min", status:"download", img: matAudio, imgOverlay:"play" },
- { type:"CHECKLIST", typeColor: lilac, TypeIcon: () => <CheckBoxIco c={lilac}/>, title:"Checklist de clareza mental", desc:"Passos práticos para organizar seus pensamentos e prioridades.", meta:"582 KB", status:"downloaded", img: matChecklist },
- { type:"DIÁRIO EMOCIONAL", typeColor: brand, TypeIcon: () => <Pencil c={brand}/>, title:"Diário emocional", desc:"Espaço para registrar pensamentos, emoções e aprendizados.", meta:"Pessoal", status:"locked", img: matDiario },
- { type:"EXERCÍCIO DO DIA", typeColor:"#C28B3A", TypeIcon: () => <Sparkle c="#C28B3A"/>, title:"Prática de desaceleração", desc:"Exercício rápido para aplicar hoje e sentir a diferença.", meta:"7 min", status:"download", img: matPratica, imgOverlay:"minutes", minutes:"7" },
+ { type:"PDF REFLEXIVO", typeColor: sage, TypeIcon: () => <FileIco c={sage}/>, title:"Exercícios reflexivos", desc:"Atividades práticas para identificar e transformar pensamentos acelerados.", meta:"—", status:"locked", img: matPdf },
+ { type:"ÁUDIO GUIADO", typeColor: brand, TypeIcon: () => <Headphone c={brand}/>, title:"Respiração e presença", desc:"Áudio guiado para acalmar a mente e recuperar o foco.", meta:"—", status:"locked", img: matAudio },
+ { type:"CHECKLIST", typeColor: lilac, TypeIcon: () => <CheckBoxIco c={lilac}/>, title:"Checklist de clareza mental", desc:"Passos práticos para organizar seus pensamentos e prioridades.", meta:"—", status:"locked", img: matChecklist },
+ { type:"DIÁRIO EMOCIONAL", typeColor: brand, TypeIcon: () => <Pencil c={brand}/>, title:"Diário emocional", desc:"Espaço para registrar pensamentos, emoções e aprendizados.", meta:"—", status:"locked", img: matDiario },
+ { type:"EXERCÍCIO DO DIA", typeColor:"#C28B3A", TypeIcon: () => <Sparkle c="#C28B3A"/>, title:"Prática de desaceleração", desc:"Exercício rápido para aplicar hoje e sentir a diferença.", meta:"—", status:"locked", img: matPratica },
 ];
 
 const StatusAction = ({ status }: { status: Status }) => {
@@ -178,13 +178,8 @@ const MateriaisScreen = () => {
               <h2 className="mt-1.5 text-[26px] lg:text-[42px] leading-[1.05] text-[#111]" style={{ ...serif, fontWeight: 600 }}>
                 Pensamentos acelerados
               </h2>
-              <div className="mt-3 flex items-center gap-3 text-[12px] lg:text-[14px]">
-                <div className="flex items-center gap-1.5">
-                  <Clock c={ink500}/>
-                  <span style={{ color: ink500 }}>22 min</span>
-                </div>
-                <span style={{ color:"#D8CFC4" }}>·</span>
-                <span className="font-bold" style={{ color: brand }}>Aula em progresso</span>
+              <div className="mt-3 text-[12px] lg:text-[14px]" style={{ color: ink500 }}>
+                Materiais complementares desta trilha.
               </div>
             </div>
             <div className="relative w-full aspect-video lg:aspect-square rounded-[24px] overflow-hidden ring-1 ring-black/5" style={{ boxShadow:"0 12px 32px -12px rgba(17,17,17,0.2)" }}>

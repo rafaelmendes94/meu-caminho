@@ -127,13 +127,9 @@ const MudancaJornadaScreen = () => {
                 <span className="px-2.5 py-[3px] rounded-full text-[9px] font-semibold" style={{ background: "rgba(255,255,255,0.7)", color: "#5A7A48" }}>Atual</span>
               </div>
               <p className="text-[8.5px] tracking-[0.18em] font-semibold mt-2.5" style={{ color: "#5A7A48" }}>SUA TRILHA ATUAL</p>
-              <h3 style={serif} className="text-[17px] leading-[1.1] mt-1 text-[#111]">Controle da Ansiedade</h3>
-              <p className="mt-2 text-[11px] font-semibold" style={{ color: "#5A7A48" }}>85% concluída</p>
-              <div className="mt-1 h-[5px] rounded-full overflow-hidden" style={{ background: "#DCE7CE" }}>
-                <span className="block h-full rounded-full" style={{ width: "85%", background: sage }}/>
-              </div>
+              <h3 style={serif} className="text-[17px] leading-[1.1] mt-1 text-[#111]">Sua trilha</h3>
               <p className="mt-2.5 text-[10.5px] leading-[1.35]" style={{ color: ink700 }}>
-                Você desenvolveu mais clareza emocional e autocontrole.
+                Continue sua trilha atual para consolidar sua evolução.
               </p>
             </div>
 
@@ -145,19 +141,11 @@ const MudancaJornadaScreen = () => {
               <div className="flex items-center gap-2">
                 <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE3CC" }}><Heart c={brand}/></span>
               </div>
-              <p className="text-[8.5px] tracking-[0.18em] font-semibold mt-2.5" style={{ color: brand }}>NOVA TRILHA RECOMENDADA</p>
-              <h3 style={serif} className="text-[17px] leading-[1.1] mt-1 text-[#111]">Relações Saudáveis</h3>
+              <p className="text-[8.5px] tracking-[0.18em] font-semibold mt-2.5" style={{ color: brand }}>NOVAS TRILHAS</p>
+              <h3 style={serif} className="text-[17px] leading-[1.1] mt-1 text-[#111]">Em breve</h3>
               <p className="mt-2 text-[10.5px] leading-[1.35]" style={{ color: ink700 }}>
-                Agora que sua mente está mais equilibrada, você está pronto para aprofundar seus vínculos emocionais.
+                Recomendações personalizadas de novas trilhas estarão disponíveis em breve.
               </p>
-              <div className="mt-2.5 flex items-center justify-between">
-                <div className="flex flex-col items-center"><Layers/><span className="text-[10px] mt-0.5 font-semibold text-[#111]">3</span><span className="text-[8.5px]" style={{ color: ink600 }}>módulos</span></div>
-                <div className="flex flex-col items-center"><Play/><span className="text-[10px] mt-0.5 font-semibold text-[#111]">24</span><span className="text-[8.5px]" style={{ color: ink600 }}>aulas</span></div>
-                <div className="flex flex-col items-center"><Clock/><span className="text-[10px] mt-0.5 font-semibold text-[#111]">~6h</span><span className="text-[8.5px]" style={{ color: ink600 }}>conteúdo</span></div>
-              </div>
-              <div className="mt-2.5 rounded-full py-1.5 flex items-center justify-center gap-1.5" style={{ background: "rgba(248,138,43,0.12)", border: "1px solid rgba(248,138,43,0.22)" }}>
-                <Spark/><span className="text-[10px] font-semibold" style={{ color: brand }}>Recomendado para você</span>
-              </div>
             </div>
           </section>
 
@@ -240,15 +228,13 @@ const MudancaJornadaScreen = () => {
 
         {/* Sticky CTAs */}
         <div className="absolute bottom-0 left-0 right-0 z-30 px-5 pt-5 pb-5" style={{ background: "linear-gradient(180deg, rgba(247,244,242,0) 0%, rgba(247,244,242,0.95) 30%, #F7F4F2 100%)" }}>
-          <Link
-            to={al("/mudar-trilha/confirmar")}
-            className="relative w-full h-[56px] rounded-full flex items-center justify-center text-white font-semibold text-[15px] active:scale-[0.99] transition"
-            style={{ background: "linear-gradient(180deg,#FF9D4D 0%,#F88A2B 100%)", boxShadow: "0 14px 32px -10px rgba(248,138,43,0.55), inset 0 1px 0 rgba(255,255,255,0.35)" }}
+          <button
+            disabled
+            className="relative w-full h-[56px] rounded-full flex items-center justify-center text-white font-semibold text-[15px] opacity-60 cursor-not-allowed"
+            style={{ background: "linear-gradient(180deg,#FF9D4D 0%,#F88A2B 100%)" }}
           >
-            <span className="absolute left-5 opacity-90"><Spark/></span>
-            Mudar minha trilha
-            <span className="absolute right-5 opacity-90"><ChevR s={18}/></span>
-          </Link>
+            Mudar de trilha (em breve)
+          </button>
           <Link
             to={al("/trilha")}
             className="mt-2.5 w-full h-[46px] rounded-full flex items-center justify-center text-[13px] font-semibold active:scale-[0.99] transition"

@@ -33,24 +33,8 @@ const Brain = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" 
 const Lotus = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={lilac} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="2"/><path d="M12 12c2 3 2 6 0 9-2-3-2-6 0-9z"/><path d="M4 14c3-1 6 0 8 3-3 1-6 0-8-3z"/><path d="M20 14c-3-1-6 0-8 3 3 1 6 0 8-3z"/></svg>;
 const Heart = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={brand} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>;
 
-const insights = [
- { Icon: Brain, iconBg: sageBg, title:"Mais clareza mental", text:"Você demonstra mais consciência sobre seus pensamentos e emoções." },
- { Icon: Lotus, iconBg:"#EFEAF7", title:"Redução da ansiedade", text:"Você está lidando melhor com a ansiedade e os pensamentos acelerados." },
- { Icon: Heart, iconBg:"#FBE9D5", title:"Respostas conscientes", text:"Você tem reagido com mais calma e equilíbrio nas situações do dia a dia." },
-];
-
-// Emo small icons
-const Cloud = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C28B3A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16h10a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1A4 4 0 0 0 7 16z"/><path d="M10 19l-1 2M14 19l-1 2"/></svg>;
-const Sun = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={brand} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/></svg>;
-const LotusS = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={lilac} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4c2 3 2 6 0 9-2-3-2-6 0-9z"/><path d="M4 13c3-1 6 0 8 3-3 1-6 0-8-3z"/><path d="M20 13c-3-1-6 0-8 3 3 1 6 0 8-3z"/></svg>;
-const Group = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={brand} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 19c1-3 4-4 6-4s5 1 6 4"/><path d="M14 19c1-2 3-3 5-3"/></svg>;
-
-const emos = [
- { Icon: Cloud, iconBg:"#FBE9D5", label:"Ansiedade", before:"Alta", now:"Moderada", pct: 55 },
- { Icon: Sun, iconBg:"#FDECDA", label:"Clareza mental", before:"Baixa", now:"Melhorando", pct: 65 },
- { Icon: LotusS, iconBg:"#EFEAF7", label:"Autocontrole", before:"Instável", now:"Consistente", pct: 78 },
- { Icon: Group, iconBg:"#FDECDA", label:"Relações", before:"Desgastadas", now:"Mais saudáveis", pct: 60 },
-];
+// Insights e evolução emocional são gerados a partir das respostas do usuário
+// (feature FEATURE-B14-01). Até isso existir, exibimos apenas mensagens neutras.
 
 const ResultadoProvaScreen = () => {
   const location = useLocation();
@@ -104,69 +88,22 @@ const ResultadoProvaScreen = () => {
                     <Sapling s={isEnterprise ? 34 : 26}/>
                   </div>
                   <div>
-                    <p style={serif} className="text-[20px] lg:text-[32px] leading-none text-[#111] font-bold">Excelente!</p>
-                    <p className="text-[11px] lg:text-[14px] text-[#666] mt-1">Consciência e maturidade emocional.</p>
+                    <p style={serif} className="text-[20px] lg:text-[32px] leading-none text-[#111] font-bold">Obrigado.</p>
+                    <p className="text-[11px] lg:text-[14px] text-[#666] mt-1">Suas respostas foram registradas.</p>
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* INSIGHTS */}
-            <div className="lg:col-span-7">
-              <div className="flex items-center gap-2 mb-6">
-                <h3 style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">Seus principais insights</h3>
-                <Sparkle/>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4 lg:gap-5">
-                {insights.map((ins) => (
-                  <div key={ins.title} className="rounded-[24px] bg-white border border-black/5 p-5 flex lg:flex-row flex-col lg:items-center gap-4 transition-all hover:shadow-md">
-                    <span className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center shrink-0" style={{ background: ins.iconBg }}>
-                      <ins.Icon/>
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[15px] lg:text-[18px] font-bold text-[#111] leading-tight">{ins.title}</p>
-                      <p className="mt-1 text-[12px] lg:text-[14px] leading-relaxed text-[#666]">{ins.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="rounded-[24px] bg-white border border-black/5 p-6 lg:p-8 text-center">
+            <div className="flex items-center gap-2 justify-center mb-2">
+              <h3 style={serif} className="text-[20px] lg:text-[26px] text-[#111] font-bold">Seus insights personalizados</h3>
+              <Sparkle/>
             </div>
-
-            {/* EVOLUÇÃO EMOCIONAL */}
-            <div className="lg:col-span-5">
-              <h3 style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold mb-6">Sua evolução</h3>
-              <div className="rounded-[32px] bg-white border border-black/5 p-6 lg:p-8">
-                <div className="flex justify-between text-[11px] lg:text-[12px] tracking-[0.2em] uppercase font-bold mb-6" style={{ color: ink500 }}>
-                  <span className="pl-12">Antes</span><span>Agora</span>
-                </div>
-                <ul className="space-y-6">
-                  {emos.map((e) => (
-                    <li key={e.label}>
-                      <div className="flex items-center gap-4 mb-3">
-                        <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style={{ background: e.iconBg }}>
-                          <e.Icon/>
-                        </span>
-                        <p className="text-[14px] lg:text-[16px] font-bold text-[#111]">{e.label}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-2 rounded-full bg-black/5 overflow-hidden flex flex-row-reverse">
-                          <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${100 - e.pct}%`, background: brand }}/>
-                        </div>
-                        <div className="flex-1 h-2 rounded-full bg-black/5 overflow-hidden">
-                          <div className="h-full rounded-full transition-all duration-1000 delay-300" style={{ width: `${e.pct}%`, background: sage }}/>
-                        </div>
-                      </div>
-                      <div className="flex justify-between mt-2 font-bold text-[10px] lg:text-[11px] uppercase tracking-wider">
-                        <span style={{ color:"#C28B3A" }}>{e.before}</span>
-                        <span style={{ color: sage }}>{e.now}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <p className="text-[13px] lg:text-[15px] text-[#666] leading-relaxed max-w-2xl mx-auto">
+              A geração automática de insights e da sua evolução emocional a partir desta avaliação estará disponível em breve.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-12 lg:mt-16 mb-20">
@@ -182,17 +119,17 @@ const ResultadoProvaScreen = () => {
               <img src={cury} alt="Augusto Cury" className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-3xl object-cover shadow-xl ring-4 ring-white"/>
             </div>
 
-            {/* UNLOCK CARD */}
+            {/* CONTINUAR */}
             <div className="relative overflow-hidden rounded-[32px] p-8 flex items-center gap-6" style={{ background: "linear-gradient(135deg,#F2F8EE,#E8F1E1)", border: "1px solid rgba(143,177,125,0.15)" }}>
               <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl bg-white flex items-center justify-center shrink-0 shadow-lg shadow-green-900/10">
                 <Unlock/>
               </div>
               <div className="relative flex-1 min-w-0">
-                <p className="text-[11px] lg:text-[12px] font-bold tracking-[0.2em] uppercase text-[#8FB17D]">Conquista desbloqueada</p>
-                <p style={serif} className="text-[20px] lg:text-[28px] text-[#111] leading-tight mt-1 font-bold">Curso 2 liberado!</p>
-                <p className="text-[13px] lg:text-[15px] mt-2 leading-relaxed text-[#666] font-medium">Você avançou mais um passo na sua evolução emocional.</p>
-                <Link to={al("/curso-desbloqueado")} className="mt-4 inline-flex items-center gap-2 text-[14px] font-bold text-[#8FB17D] hover:underline">
-                  Ver novo conteúdo <ChevR s={14}/>
+                <p className="text-[11px] lg:text-[12px] font-bold tracking-[0.2em] uppercase text-[#8FB17D]">Sua jornada</p>
+                <p style={serif} className="text-[20px] lg:text-[28px] text-[#111] leading-tight mt-1 font-bold">Continue evoluindo</p>
+                <p className="text-[13px] lg:text-[15px] mt-2 leading-relaxed text-[#666] font-medium">Volte para sua trilha e siga explorando novos conteúdos.</p>
+                <Link to={al("/trilha")} className="mt-4 inline-flex items-center gap-2 text-[14px] font-bold text-[#8FB17D] hover:underline">
+                  Voltar para a trilha <ChevR s={14}/>
                 </Link>
               </div>
             </div>
