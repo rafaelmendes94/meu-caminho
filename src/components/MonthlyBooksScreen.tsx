@@ -107,7 +107,7 @@ export default function MonthlyBooksScreen() {
                         boxShadow: "0 20px 40px -16px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.06)",
                       }}>
                         <div className="absolute inset-0" style={{ background: `radial-gradient(120% 80% at 30% 0%, ${b.accent}33, transparent 60%)` }} />
-                        <div className="absolute inset-x-3 top-4 text-[8px] tracking-[0.25em] uppercase opacity-70" style={{ color: b.accent }}>{b.author ?? "—"}</div>
+                        <div className="absolute inset-x-3 top-4 text-[8px] tracking-[0.25em] uppercase opacity-70" style={{ color: b.accent }}>{b.a || "—"}</div>
                         <div className="absolute inset-x-3 bottom-3 text-[10px] leading-tight" style={{ ...serif, color: "#F4E7CE" }}>{b.t}</div>
                         <div className="absolute inset-y-0 left-0 w-[3px]" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.4), transparent, rgba(0,0,0,0.4))" }} />
                       </div>
