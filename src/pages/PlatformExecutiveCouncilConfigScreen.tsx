@@ -359,7 +359,7 @@ export default function PlatformExecutiveCouncilConfigScreen() {
         {tab === "questions" && <QuestionsTab config={config} setConfig={setConfig} />}
         {tab === "examples" && <ExamplesTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} updateModel={updateModel} />}
-        {tab === "chat" && <ComingSoonTab title="Testar no Chat" description="Ambiente de teste em modo isolado com dados agregados chega na próxima sub-fase." />}
+        {tab === "chat" && <ChatTestTab configVersion={config.version} configStatus={config.status} />}
         {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
 
         {/* Note for publish */}
