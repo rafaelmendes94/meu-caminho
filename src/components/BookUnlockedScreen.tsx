@@ -103,15 +103,11 @@ export default function BookUnlockedScreen() {
 
  <div className="relative w-full h-full rounded-[10px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.55),0_0_40px_rgba(255,180,100,0.35)] shine">
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#FBE7C7 0%,#F5C786 50%,#C25A2A 100%)" }} />
- <img
- src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop"
- alt=""
- className="absolute inset-0 w-full h-full object-cover mix-blend-soft-light opacity-90"
- />
+ {/* imagem de capa removida — sem dado real */}
  <div className="absolute inset-0 p-3 flex flex-col items-center text-center">
- <div className="text-[9px] tracking-[0.32em] uppercase font-semibold mt-1.5" style={{ color:"#5B2A12" }}>Augusto Cury</div>
+ <div className="text-[9px] tracking-[0.32em] uppercase font-semibold mt-1.5" style={{ color:"#5B2A12" }}>—</div>
  <div style={serif} className="mt-7 text-[18px] leading-[1.05] font-semibold uppercase" >
- <span style={{ color:"#5B2A12" }}>O Vendedor<br/>de Sonhos</span>
+ <span style={{ color:"#5B2A12" }}>Novo livro</span>
  </div>
  <div className="mt-2 w-10 h-px bg-[#5B2A12]/40"/>
  </div>
@@ -127,7 +123,7 @@ export default function BookUnlockedScreen() {
  >
  <Sparkle s={11}/>
  <div style={serif} className="text-[12px] leading-none mt-0.5 font-bold tracking-wider">LIBERADO</div>
- <div className="text-[7.5px] uppercase tracking-[0.2em] mt-1 opacity-80">Cap. 03</div>
+ <div className="text-[7.5px] uppercase tracking-[0.2em] mt-1 opacity-80">—</div>
  <div className="absolute inset-0 rounded-full border border-[#FFE3A8]/60"/>
  </div>
  </div>
@@ -141,32 +137,24 @@ export default function BookUnlockedScreen() {
  <span className="italic" style={{ color:"#F8B05A" }}>foi desbloqueado.</span>
  </h1>
  <p className="mt-3.5 text-[12.5px] text-white/70 leading-relaxed max-w-[300px] mx-auto">
- Uma leitura sobre coragem, esperança e a arte de reencontrar sentido nas pequenas escolhas do dia a dia.
+ Um novo título foi liberado na sua biblioteca.
  </p>
  </div>
 
- {/* Quote */}
- <div className="relative z-20 px-7 mt-6 fade-up">
- <div className="rounded-2xl px-5 py-4 border border-white/10 bg-white/[0.04] backdrop-blur-sm">
- <p style={serif} className="text-[14.5px] leading-[1.4] italic text-white/85">
- “Os que sonham acordados são os mesmos que constroem o futuro.”
- </p>
- <p className="mt-2 text-[10.5px] text-[#F8B05A]/90 tracking-[0.18em] uppercase">— Augusto Cury</p>
- </div>
- </div>
+ {/* Citação removida — sem atribuição real */}
 
  {/* Progress journey */}
  <div className="relative z-20 px-6 mt-6 fade-up">
  <div className="flex items-center justify-between mb-3">
  <p className="text-[10px] uppercase tracking-[0.28em] text-white/55">Sua jornada</p>
- <p className="text-[10.5px] text-white/70 tabular-nums">3 de 7 livros</p>
+ <p className="text-[10.5px] text-white/70 tabular-nums">—</p>
  </div>
  <div className="relative h-[6px] rounded-full bg-white/10 overflow-hidden">
- <div className="absolute inset-y-0 left-0 rounded-full" style={{ width:"43%", background:"linear-gradient(90deg,#FFE3B0,#F8B05A,#F88A2B)", boxShadow:"0 0 14px rgba(248,176,90,0.65)" }}/>
+ <div className="absolute inset-y-0 left-0 rounded-full" style={{ width:"0%", background:"linear-gradient(90deg,#FFE3B0,#F8B05A,#F88A2B)", boxShadow:"0 0 14px rgba(248,176,90,0.65)" }}/>
  </div>
  <div className="mt-3 flex items-center justify-between">
  {[1,2,3,4,5,6,7].map((n) => {
- const done = n <= 3;
+ const done = false;
  return (
    <AppUserLayout>
  <div key={n} className="flex flex-col items-center gap-1">
@@ -187,9 +175,9 @@ export default function BookUnlockedScreen() {
  <div className="relative z-20 px-6 mt-6 fade-up">
  <div className="grid grid-cols-3 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm py-3">
  {[
- { n:"5h 20m", l:"duração" },
- { n:"12", l:"capítulos" },
- { n:"+2", l:"este mês" },
+ { n:"—", l:"duração" },
+ { n:"—", l:"capítulos" },
+ { n:"—", l:"este mês" },
  ].map((s, i) => (
  <div key={s.l} className={`text-center ${i < 2 ?"border-r border-white/10" :""}`}>
  <div style={serif} className="text-[16px] text-white">{s.n}</div>
