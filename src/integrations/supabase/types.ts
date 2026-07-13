@@ -3015,6 +3015,18 @@ export type Database = {
         Args: { _organization_id: string }
         Returns: Json
       }
+      get_my_organization: {
+        Args: never
+        Returns: {
+          id: string
+          licenses_total: number
+          licenses_used: number
+          logo_url: string
+          name: string
+          slug: string
+          subscription_status: Database["public"]["Enums"]["subscription_status"]
+        }[]
+      }
       get_org_min_group_size: {
         Args: { _organization_id: string }
         Returns: number
