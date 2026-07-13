@@ -117,51 +117,13 @@ export default function EnterpriseDepartmentDetailScreen() {
         <section className="space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999]">Tendência das últimas semanas</h3>
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white border border-[#EFEAE5]">
-              <TrendingDown className="h-3 w-3 text-[#D97706]" />
-              <span className="text-[10px] font-bold text-[#D97706]">Queda gradual</span>
-            </div>
           </div>
           
           <div className="rounded-[32px] bg-white p-7 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
-            {/* Organic Trend Chart */}
-            <div className="w-full h-32 relative flex items-end justify-between px-2">
-              <div className="absolute inset-0 flex flex-col justify-between py-2 pointer-events-none opacity-20">
-                <div className="w-full border-t border-[#00000010]" />
-                <div className="w-full border-t border-[#00000010]" />
-                <div className="w-full border-t border-[#00000010]" />
-              </div>
-              
-              {[
-                { s: "29", v: 3.5, h: "70%" },
-                { s: "30", v: 3.2, h: "64%" },
-                { s: "31", v: 3.0, h: "60%" },
-                { s: "32", v: 2.9, h: "58%" }
-              ].map((week, i) => (
-                <div key={i} className="flex flex-col items-center gap-3 z-10">
-                  <span className="text-[10px] font-bold text-[#111]">{week.v.toFixed(1)}</span>
-                  <div className="w-8 bg-[#F88A2B1A] rounded-t-xl relative overflow-hidden group" style={{ height: week.h }}>
-                    <div className={`absolute inset-0 bg-[#F88A2B] ${i === 3 ? 'opacity-100' : 'opacity-40'} transition-all`} />
-                  </div>
-                  <span className="text-[10px] text-[#999] font-bold uppercase tracking-wider">Sem {week.s}</span>
-                </div>
-              ))}
-
-              {/* Line overlay */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" preserveAspectRatio="none">
-                <path 
-                  d="M15,40 C60,45 120,55 180,65" 
-                  fill="none" 
-                  stroke="#F88A2B" 
-                  strokeWidth="2" 
-                  strokeDasharray="4 4"
-                  className="opacity-30"
-                />
-              </svg>
-            </div>
-
-            <p className="text-[13px] text-[#444] font-medium leading-relaxed italic border-t border-[#F7F4F2] pt-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              “O equilíbrio coletivo apresenta queda gradual há 3 semanas.”
+            <p className="text-[13px] text-[#666] leading-relaxed">
+              {belowThreshold
+                ? "Tendências não são exibidas para grupos abaixo do volume mínimo."
+                : "Sem tendência consolidada ainda. Os agregados por área aparecem conforme o volume de check-ins cresce."}
             </p>
           </div>
         </section>
@@ -169,49 +131,22 @@ export default function EnterpriseDepartmentDetailScreen() {
         {/* Fatores Associados */}
         <section className="space-y-5">
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999]">Fatores associados</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              "Pressão por entrega",
-              "Mente acelerada",
-              "Cansaço emocional",
-              "Baixa recuperação"
-            ].map((factor, i) => (
-              <div key={i} className="rounded-2xl p-4 bg-white border border-white/80 shadow-sm">
-                <p className="text-[13px] text-[#333] font-bold leading-tight">{factor}</p>
-              </div>
-            ))}
+          <div className="rounded-2xl p-4 bg-white border border-white/80 shadow-sm text-[13px] text-[#666]">
+            Sem fatores associados consolidados para este departamento.
           </div>
         </section>
 
-        {/* Temas levados ao Cury Digital */}
+        {/* Temas no assistente IA */}
         <section className="space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999]">Temas no Cury Digital</h3>
+            <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999]">Temas na IA</h3>
             <Activity className="h-4 w-4 text-[#999]" />
           </div>
           
           <div className="rounded-[32px] bg-white p-7 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
-            <div className="space-y-5">
-              {[
-                { label: "Ansiedade por prazo", value: "38%" },
-                { label: "Dificuldade de desacelerar", value: "27%" },
-                { label: "Conflitos de comunicação", value: "21%" },
-                { label: "Sensação de excesso", value: "14%" }
-              ].map((theme, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[13px] font-semibold text-[#111]">{theme.label}</span>
-                    <span className="text-[13px] font-bold text-[#F88A2B]">{theme.value}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-[#F7F4F2] rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-[#F88A2B] rounded-full opacity-80" 
-                      style={{ width: theme.value }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-[13px] text-[#666] leading-relaxed">
+              Sem agregados temáticos disponíveis para este recorte no período.
+            </p>
 
             <div className="flex items-start gap-2 pt-4 border-t border-[#F7F4F2]">
               <Info className="h-3 w-3 text-[#999] mt-0.5" />
@@ -225,11 +160,8 @@ export default function EnterpriseDepartmentDetailScreen() {
         {/* Ações recomendadas */}
         <section className="space-y-5">
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999]">Ações recomendadas para esta área</h3>
-          <div className="grid grid-cols-1 gap-3">
-            <RecommendedActionCard text="Criar uma escuta estruturada com liderança." />
-            <RecommendedActionCard text="Reduzir ruído operacional da semana." />
-            <RecommendedActionCard text="Recomendar conteúdo sobre mente acelerada." />
-            <RecommendedActionCard text="Revisar carga de entregas críticas." />
+          <div className="rounded-2xl p-5 bg-white border border-white/60 shadow-sm text-[13px] text-[#666]">
+            Sem ações recomendadas geradas para este departamento no momento.
           </div>
         </section>
 
