@@ -84,11 +84,11 @@ export default function NewReleaseScreen() {
               boxShadow: "0 40px 70px -20px rgba(0,0,0,0.8), 0 0 60px rgba(248,176,90,0.35), inset 0 0 0 1px rgba(255,255,255,0.08)",
             }}>
               <div className="absolute inset-0" style={{ background: "radial-gradient(120% 80% at 30% 0%, rgba(248,176,90,0.35), transparent 60%)" }} />
-              <div className="absolute inset-x-4 top-5 text-[9px] tracking-[0.28em] uppercase opacity-80" style={{ color: "#F8B05A" }}>Augusto Cury</div>
+              <div className="absolute inset-x-4 top-5 text-[9px] tracking-[0.28em] uppercase opacity-80" style={{ color: "#F8B05A" }}>—</div>
               <div className="absolute inset-x-4 bottom-5">
-                <div className="text-[15px] leading-tight mb-1" style={{ ...serif, color: "#F4E7CE" }}>O vendedor de sonhos</div>
+                <div className="text-[15px] leading-tight mb-1" style={{ ...serif, color: "#F4E7CE" }}>Novo livro</div>
                 <div className="h-[1px] w-10 mb-2" style={{ background: "#F8B05A" }} />
-                <div className="text-[8px] tracking-[0.2em] uppercase opacity-60">Edição premium</div>
+                <div className="text-[8px] tracking-[0.2em] uppercase opacity-60">Liberado</div>
               </div>
               <div className="absolute inset-y-0 left-0 w-[4px]" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.5), transparent, rgba(0,0,0,0.5))" }} />
               <div className="absolute inset-x-0 top-0 h-[60%] opacity-40" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.15), transparent)" }} />
@@ -131,20 +131,14 @@ export default function NewReleaseScreen() {
 
         {/* meta */}
         <div className="fade-up flex items-center justify-center gap-4 text-[11px] opacity-60 mb-10" style={{ animationDelay: "1.8s" }}>
-          <span className="flex items-center gap-1.5"><Icon.Pages /> 312 páginas</span>
+          <span className="flex items-center gap-1.5"><Icon.Pages /> — páginas</span>
           <span className="opacity-40">·</span>
-          <span className="flex items-center gap-1.5"><Icon.Clock /> 5h 40m</span>
+          <span className="flex items-center gap-1.5"><Icon.Clock /> —</span>
           <span className="opacity-40">·</span>
-          <span>7 capítulos</span>
+          <span>— capítulos</span>
         </div>
 
-        {/* quote */}
-        <div className="fade-up text-center px-6" style={{ animationDelay: "2s" }}>
-          <p className="text-[14px] leading-relaxed" style={{ ...serif, fontStyle: "italic", color: "#E8C07A" }}>
-            "Os grandes começos começam em silêncio."
-          </p>
-          <div className="text-[10px] tracking-[0.3em] uppercase opacity-50 mt-3">Augusto Cury</div>
-        </div>
+        {/* Citação removida — sem atribuição real */}
       </div>
 
       {/* floating CTA */}
