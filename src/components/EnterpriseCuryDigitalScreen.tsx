@@ -42,10 +42,7 @@ const suggestions = [
   }
 ];
 
-const history = [
-  { title: "Pressão por entrega", date: "Esta semana" },
-  { title: "Mente acelerada à noite", date: "Semana passada" }
-];
+const history: Array<{ title: string; date: string }> = [];
 
 export default function EnterpriseCuryDigitalScreen() {
   const navigate = useNavigate();
@@ -160,7 +157,7 @@ export default function EnterpriseCuryDigitalScreen() {
               <Clock className="h-3.5 w-3.5 text-[#999]" />
             </div>
             <div className="space-y-3 px-1">
-              {history.map((item, idx) => (
+              {history.length > 0 ? history.map((item, idx) => (
                 <button 
                   key={idx}
                   onClick={() => navigate('/enterprise/cury-digital/chat')}
@@ -172,7 +169,13 @@ export default function EnterpriseCuryDigitalScreen() {
                   </div>
                   <span className="text-[10px] lg:text-[11px] text-[#999] font-medium">{item.date}</span>
                 </button>
-              ))}
+              )) : (
+                <div className="p-5 rounded-2xl bg-white border border-dashed border-black/10 text-center">
+                  <MessageSquare className="h-4 w-4 text-[#CCC] mx-auto mb-2" />
+                  <p className="text-[12px] text-[#666] font-medium">Nenhuma conversa registrada ainda.</p>
+                  <p className="text-[11px] text-[#999] mt-0.5">Suas próximas sessões aparecerão aqui.</p>
+                </div>
+              )}
             </div>
           </div>
 
