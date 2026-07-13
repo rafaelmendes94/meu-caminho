@@ -323,7 +323,7 @@ const TrilhaScreen = () => {
   const stageColors = [brand, green, purple];
 
   const displayEtapas: Etapa[] = useMemo(() => {
-    if (!trackItems.length) return etapas;
+    if (!trackItems.length) return [];
     return trackItems.map((it, i) => ({
       tag: `ETAPA ${i + 1}`,
       tagColor: stageColors[i % stageColors.length],
@@ -336,6 +336,8 @@ const TrilhaScreen = () => {
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackItems]);
+
+  const hasTrack = displayEtapas.length > 0;
 
  const menuRef = useRef<HTMLDivElement>(null);
 
@@ -420,39 +422,35 @@ const TrilhaScreen = () => {
   </div>
 
  {/* stats card */}
-  <div
-  className="mt-6 lg:mt-10 rounded-[20px] lg:rounded-[32px] bg-white p-4 lg:p-8"
- style={{ boxShadow:"0 6px 22px rgba(0,0,0,0.03), inset 0 0 0 1px rgba(0,0,0,0.04)" }}
- >
- {/* row 1: big % + progress */}
- <div className="flex items-end gap-3">
- <div className="leading-none">
- <p className="text-[34px]" style={{ ...serif, color: brand, fontWeight: 600, lineHeight: 1 }}>
- 35<span className="text-[18px] align-top">%</span>
- </p>
- <p className="mt-1 text-[10.5px]" style={{ color: ink500 }}>da jornada concluída</p>
- </div>
- <div className="flex-1 pb-1">
- <div className="relative h-1.5 rounded-full bg-[#F1ECE6] overflow-hidden">
- <div
- className="h-full rounded-full"
- style={{
- width:"35%",
- background:"linear-gradient(90deg, #F88A2B 0%, #FFB778 100%)",
- boxShadow:"0 0 10px rgba(248,138,43,0.45)",
- }}
- />
- </div>
- </div>
- </div>
-
- {/* row 2: 3 stat boxes */}
- <div className="mt-4 pt-4 border-t border-[#F1ECE6] grid grid-cols-3 gap-2">
-  <StatBox Icon={FlameIcon} value="12" label="dias seguidos" bg={isEnterprise ? "#F8F9FA" : "#FFE3CC"} />
-  <StatBox Icon={StarIcon} value="Nível 3" label="em evolução" bg={isEnterprise ? "#F8F9FA" : "#FFE3CC"} />
-  <StatBox Icon={TrendIcon} value="+18%" label="evolução semanal" bg={isEnterprise ? "#F1F5F0" : "#E3ECDD"} />
- </div>
- </div>
+  {hasTrack && (
+    <div
+      className="mt-6 lg:mt-10 rounded-[20px] lg:rounded-[32px] bg-white p-4 lg:p-8"
+      style={{ boxShadow:"0 6px 22px rgba(0,0,0,0.03), inset 0 0 0 1px rgba(0,0,0,0.04)" }}
+    >
+      <div className="flex items-end gap-3">
+        <div className="leading-none">
+          <p className="text-[34px]" style={{ ...serif, color: brand, fontWeight: 600, lineHeight: 1 }}>
+            0<span className="text-[18px] align-top">%</span>
+          </p>
+          <p className="mt-1 text-[10.5px]" style={{ color: ink500 }}>da jornada concluída</p>
+        </div>
+        <div className="flex-1 pb-1">
+          <div className="relative h-1.5 rounded-full bg-[#F1ECE6] overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: "0%",
+                background: "linear-gradient(90deg, #F88A2B 0%, #FFB778 100%)",
+              }}
+            />
+          </div>
+          <p className="mt-2 text-[10px]" style={{ color: ink500 }}>
+            Seu progresso será registrado a cada etapa concluída.
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
  </section>
 
  {/* Sua jornada list */}
@@ -460,12 +458,24 @@ const TrilhaScreen = () => {
  <h3 className="text-[15px] lg:text-[18px] font-bold text-[#111] px-1 mb-3 lg:mb-5" style={{ letterSpacing:"-0.01em" }}>
  Sua jornada
  </h3>
-  <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3 lg:gap-6">
-  {displayEtapas.map((e, i) => <EtapaCard key={i} e={e} />)}
-  </div>
+  {hasTrack ? (
+    <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3 lg:gap-6">
+      {displayEtapas.map((e, i) => <EtapaCard key={i} e={e} />)}
+    </div>
+  ) : (
+    <div className="rounded-[20px] lg:rounded-[28px] bg-white p-6 lg:p-10 text-center" style={{ boxShadow:"inset 0 0 0 1px rgba(0,0,0,0.05)" }}>
+      <p className="text-[14px] lg:text-[16px] text-[#111]" style={{ ...serif, fontWeight: 600 }}>
+        Sua trilha ainda não foi publicada.
+      </p>
+      <p className="mt-1 text-[11.5px] lg:text-[13px]" style={{ color: ink500 }}>
+        Assim que sua organização liberar uma trilha personalizada, as etapas aparecerão aqui.
+      </p>
+    </div>
+  )}
  </section>
 
  {/* Footer encouragement */}
+ {hasTrack && (
  <section className="mt-5">
  <div
  className="rounded-[20px] p-3.5 flex items-center gap-3"
@@ -495,6 +505,7 @@ const TrilhaScreen = () => {
  </Link>
  </div>
  </section>
+ )}
  </div>
 
  </div>
