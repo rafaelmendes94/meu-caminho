@@ -23,16 +23,7 @@ type Item = {
   to?: string;
 };
 
-const allActivities: Item[] = [
-  { id: "1", type: "aula", title: "Respiração consciente", meta: "Curso · Aula 3", when: "Hoje", time: "09:42", duration: "12m", to: "/aula" },
-  { id: "2", type: "chat", title: "Conversa sobre ansiedade", meta: "Cury IA", when: "Hoje", time: "08:10", to: "/cury-digital/chat" },
-  { id: "3", type: "leitura", title: "Ansiedade — capítulo 4", meta: "Biblioteca", when: "Ontem", time: "22:18", to: "/biblioteca/leitor" },
-  { id: "4", type: "audio", title: "Mente serena — meditação", meta: "Áudio · 12 min", when: "Ontem", time: "21:05", duration: "12m", to: "/player/audio" },
-  { id: "5", type: "conquista", title: "7 dias seguidos!", meta: "Conquista desbloqueada", when: "13/06", time: "07:32", to: "/conquista" },
-  { id: "6", type: "aula", title: "Limites saudáveis", meta: "Curso · Aula 2", when: "12/06", time: "19:48", duration: "15m", to: "/aula" },
-  { id: "7", type: "leitura", title: "Inteligência emocional — cap. 1", meta: "Biblioteca", when: "11/06", time: "18:00", to: "/biblioteca/leitor" },
-  { id: "8", type: "chat", title: "Reflexão sobre relações", meta: "Cury IA", when: "10/06", time: "20:22", to: "/cury-digital/chat" },
-];
+const allActivities: Item[] = [];
 
 const tabs = ["Tudo", "Aulas", "Áudios", "Leituras", "IA", "Conquistas"] as const;
 const filterMap: Record<typeof tabs[number], Item["type"][] | null> = {
@@ -111,10 +102,10 @@ const HistoryScreen = () => {
           {/* Stats SaaS Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Atividades Concluídas", value: "47", Icon: CheckCircle2, color: "#F88A2B", bg: "bg-orange-50" },
-              { label: "Dias Seguidos", value: "12", Icon: TrendingUp, color: "#9B8AC9", bg: "bg-purple-50" },
-              { label: "Tempo de Cuidado", value: "7.2h", Icon: Clock, color: "#7FBF9F", bg: "bg-green-50" },
-              { label: "Nível de Evolução", value: "Lvl 3", Icon: Award, color: "#E0A93A", bg: "bg-yellow-50" },
+              { label: "Atividades Concluídas", value: "—", Icon: CheckCircle2, color: "#F88A2B", bg: "bg-orange-50" },
+              { label: "Dias Seguidos", value: "—", Icon: TrendingUp, color: "#9B8AC9", bg: "bg-purple-50" },
+              { label: "Tempo de Cuidado", value: "—", Icon: Clock, color: "#7FBF9F", bg: "bg-green-50" },
+              { label: "Nível de Evolução", value: "—", Icon: Award, color: "#E0A93A", bg: "bg-yellow-50" },
             ].map((stat, i) => (
               <motion.div 
                 key={i}
@@ -252,9 +243,9 @@ const HistoryScreen = () => {
 
             <div className="grid grid-cols-3 gap-2 mt-4">
               {[
-                { v: "47", l: "atividades", c: brand },
-                { v: "12", l: "dias seguidos", c: "#9B8AC9" },
-                { v: "7h", l: "tempo total", c: "#7FBF9F" },
+                { v: "—", l: "atividades", c: brand },
+                { v: "—", l: "dias seguidos", c: "#9B8AC9" },
+                { v: "—", l: "tempo total", c: "#7FBF9F" },
               ].map((s, i) => (
                 <div key={i} className="bg-white rounded-2xl py-3 text-center border border-black/5 shadow-sm">
                   <p className="text-[18px] font-bold" style={{ color: s.c }}>{s.v}</p>
@@ -292,6 +283,11 @@ const HistoryScreen = () => {
                   </motion.div>
                 );
               })}
+              {filtered.length === 0 && (
+                <div className="text-center py-10 text-[12.5px] text-[#999]">
+                  Nenhuma atividade ainda.
+                </div>
+              )}
             </div>
           </div>
         </div>

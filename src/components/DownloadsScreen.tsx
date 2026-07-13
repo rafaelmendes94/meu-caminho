@@ -18,14 +18,7 @@ type Dl = {
  progress?: number;
 };
 
-const initial: Dl[] = [
- { type:"audio", title:"Meditação — mente serena", size:"12.4 MB", status:"ready" },
- { type:"video", title:"Aula 2 · Limites saudáveis", size:"186 MB", status:"ready" },
- { type:"ebook", title:"Ansiedade — capítulo 4", size:"3.1 MB", status:"ready" },
- { type:"pdf", title:"Material de apoio · Curso 1", size:"1.8 MB", status:"ready" },
- { type:"video", title:"Aula 3 · Respiração consciente", size:"212 MB", status:"downloading", progress: 64 },
- { type:"audio", title:"Podcast · Inteligência emocional", size:"28.7 MB", status:"ready" },
-];
+const initial: Dl[] = [];
 
 const iconFor = (t: Dl["type"]) => {
  const map = {
