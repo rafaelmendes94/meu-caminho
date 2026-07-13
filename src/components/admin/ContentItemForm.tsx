@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { StorageUpload } from "./StorageUpload";
 
 export type ContentType = "book" | "course" | "track" | "podcast" | "video" | "audio" | "material";
 
