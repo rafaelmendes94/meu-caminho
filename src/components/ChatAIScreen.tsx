@@ -135,28 +135,10 @@ const ChatAIScreen = () => {
  </div>
  </div>
 
- {/* Date divider */}
- <div className="flex justify-center pt-1">
- <span className="bg-[#EFEAE5] text-[#888] text-[11px] font-medium px-3 py-1 rounded-full">Hoje</span>
- </div>
-
  <AIBubble time="09:41">
  Olá, {userName}! 👋<br/>
  Como você está se sentindo hoje?<br/>
  Estou aqui para te ouvir.
- </AIBubble>
-
- <UserBubble time="09:42">
- Estou me sentindo ansiosa e com a mente muito acelerada...
- </UserBubble>
-
- <AIBubble time="09:43">
- Entendo como isso pode ser desafiador. A ansiedade costuma surgir quando nossa mente tenta antecipar situações ou lidar com muitas preocupações ao mesmo tempo.
- </AIBubble>
-
- <AIBubble time="09:43">
- Vamos respirar juntos? 🌿<br/>
- Que tal fazermos um exercício rápido para te ajudar a se acalmar agora?
  </AIBubble>
 
  {/* Quick actions */}
