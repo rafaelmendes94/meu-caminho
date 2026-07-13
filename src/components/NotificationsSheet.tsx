@@ -1,26 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Flame, CalendarDays, Headphones, BookOpen } from "lucide-react";
+import { ArrowRight, Bell } from "lucide-react";
 
 const serif = { fontFamily: "'Playfair Display', serif" };
 
-type Notif = {
-  id: string;
-  title: string;
-  desc: string;
-  time: string;
-  Icon: React.ElementType;
-  color: string;
-  bg: string;
-  unread?: boolean;
-};
-
-const items: Notif[] = [
-  { id: "1", title: "Sequência de 12 dias!", desc: "Você mantém sua sequência de cuidado emocional.", time: "Agora", Icon: Flame, color: "#F88A2B", bg: "#FDECDA", unread: true },
-  { id: "2", title: "Resumo semanal", desc: "Veja o seu progresso da semana.", time: "2h", Icon: CalendarDays, color: "#9B8AC9", bg: "#EFEAF7", unread: true },
-  { id: "3", title: "Novo áudio do dia", desc: "Uma nova mensagem para sua mente.", time: "1d", Icon: Headphones, color: "#8FB17D", bg: "#E3ECDD" },
-  { id: "4", title: "Clube do Livro", desc: "Um novo capítulo foi liberado.", time: "2d", Icon: BookOpen, color: "#B58A5A", bg: "#F6EFE8" },
-];
+// Notifications backend not implemented yet; sheet renders empty state instead of mock content.
 
 const NotificationsSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const [mounted, setMounted] = useState(open);
@@ -74,46 +58,17 @@ const NotificationsSheet = ({ open, onClose }: { open: boolean; onClose: () => v
               <h2 style={serif} className="text-[18px] leading-none text-[#111] tracking-tight">
                 Notificações
               </h2>
-              <p className="text-[10.5px] text-[#666] mt-1">Últimas notificações</p>
+              <p className="text-[10.5px] text-[#666] mt-1">Você está em dia</p>
             </div>
-            <span className="text-[10px] font-semibold text-[#F88A2B] bg-[#FDECDA] px-2 py-0.5 rounded-full">
-              2 novas
-            </span>
           </div>
 
-          {/* List */}
-          <div className="max-h-[340px] overflow-y-auto scrollbar-hide divide-y divide-[#F0EAE3] px-2">
-            {items.map((n, i) => (
-              <button
-                key={n.id}
-                className="w-full text-left flex items-start gap-2.5 py-2.5 px-2 rounded-xl active:bg-black/[0.02] transition-colors"
-                style={{
-                  animation: "fadeUp 320ms cubic-bezier(0.22,1,0.36,1) both",
-                  animationDelay: `${60 + i * 40}ms`,
-                }}
-              >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: n.bg }}
-                >
-                  <n.Icon size={15} color={n.color} strokeWidth={1.8} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-[12.5px] font-semibold text-[#111] leading-tight truncate">
-                      {n.title}
-                    </p>
-                    {n.unread && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F88A2B] shrink-0" />
-                    )}
-                  </div>
-                  <p className="text-[10.5px] text-[#666] mt-0.5 leading-snug line-clamp-2">
-                    {n.desc}
-                  </p>
-                </div>
-                <span className="text-[9.5px] text-[#999] shrink-0 mt-0.5">{n.time}</span>
-              </button>
-            ))}
+          {/* Empty state */}
+          <div className="px-4 py-8 flex flex-col items-center text-center gap-2">
+            <div className="w-10 h-10 rounded-2xl bg-[#F9F8F6] flex items-center justify-center text-[#C9C2BB]">
+              <Bell size={18} />
+            </div>
+            <p className="text-[12.5px] font-semibold text-[#111]">Sem notificações</p>
+            <p className="text-[10.5px] text-[#666] max-w-[220px]">Você não tem novidades no momento.</p>
           </div>
 
           {/* CTA */}
