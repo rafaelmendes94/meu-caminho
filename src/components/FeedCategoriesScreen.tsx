@@ -186,7 +186,7 @@ const FeedCategoriesScreen = () => {
  <div className="flex-1 min-w-0">
  <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: c.tone.replace(/0\.85\)|0\.88\)/,"1)") }}>Território</p>
  <h4 className="mt-0.5 text-[16px] leading-tight text-[#111]" style={{ ...serif, fontWeight: 600 }}>{c.title}</h4>
- <p className="mt-1 text-[11px] text-[#666]">{c.count} conteúdos · curado por Cury</p>
+ <p className="mt-1 text-[11px] text-[#666]">{c.count} conteúdos</p>
  </div>
  <span className="w-8 h-8 rounded-full bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]">
  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
