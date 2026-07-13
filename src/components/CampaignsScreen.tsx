@@ -25,67 +25,10 @@ type Campaign = {
  to: string;
 };
 
-const HERO: Campaign = {
- id:"janeiro",
- badge:"Campanha do mês",
- title:"Janeiro",
- italic:"Branco",
- subtitle:"Um movimento pela saúde emocional. 31 dias de reflexões guiadas por Augusto Cury.",
- img:"https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1000&q=75&auto=format&fit=crop",
- accent:"#F88A2B",
- glow:"rgba(248,138,43,0.45)",
- pieces: 31,
- duration:"Janeiro inteiro",
- to:"/feed",
-};
-
-const CAMPAIGNS: Campaign[] = [
- {
- id:"setembro",
- badge:"Em destaque",
- title:"Setembro",
- italic:"Amarelo",
- subtitle:"Falar é a melhor solução. Conteúdos sobre prevenção, escuta e cuidado.",
- img:"https://images.unsplash.com/photo-1500627964684-141351970a7f?w=900&q=75&auto=format&fit=crop",
- accent:"#E8B43A",
- glow:"rgba(232,180,58,0.5)",
- pieces: 18,
- duration:"Mês inteiro",
- to:"/feed",
- },
- {
- id:"trabalho",
- badge:"Especial",
- title:"Saúde emocional",
- italic:"no trabalho",
- subtitle:"Como reencontrar o sentido, lidar com pressão e proteger sua mente no dia a dia.",
- img:"https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&q=75&auto=format&fit=crop",
- accent:"#5B8DB8",
- glow:"rgba(91,141,184,0.45)",
- pieces: 12,
- duration:"4 semanas",
- to:"/feed",
- },
- {
- id:"outubro",
- badge:"Em breve",
- title:"Outubro",
- italic:"Rosa",
- subtitle:"Coragem, fé e o cuidado emocional na jornada feminina.",
- img:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=900&q=75&auto=format&fit=crop",
- accent:"#D87BA8",
- glow:"rgba(216,123,168,0.5)",
- pieces: 14,
- duration:"Outubro",
- to:"/feed",
- },
-];
-
-const PAST = [
- { id:"p1", title:"Maio das Mães", img:"https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?w=400&q=70&auto=format&fit=crop", count:"10 conteúdos" },
- { id:"p2", title:"Junho da Família", img:"https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=70&auto=format&fit=crop", count:"8 conteúdos" },
- { id:"p3", title:"Verão Sereno", img:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70&auto=format&fit=crop", count:"12 conteúdos" },
-];
+// Campanhas reais serão carregadas via CMS (marketing_campaigns) em integração futura.
+const HERO: Campaign | null = null;
+const CAMPAIGNS: Campaign[] = [];
+const PAST: { id: string; title: string; img: string; count: string }[] = [];
 
 export default function CampaignsScreen() {
  return (
@@ -134,6 +77,7 @@ export default function CampaignsScreen() {
  </div>
 
  {/* HERO cinematic */}
+ {HERO && (
  <div className="relative z-20 px-5 pb-6 fade-up">
  <Link to={HERO.to} className="block relative rounded-[28px] overflow-hidden shadow-[0_22px_50px_rgba(0,0,0,0.22)] group">
  <div className="relative h-[440px]">
@@ -172,14 +116,21 @@ export default function CampaignsScreen() {
  <div className="mt-4 flex items-center gap-4 text-[10.5px] text-white/70">
  <span>{HERO.pieces} reflexões</span>
  <span className="w-1 h-1 rounded-full bg-white/40"/>
- <span>Augusto Cury</span>
- <span className="w-1 h-1 rounded-full bg-white/40"/>
  <span>Áudio · vídeo · leitura</span>
  </div>
  </div>
  </div>
  </Link>
  </div>
+ )}
+
+ {!HERO && CAMPAIGNS.length === 0 && (
+ <div className="relative z-20 px-5 pb-6 fade-up">
+ <div className="rounded-[24px] border border-[#EFE3D5] bg-white/70 backdrop-blur p-8 text-center text-[13px] text-[#7A6A5C]">
+ Nenhuma campanha ativa no momento.
+ </div>
+ </div>
+ )}
 
  {/* Section */}
  <div className="relative z-20 px-5 pb-3 flex items-center justify-between">
@@ -213,8 +164,6 @@ export default function CampaignsScreen() {
  <div className="flex items-center gap-2 text-[10.5px] text-[#8A7868]">
  <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.accent }}/>
  <span>{c.pieces} conteúdos</span>
- <span className="w-1 h-1 rounded-full bg-[#D9C8B5]"/>
- <span>Augusto Cury</span>
  </div>
  <span className="text-[#1F1A16]"><ArrowR s={16}/></span>
  </div>
@@ -223,19 +172,9 @@ export default function CampaignsScreen() {
  ))}
  </div>
 
- {/* Editorial quote */}
- <div className="relative z-20 px-5 pb-6 fade-up">
- <div className="rounded-[24px] p-6 text-white relative overflow-hidden" style={{ background:"linear-gradient(135deg,#2E2218,#1A130C)" }}>
- <div className="absolute -top-12 -right-10 w-[200px] h-[200px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.35), transparent 70%)", filter:"blur(20px)" }} />
- <p className="text-[10px] uppercase tracking-[0.28em] text-[#F8B07A]">Manifesto</p>
- <p style={serif} className="mt-3 text-[22px] leading-[1.2] italic">
- “Cuidar das emoções é o ato mais corajoso de uma geração apressada.”
- </p>
- <p className="mt-3 text-[11px] text-white/60">— Augusto Cury</p>
- </div>
- </div>
-
  {/* Past campaigns horizontal */}
+ {PAST.length > 0 && (
+ <>
  <div className="relative z-20 px-5 pb-2">
  <h2 style={serif} className="text-[18px]">Movimentos anteriores</h2>
  </div>
@@ -256,6 +195,8 @@ export default function CampaignsScreen() {
  ))}
  </div>
  </div>
+ </>
+ )}
 
  {/* Bottom nav */}
  <div className="absolute bottom-0 left-0 right-0 z-30">

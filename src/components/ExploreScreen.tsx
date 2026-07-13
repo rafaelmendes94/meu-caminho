@@ -218,7 +218,7 @@ export default function ExploreScreen() {
  <div className="relative z-20 px-5 pb-3 fade-up">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#8A7868] mb-2">Sugestões</p>
  <div className="space-y-1.5">
- {[`${q} para dormir`, `${q} de Augusto Cury`, `como lidar com ${q}`].map((s, i) => (
+  {[`${q} para dormir`, `${q} guiado`, `como lidar com ${q}`].map((s, i) => (
  <button key={i} onClick={() => setQ(s)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/85 border border-[#EFE3D5] text-left">
  <SearchI s={14}/>
  <span className="text-[13px] text-[#1F1A16] flex-1 truncate">{s}</span>
@@ -334,8 +334,7 @@ function ExploreCard({ c, delay }: { c: Card; delay: number }) {
  return (
  <Link to={c.to} className="block fade-up rounded-2xl p-4 border border-[#EFE3D5] shadow-[0_8px_22px_rgba(0,0,0,0.06)]" style={{ background: c.tone, height: c.h, animationDelay: `${delay}ms` }}>
  <span className="text-[9px] uppercase tracking-[0.22em] text-[#8A6A3A] font-semibold">{c.type}</span>
- <p style={serif} className="mt-3 text-[15px] leading-[1.3] italic text-[#3A2E24]">“{c.title}”</p>
- <p className="mt-3 text-[10px] text-[#5C4E42]/80">— Augusto Cury</p>
+  <p style={serif} className="mt-3 text-[15px] leading-[1.3] italic text-[#3A2E24]">“{c.title}”</p>
  </Link>
  );
  }

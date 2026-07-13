@@ -67,7 +67,7 @@ function mapItem(item: CmsItem, idx: number): Book {
     title: item.title,
     cover: GRADIENTS[idx % GRADIENTS.length],
     accent: ACCENTS[idx % ACCENTS.length],
-    bg: item.cover_url || item.banner_url || "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop",
+    bg: item.cover_url || item.banner_url || "",
     progress: 0,
     duration,
     isNew,
@@ -144,9 +144,7 @@ export default function LibraryScreen() {
  </div>
  ) : (
   <div className={`relative z-20 px-5 pt-1 pb-4 flex items-center gap-3 ${isEnterprise ? 'lg:hidden' : ''}`}>
-  <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-[0_6px_18px_rgba(0,0,0,0.12)] shrink-0">
-  <img src={isEnterprise ?"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" :"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&q=70&auto=format&fit=crop"} alt="" className="w-full h-full object-cover"/>
-  </div>
+   <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-[0_6px_18px_rgba(0,0,0,0.12)] shrink-0 bg-[#EFE3D5]" />
   <div className="flex-1 min-w-0">
   <h1 style={serif} className="text-[20px] leading-tight text-[#111111] truncate">Clube do Livro</h1>
   <p className="text-[11.5px] text-[#666666] truncate">Sua biblioteca para evoluir sempre</p>
@@ -160,9 +158,7 @@ export default function LibraryScreen() {
 
   {/* HERO - Hidden on Enterprise mobile */}
   <div className={`relative z-20 px-5 pb-5 fade-up ${isEnterprise ? 'lg:px-0 lg:pt-2' : ''} ${isEnterprise ? 'hidden lg:block' : ''}`}>
-    <div className="relative rounded-[24px] overflow-hidden h-[210px] lg:h-[320px] shadow-[0_18px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)]">
-      <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&q=80&auto=format&fit=crop" alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
-      <div className="absolute inset-0" style={{ background: isEnterprise ? "linear-gradient(100deg, rgba(255,244,228,0.92) 0%, rgba(255,242,222,0.85) 55%, rgba(255,238,214,0.35) 80%, rgba(255,238,214,0.05) 100%)" : "linear-gradient(100deg, rgba(255,244,228,0.99) 0%, rgba(255,242,222,0.96) 55%, rgba(255,238,214,0.55) 80%, rgba(255,238,214,0.1) 100%)" }} />
+     <div className="relative rounded-[24px] overflow-hidden h-[210px] lg:h-[320px] shadow-[0_18px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)]" style={{ background:"linear-gradient(135deg,#FFF4E4 0%,#FFE9CE 100%)" }}>
       <div className="absolute -bottom-12 -left-10 w-[220px] h-[220px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.30), transparent 70%)", filter:"blur(18px)" }} />
       <div className="relative z-10 h-full p-6 lg:p-12 flex flex-col justify-center max-w-[280px] lg:max-w-[550px]">
         <div>
@@ -170,7 +166,7 @@ export default function LibraryScreen() {
             Uma biblioteca para transformar sua mente.
           </h2>
           <p className="mt-4 text-[12px] lg:text-[16px] text-[#3D3225] leading-relaxed font-medium">
-            Explore os livros que acompanham sua evolução emocional. Uma curadoria exclusiva de Augusto Cury para seu desenvolvimento.
+             Explore os livros que acompanham sua evolução emocional.
           </p>
         </div>
       </div>
@@ -254,17 +250,12 @@ export default function LibraryScreen() {
   <div className="absolute inset-0" style={{ background:"radial-gradient(120% 80% at 100% 100%, #FFE8C8 0%, transparent 60%), radial-gradient(80% 60% at 0% 0%, #F6EADD 0%, transparent 60%)" }} />
   <div className="absolute -top-12 -left-8 w-[200px] h-[200px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(143,177,125,0.15), transparent 70%)", filter:"blur(24px)" }} />
 
-  <div className="relative z-10 p-8 lg:p-12 flex flex-col items-center text-center max-w-2xl mx-auto">
-  <div className="text-[#F88A2B] mb-6 transform scale-150"><Quote/></div>
-  <p style={serif} className="text-2xl lg:text-3xl leading-snug text-[#1F1A14] font-medium">
-  "Os livros expandem horizontes que a ansiedade limita. Cada página é um passo em direção à sua liberdade emocional."
-  </p>
-  <div className="mt-8 flex items-center gap-3">
-  <div className="h-px w-8 bg-[#F88A2B]/30" />
-  <p className="text-sm text-[#F88A2B] font-bold uppercase tracking-widest">Augusto Cury</p>
-  <div className="h-px w-8 bg-[#F88A2B]/30" />
-  </div>
-  </div>
+   <div className="relative z-10 p-8 lg:p-12 flex flex-col items-center text-center max-w-2xl mx-auto">
+   <div className="text-[#F88A2B] mb-6 transform scale-150"><Quote/></div>
+   <p style={serif} className="text-2xl lg:text-3xl leading-snug text-[#1F1A14] font-medium">
+   Reflexões editoriais estarão disponíveis em breve.
+   </p>
+   </div>
   </div>
   </div>
 
@@ -291,7 +282,7 @@ function BookCard({ b, delay, isEnterprise }: { b: Book; delay: number; isEnterp
  <img src={b.bg} alt="" className={`absolute inset-0 w-full h-full object-cover mix-blend-soft-light opacity-80 ${locked ?"blur-[1.5px]" :""}`} />
  {/* top tag */}
  <div className="absolute top-2 left-2 right-2 flex items-center justify-center">
- <div className="text-[8px] tracking-[0.32em] uppercase font-semibold" style={{ color: b.accent }}>Augusto Cury</div>
+ <div className="text-[8px] tracking-[0.32em] uppercase font-semibold" style={{ color: b.accent }}>Clube do Livro</div>
  </div>
  {/* title on cover */}
  <div className="absolute inset-x-0 top-1/3 -translate-y-1/2 px-3 text-center">

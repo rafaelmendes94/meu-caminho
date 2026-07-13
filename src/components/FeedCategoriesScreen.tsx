@@ -29,15 +29,9 @@ const Leaf = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" 
 const Shield = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" /></svg>);
 const Heart = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 6.6a5.5 5.5 0 0 0-9.3-2.4l-.5.5-.5-.5A5.5 5.5 0 1 0 2.7 12l8.3 8.3 8.3-8.3a5.5 5.5 0 0 0 1.5-5.4z" /></svg>);
 
-const categories: Cat[] = [
- { key:"ansiedade", title:"Ansiedade", count: 84, img:"https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=800&q=80", tone:"rgba(248,138,43,0.85)", glow:"rgba(248,138,43,0.4)", icon: <Wave /> },
- { key:"sono", title:"Sono", count: 42, img:"https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=800&q=80", tone:"rgba(96,84,168,0.85)", glow:"rgba(155,138,201,0.45)", icon: <Moon /> },
- { key:"relacoes", title:"Relações", count: 56, img:"https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=800&q=80", tone:"rgba(196,101,74,0.85)", glow:"rgba(232,168,124,0.45)", icon: <People /> },
- { key:"ie", title:"Inteligência emocional", count: 112, img:"https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80", tone:"rgba(74,103,65,0.85)", glow:"rgba(135,168,120,0.45)", icon: <Brain /> },
- { key:"mind", title:"Mindfulness", count: 67, img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80", tone:"rgba(74,138,158,0.85)", glow:"rgba(92,189,185,0.45)", icon: <Leaf /> },
- { key:"auto", title:"Autocontrole", count: 48, img:"https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80", tone:"rgba(58,52,82,0.88)", glow:"rgba(120,108,170,0.4)", icon: <Shield /> },
- { key:"saude", title:"Saúde mental", count: 95, img:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=800&q=80", tone:"rgba(216,108,127,0.85)", glow:"rgba(232,140,160,0.45)", icon: <Heart /> },
-];
+// Territórios emocionais reais serão carregados do CMS (cms_categories) em integração futura.
+void Wave; void Moon; void People; void Brain; void Leaf; void Shield; void Heart;
+const categories: Cat[] = [];
 
 const moods = ["Calmo","Ansioso","Cansado","Inspirado","Reflexivo"];
 
@@ -88,7 +82,7 @@ const FeedCategoriesScreen = () => {
  Encontre o conteúdo que sua mente precisa hoje.
  </h1>
  <p className="mt-2 text-[13px] text-[#666] leading-snug">
- Sete territórios emocionais. Curados por Augusto Cury.
+ Explore territórios emocionais curados para você.
  </p>
  </section>
 
@@ -120,6 +114,8 @@ const FeedCategoriesScreen = () => {
  </div>
  </section>
 
+ {featured ? (
+ <>
  {/* Featured large card */}
  <section className="mt-6 fade-up">
  <Link to="/feed" className="relative block rounded-[24px] overflow-hidden h-[210px]" style={{ boxShadow:"0 18px 40px -18px rgba(248,138,43,0.45), inset 0 0 0 1px rgba(17,17,17,0.05)" }}>
@@ -152,7 +148,7 @@ const FeedCategoriesScreen = () => {
 
  {/* Two-up */}
  <section className="mt-3 grid grid-cols-2 gap-3 fade-up">
- {[a, b].map((c) => (
+ {[a, b].filter(Boolean).map((c) => (
  <Link key={c.key} to="/feed" className="relative block rounded-[20px] overflow-hidden h-[170px]" style={{ boxShadow:"0 10px 26px -14px rgba(17,17,17,0.3), inset 0 0 0 1px rgba(17,17,17,0.05)" }}>
  <img src={c.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%)" }} />
@@ -190,7 +186,7 @@ const FeedCategoriesScreen = () => {
  <div className="flex-1 min-w-0">
  <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: c.tone.replace(/0\.85\)|0\.88\)/,"1)") }}>Território</p>
  <h4 className="mt-0.5 text-[16px] leading-tight text-[#111]" style={{ ...serif, fontWeight: 600 }}>{c.title}</h4>
- <p className="mt-1 text-[11px] text-[#666]">{c.count} conteúdos · curado por Cury</p>
+ <p className="mt-1 text-[11px] text-[#666]">{c.count} conteúdos</p>
  </div>
  <span className="w-8 h-8 rounded-full bg-[#F7F4F2] flex items-center justify-center text-[#F88A2B]">
  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
@@ -198,19 +194,14 @@ const FeedCategoriesScreen = () => {
  </Link>
  ))}
  </section>
-
- {/* Insight */}
- <section className="mt-6 mb-2 fade-up">
- <div className="relative rounded-[22px] p-5 overflow-hidden" style={{ background:"linear-gradient(135deg, #FFFFFF 0%, #FFF6EE 100%)", boxShadow:"0 10px 28px -14px rgba(248,138,43,0.3), inset 0 0 0 1px rgba(248,138,43,0.12)" }}>
- <p className="text-[15px] leading-[1.4] text-[#111]" style={{ ...serif, fontWeight: 500 }}>
-"Quem conhece o território da própria mente nunca se perde no mundo."
+ </>
+ ) : (
+ <section className="mt-8 fade-up rounded-[22px] border border-[#EFE3D5] bg-white/70 backdrop-blur p-8 text-center">
+ <p className="text-[13px] text-[#7A6A5C] leading-relaxed">
+ Territórios emocionais serão exibidos aqui em breve.
  </p>
- <div className="mt-2 flex items-center gap-2">
- <span className="w-5 h-px bg-[#F88A2B]" />
- <span className="text-[11.5px] font-semibold text-[#F88A2B]">Augusto Cury</span>
- </div>
- </div>
  </section>
+ )}
  </div>
 
  </div>
