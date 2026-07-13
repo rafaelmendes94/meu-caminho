@@ -93,7 +93,7 @@ export default function MyReadingScreen() {
         </div>
 
         {/* in progress list */}
-        <div className="fade-up mb-10">
+        {inProgress.length > 0 && (<div className="fade-up mb-10">
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-[18px]" style={serif}>Em andamento</h2>
             <Link to="/biblioteca" className="text-[11px] opacity-60 flex items-center gap-1">Todos <Icon.Chevron /></Link>
@@ -118,7 +118,7 @@ export default function MyReadingScreen() {
               </Link>
             ))}
           </div>
-        </div>
+        </div>)}
 
         {/* quick access tiles */}
         <div className="grid grid-cols-2 gap-3 mb-10 fade-up">
