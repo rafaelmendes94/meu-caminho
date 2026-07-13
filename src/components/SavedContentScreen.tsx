@@ -32,24 +32,12 @@ type Item = {
  tone?: string;
 };
 
-const ITEMS: Item[] = [
- { id:"a1", type:"audio", title:"A coragem de recomeçar", meta:"Áudio · Augusto Cury", img:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop", duration:"12 min", to:"/player/audio", saved:"Hoje" },
- { id:"v1", type:"video", title:"O território das emoções", meta:"Vídeo · 4 min", img:"https://images.unsplash.com/photo-1499346030926-9a72daac6c63?w=600&q=70&auto=format&fit=crop", duration:"4 min", to:"/conteudo/video", saved:"Hoje" },
- { id:"r1", type:"read", title:"Quando o silêncio fala mais alto", meta:"Leitura · 6 min", img:"https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=70&auto=format&fit=crop", duration:"6 min", to:"/conteudo/leitura", saved:"Ontem" },
- { id:"a2", type:"audio", title:"Treine sua mente para a paz", meta:"Áudio · 18 min", img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=600&q=70&auto=format&fit=crop", duration:"18 min", to:"/player/audio", saved:"Ontem" },
- { id:"q1", type:"quote", title:"Quem ama, educa pelo exemplo, não pela exigência.", meta:"Reflexão guardada", saved:"3 dias", tone:"linear-gradient(135deg,#FFE3C7,#F8C892)" },
- { id:"v2", type:"video", title:"A arte de pensar antes de sentir", meta:"Vídeo · 7 min", img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70&auto=format&fit=crop", duration:"7 min", to:"/conteudo/video", saved:"5 dias" },
- { id:"r2", type:"read", title:"O preço invisível da pressa", meta:"Leitura · 8 min", img:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=70&auto=format&fit=crop", duration:"8 min", to:"/conteudo/leitura", saved:"1 sem" },
- { id:"q2", type:"quote", title:"Sua mente não é uma prisão. É um jardim que pede cuidado diário.", meta:"Reflexão guardada", saved:"2 sem", tone:"linear-gradient(135deg,#F4E3D7,#E9C9B0)" },
-];
+// Itens salvos reais serão carregados de user_bookmarks/user_saved_content.
+const ITEMS: Item[] = [];
 
 type Playlist = { id: string; title: string; count: number; gradient: string; emoji: string };
-const PLAYLISTS: Playlist[] = [
- { id:"p1", title:"Para acalmar a mente", count: 14, gradient:"linear-gradient(135deg,#FFD7B0,#F88A2B)", emoji:"🌿" },
- { id:"p2", title:"Antes de dormir", count: 9, gradient:"linear-gradient(135deg,#C9B5E8,#7E5BB8)", emoji:"🌙" },
- { id:"p3", title:"Reconstruir-se", count: 11, gradient:"linear-gradient(135deg,#F8B8A0,#D86B4A)", emoji:"✦" },
- { id:"p4", title:"Foco profundo", count: 7, gradient:"linear-gradient(135deg,#A8C8E0,#4A6E92)", emoji:"◐" },
-];
+// Playlists emocionais reais dependem de user_playlists — em integração.
+const PLAYLISTS: Playlist[] = [];
 
 export default function SavedContentScreen() {
  const [tab, setTab] = useState<Tab>("Tudo");
@@ -211,7 +199,7 @@ function ItemCard({ item, delay }: { item: Item; delay: number }) {
  “{item.title}”
  </p>
  <div className="mt-3 flex items-center justify-between text-[11px] text-[#5C4E42]/80">
- <span>— Augusto Cury</span>
+ <span>{item.meta}</span>
  <span className="flex items-center gap-1"><Bookmark/> {item.saved}</span>
  </div>
  </div>
