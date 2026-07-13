@@ -30,27 +30,9 @@ const EnterpriseEmotionalMapScreen = () => {
       .then(({ data }: any) => { setWeeks(data ?? []); setLoaded(true); });
   }, [organization?.id]);
 
-  const emotionalAreas = [
-    { name: "Operações", state: "Aceleração", intensity: 85, color: "bg-orange-500" },
-    { name: "Produto", state: "Recuperação", intensity: 62, color: "bg-blue-400" },
-    { name: "Comercial", state: "Estabilidade", intensity: 45, color: "bg-emerald-400" },
-    { name: "Atendimento", state: "Oscilação", intensity: 74, color: "bg-purple-400" },
-  ];
-
-  const states = [
-    { label: "Mente acelerada", value: "64%", icon: <Zap className="w-5 h-5" />, color: "text-orange-500" },
-    { label: "Clareza em evolução", value: "71%", icon: <Sparkles className="w-5 h-5" />, color: "text-amber-500" },
-    { label: "Equilíbrio estável", value: "39%", icon: <Wind className="w-5 h-5" />, color: "text-emerald-500" },
-    { label: "Necessidade de recuperação", value: "52%", icon: <Activity className="w-5 h-5" />, color: "text-blue-500" },
-  ];
-
-  const weeklyMovement = [
-    { day: "Segunda", pressure: "Alta", desc: "Início de ciclo", color: "h-24 bg-orange-500/40" },
-    { day: "Terça", pressure: "Alta", desc: "Pico de demanda", color: "h-20 bg-orange-400/30" },
-    { day: "Quarta", pressure: "Média", desc: "Estabilização", color: "h-14 bg-amber-400/30" },
-    { day: "Quinta", pressure: "Média", desc: "Consolidação", color: "h-16 bg-amber-300/20" },
-    { day: "Sexta", pressure: "Baixa", desc: "Recuperação", color: "h-10 bg-emerald-400/20" },
-  ];
+  const emotionalAreas: Array<{ name: string; state: string; intensity: number; color: string }> = [];
+  const states: Array<{ label: string; value: string; icon: JSX.Element; color: string }> = [];
+  const weeklyMovement: Array<{ day: string; pressure: string; desc: string; color: string }> = [];
 
   return (
     <EnterpriseRHLayout title="Mapa emocional">
@@ -87,6 +69,11 @@ const EnterpriseEmotionalMapScreen = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {emotionalAreas.length === 0 && (
+              <p className="text-sm text-black/50 italic py-6 col-span-full text-center">
+                Ainda não há dados agregados suficientes por área.
+              </p>
+            )}
             {emotionalAreas.map((area, idx) => (
               <motion.div
                 key={area.name}
@@ -133,6 +120,11 @@ const EnterpriseEmotionalMapScreen = () => {
         <section className="space-y-6">
           <h3 className="text-sm uppercase tracking-widest font-bold text-black/40">Estados predominantes</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {states.length === 0 && (
+              <p className="text-sm text-black/50 italic py-6 col-span-full text-center">
+                Estados predominantes ainda não disponíveis.
+              </p>
+            )}
             {states.map((state, idx) => (
               <motion.div
                 key={state.label}
@@ -210,14 +202,6 @@ const EnterpriseEmotionalMapScreen = () => {
             Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.
           </p>
 
-          <div className="mt-8 pt-6 border-t border-black/5 flex gap-4 items-start">
-            <div className="p-2 bg-orange-50 rounded-xl">
-              <Brain className="w-4 h-4 text-orange-500" />
-            </div>
-            <p className="text-xs text-black/60 leading-relaxed font-light italic">
-              "A recuperação emocional tende a crescer após redução de pressão operacional, com maior incidência entre quarta e sexta-feira."
-            </p>
-          </div>
         </section>
 
         {/* Leitura Coletiva da IA */}
@@ -232,18 +216,9 @@ const EnterpriseEmotionalMapScreen = () => {
             </div>
           </div>
 
-          <p className="text-black/70 text-sm md:text-base leading-relaxed font-light">
-            “A organização apresenta sinais simultâneos de evolução emocional e aceleração mental em áreas específicas. O principal fator associado continua sendo pressão contínua por entrega, equilibrada por uma forte cultura de pertencimento.”
+          <p className="text-black/60 text-sm leading-relaxed italic">
+            A leitura coletiva será gerada automaticamente pela IA quando houver volume mínimo de dados agregados.
           </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-            {['equilíbrio', 'clareza', 'energia', 'recuperação'].map((item) => (
-              <div key={item} className="bg-black/[0.03]0 backdrop-blur-sm p-3 rounded-2xl border border-white flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-black/40">{item}</span>
-              </div>
-            ))}
-          </div>
         </section>
 
         {/* Como interpretar */}

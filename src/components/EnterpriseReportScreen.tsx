@@ -90,7 +90,7 @@ export default function EnterpriseReportScreen() {
           </div>
 
           <button className="text-[13px] font-bold text-[#111] bg-white px-4 py-2 rounded-full border border-white/60 shadow-sm flex items-center gap-2">
-            Maio 2026
+            Selecionar período
             <ChevronDown className="h-4 w-4 text-[#F88A2B]" />
           </button>
         </div>
@@ -135,45 +135,26 @@ export default function EnterpriseReportScreen() {
         <section>
           <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
             <h3 className="text-[20px] font-bold text-[#111] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Síntese do mês</h3>
-            <p className="text-[15px] leading-relaxed text-[#555] font-medium">
-              O time apresentou melhora em clareza emocional, manutenção do índice geral de equilíbrio e aumento pontual de sobrecarga em áreas operacionais. O principal ponto de atenção segue sendo a pressão por entrega e a dificuldade de desacelerar a mente.
+            <p className="text-[15px] leading-relaxed text-[#555] font-medium italic">
+              A síntese executiva do mês será gerada automaticamente quando houver volume mínimo de dados agregados.
             </p>
           </div>
         </section>
 
         {/* KPIs Grid */}
         <section className="grid grid-cols-2 gap-3">
-          <KPICard value="+12%" label="Clareza emocional" trend="Evolução" />
-          <KPICard value="3,8/5" label="Equilíbrio médio" trend="Estável" />
-          <KPICard value="87%" label="Adesão ao check-in" />
-          <KPICard value="2" label="Áreas em atenção" isPositive={false} />
+          <KPICard value="—" label="Clareza emocional" />
+          <KPICard value="—" label="Equilíbrio médio" />
+          <KPICard value="—" label="Adesão ao check-in" />
+          <KPICard value="—" label="Áreas em atenção" />
         </section>
 
         {/* Evolução do mês */}
         <section>
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999] mb-5 px-1">Evolução do mês</h3>
           <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <div className="flex items-end justify-between h-40 gap-4 mb-6">
-              {[
-                { week: "Sem 1", val: 3.4, h: "60%" },
-                { week: "Sem 2", val: 3.5, h: "65%" },
-                { week: "Sem 3", val: 3.7, h: "75%" },
-                { week: "Sem 4", val: 3.8, h: "80%" }
-              ].map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-3">
-                  <div className="relative w-full flex justify-center items-end h-full">
-                    <div 
-                      className="w-full max-w-[40px] rounded-2xl bg-gradient-to-t from-[#F88A2B] to-[#F88A2B]/40 transition-all duration-1000"
-                      style={{ height: d.h }}
-                    />
-                    <div className="absolute -top-6 text-[12px] font-bold text-[#111]">{d.val}</div>
-                  </div>
-                  <span className="text-[10px] font-bold text-[#999] uppercase">{d.week}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[13px] text-[#666] font-medium leading-relaxed italic text-center border-t border-[#F7F4F2] pt-4">
-              "O equilíbrio coletivo apresentou evolução gradual, com melhora consistente nas últimas duas semanas."
+            <p className="text-[13px] text-[#666] font-medium leading-relaxed italic text-center py-10">
+              O gráfico de evolução semanal aparecerá aqui quando houver dados agregados.
             </p>
           </div>
         </section>
@@ -182,20 +163,9 @@ export default function EnterpriseReportScreen() {
         <section>
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999] mb-5 px-1">Impacto da jornada</h3>
           <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-8">
-            <div className="flex justify-between text-[10px] font-bold text-[#999] uppercase tracking-widest mb-2">
-              <span>Antes</span>
-              <span>Depois da trilha</span>
-            </div>
-            
-            <ImpactRow label="Clareza emocional" before="58%" after="70%" />
-            <ImpactRow label="Equilíbrio estável" before="31%" after="39%" />
-            <ImpactRow label="Sobrecarga elevada" before="55%" after="48%" isWarning />
-
-            <div className="bg-[#F88A2B0A] rounded-2xl p-4 border border-[#F88A2B1A]">
-              <p className="text-[13px] text-[#F88A2B] font-semibold leading-relaxed">
-                Colaboradores que avançaram na trilha apresentaram maior percepção de clareza e equilíbrio coletivo.
-              </p>
-            </div>
+            <p className="text-[13px] text-[#666] font-medium leading-relaxed italic text-center py-6">
+              A comparação "antes x depois" da trilha aparecerá aqui quando houver amostra suficiente.
+            </p>
           </div>
         </section>
 
@@ -203,20 +173,9 @@ export default function EnterpriseReportScreen() {
         <section>
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999] mb-5 px-1">Principais temas emocionais</h3>
           <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <div className="space-y-6">
-              {[
-                { label: "Ansiedade e pressão por entrega", val: 41 },
-                { label: "Mente acelerada", val: 29 },
-                { label: "Cansaço emocional", val: 18 },
-                { label: "Conflitos de comunicação", val: 12 }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <div className="text-[16px] font-bold text-[#F88A2B] w-10 shrink-0">{item.val}%</div>
-                  <div className="flex-1 h-[1px] bg-[#F7F4F2]" />
-                  <div className="text-[14px] font-semibold text-[#333]">{item.label}</div>
-                </div>
-              ))}
-            </div>
+            <p className="text-[13px] text-[#666] font-medium leading-relaxed italic text-center py-6">
+              Os principais temas emocionais serão extraídos automaticamente de padrões agregados.
+            </p>
             
             <div className="mt-8 pt-6 border-t border-[#F7F4F2] flex items-start gap-3">
               <ShieldCheck className="h-4 w-4 text-[#999] shrink-0 mt-0.5" />
@@ -230,38 +189,20 @@ export default function EnterpriseReportScreen() {
         {/* Áreas de atenção */}
         <section>
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999] mb-5 px-1">Áreas de atenção</h3>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="rounded-[24px] bg-amber-50/50 p-6 border border-amber-200/50 flex justify-between items-center">
-              <div>
-                <div className="text-[16px] font-bold text-[#111]">Operações</div>
-                <div className="text-[12px] text-amber-700 font-medium">Sobrecarga elevada há 3 semanas</div>
-              </div>
-              <AlertTriangle className="h-6 w-6 text-amber-500" />
-            </div>
-            <div className="rounded-[24px] bg-white p-6 border border-white/60 flex justify-between items-center shadow-sm">
-              <div>
-                <div className="text-[16px] font-bold text-[#111]">Atendimento</div>
-                <div className="text-[12px] text-[#666] font-medium">Oscilação emocional em semanas de pico</div>
-              </div>
-            </div>
-            <div className="rounded-[24px] bg-white p-6 border border-white/60 flex justify-between items-center shadow-sm">
-              <div>
-                <div className="text-[16px] font-bold text-[#111]">Produto</div>
-                <div className="text-[12px] text-[#7FA06E] font-medium">Melhora gradual de clareza</div>
-              </div>
-              <CheckCircle2 className="h-6 w-6 text-[#7FA06E]" />
-            </div>
+          <div className="rounded-[24px] bg-white p-8 border border-white/60 shadow-sm text-center">
+            <p className="text-[13px] text-[#666] font-medium italic">
+              As áreas em atenção aparecerão aqui quando forem detectadas pela análise agregada.
+            </p>
           </div>
         </section>
 
         {/* Recomendações estratégicas */}
         <section>
           <h3 className="text-[14px] font-bold uppercase tracking-widest text-[#999] mb-5 px-1">Recomendações estratégicas</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <RecommendationCard icon={Target} text="Reduzir ruído operacional em áreas sob pressão." />
-            <RecommendationCard icon={Users} text="Criar momentos estruturados de escuta com liderança." />
-            <RecommendationCard icon={ShieldCheck} text="Reforçar conteúdos sobre mente acelerada e clareza." />
-            <RecommendationCard icon={FileText} text="Acompanhar Operações por mais duas semanas." />
+          <div className="rounded-2xl p-6 bg-[#F7F4F2] border border-white/40 text-center">
+            <p className="text-[13px] text-[#666] font-medium italic">
+              Recomendações estratégicas serão sugeridas pela IA a partir do plano de ação real.
+            </p>
           </div>
         </section>
 
