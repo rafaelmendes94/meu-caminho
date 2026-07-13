@@ -77,6 +77,7 @@ export default function CampaignsScreen() {
  </div>
 
  {/* HERO cinematic */}
+ {HERO && (
  <div className="relative z-20 px-5 pb-6 fade-up">
  <Link to={HERO.to} className="block relative rounded-[28px] overflow-hidden shadow-[0_22px_50px_rgba(0,0,0,0.22)] group">
  <div className="relative h-[440px]">
@@ -115,14 +116,21 @@ export default function CampaignsScreen() {
  <div className="mt-4 flex items-center gap-4 text-[10.5px] text-white/70">
  <span>{HERO.pieces} reflexões</span>
  <span className="w-1 h-1 rounded-full bg-white/40"/>
- <span>Augusto Cury</span>
- <span className="w-1 h-1 rounded-full bg-white/40"/>
  <span>Áudio · vídeo · leitura</span>
  </div>
  </div>
  </div>
  </Link>
  </div>
+ )}
+
+ {!HERO && CAMPAIGNS.length === 0 && (
+ <div className="relative z-20 px-5 pb-6 fade-up">
+ <div className="rounded-[24px] border border-[#EFE3D5] bg-white/70 backdrop-blur p-8 text-center text-[13px] text-[#7A6A5C]">
+ Nenhuma campanha ativa no momento.
+ </div>
+ </div>
+ )}
 
  {/* Section */}
  <div className="relative z-20 px-5 pb-3 flex items-center justify-between">
@@ -156,8 +164,6 @@ export default function CampaignsScreen() {
  <div className="flex items-center gap-2 text-[10.5px] text-[#8A7868]">
  <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.accent }}/>
  <span>{c.pieces} conteúdos</span>
- <span className="w-1 h-1 rounded-full bg-[#D9C8B5]"/>
- <span>Augusto Cury</span>
  </div>
  <span className="text-[#1F1A16]"><ArrowR s={16}/></span>
  </div>
@@ -166,19 +172,9 @@ export default function CampaignsScreen() {
  ))}
  </div>
 
- {/* Editorial quote */}
- <div className="relative z-20 px-5 pb-6 fade-up">
- <div className="rounded-[24px] p-6 text-white relative overflow-hidden" style={{ background:"linear-gradient(135deg,#2E2218,#1A130C)" }}>
- <div className="absolute -top-12 -right-10 w-[200px] h-[200px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.35), transparent 70%)", filter:"blur(20px)" }} />
- <p className="text-[10px] uppercase tracking-[0.28em] text-[#F8B07A]">Manifesto</p>
- <p style={serif} className="mt-3 text-[22px] leading-[1.2] italic">
- “Cuidar das emoções é o ato mais corajoso de uma geração apressada.”
- </p>
- <p className="mt-3 text-[11px] text-white/60">— Augusto Cury</p>
- </div>
- </div>
-
  {/* Past campaigns horizontal */}
+ {PAST.length > 0 && (
+ <>
  <div className="relative z-20 px-5 pb-2">
  <h2 style={serif} className="text-[18px]">Movimentos anteriores</h2>
  </div>
@@ -199,6 +195,8 @@ export default function CampaignsScreen() {
  ))}
  </div>
  </div>
+ </>
+ )}
 
  {/* Bottom nav */}
  <div className="absolute bottom-0 left-0 right-0 z-30">
