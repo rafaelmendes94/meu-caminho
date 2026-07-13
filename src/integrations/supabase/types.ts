@@ -1856,7 +1856,9 @@ export type Database = {
           mrr_cents: number | null
           name: string
           next_contact_at: string | null
+          onboarding_data: Json
           onboarding_status: string | null
+          onboarding_step: number
           plan: string | null
           responsible_email: string | null
           responsible_name: string | null
@@ -1898,7 +1900,9 @@ export type Database = {
           mrr_cents?: number | null
           name: string
           next_contact_at?: string | null
+          onboarding_data?: Json
           onboarding_status?: string | null
+          onboarding_step?: number
           plan?: string | null
           responsible_email?: string | null
           responsible_name?: string | null
@@ -1940,7 +1944,9 @@ export type Database = {
           mrr_cents?: number | null
           name?: string
           next_contact_at?: string | null
+          onboarding_data?: Json
           onboarding_status?: string | null
+          onboarding_step?: number
           plan?: string | null
           responsible_email?: string | null
           responsible_name?: string | null

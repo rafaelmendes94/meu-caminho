@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ShieldCheck, 
@@ -28,10 +28,14 @@ import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import logoMark from "@/assets/login-abstract.webp";
+import { supabase } from "@/integrations/supabase/client";
 
 const EnterpriseOnboardingScreen = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [formData, setFormData] = useState({
     companyName: "",
     segment: "",
@@ -50,6 +54,49 @@ const EnterpriseOnboardingScreen = () => {
     launch: false,
     dashboard: false
   });
+
+  // Load persisted progress
+  useEffect(() => {
+    (async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes?.user?.id;
+      if (!uid) { setHydrated(true); return; }
+      const { data: profile } = await supabase
+        .from("profiles").select("organization_id").eq("id", uid).maybeSingle();
+      const oid = profile?.organization_id ?? null;
+      if (!oid) { setHydrated(true); return; }
+      setOrgId(oid);
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("onboarding_step, onboarding_data")
+        .eq("id", oid)
+        .maybeSingle();
+      if (org?.onboarding_step && org.onboarding_step >= 1 && org.onboarding_step <= 6) {
+        setCurrentStep(org.onboarding_step);
+      }
+      const d = (org?.onboarding_data ?? {}) as { formData?: typeof formData; checklist?: typeof checklist };
+      if (d.formData) setFormData((prev) => ({ ...prev, ...d.formData }));
+      if (d.checklist) setChecklist((prev) => ({ ...prev, ...d.checklist }));
+      setHydrated(true);
+    })();
+  }, []);
+
+  // Debounced autosave
+  useEffect(() => {
+    if (!hydrated || !orgId) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      supabase
+        .from("organizations")
+        .update({
+          onboarding_step: currentStep,
+          onboarding_data: { formData, checklist } as never,
+        })
+        .eq("id", orgId)
+        .then(() => {});
+    }, 400);
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
+  }, [currentStep, formData, checklist, hydrated, orgId]);
 
   const steps = [
     { id: 1, label: "Empresa", icon: Building2 },
@@ -70,6 +117,13 @@ const EnterpriseOnboardingScreen = () => {
   };
 
   const handleFinish = () => {
+    if (orgId) {
+      supabase
+        .from("organizations")
+        .update({ onboarding_step: 6, onboarding_status: "completed" })
+        .eq("id", orgId)
+        .then(() => {});
+    }
     toast.success("Implantação concluída com sucesso!", {
       description: "O dashboard RH agora está liberado para monitoramento coletivo."
     });
