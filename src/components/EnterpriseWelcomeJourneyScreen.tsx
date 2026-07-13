@@ -27,8 +27,8 @@ const EnterpriseWelcomeJourneyScreen = () => {
       delay: 0.1 
     },
     { 
-      title: "Cury Digital IA", 
-      desc: "Converse com uma IA inspirada nos ensinamentos de Augusto Cury.", 
+      title: "Conversa com IA", 
+      desc: "Converse com uma IA de apoio emocional.", 
       icon: MessageSquare,
       delay: 0.2 
     },
@@ -123,7 +123,7 @@ const EnterpriseWelcomeJourneyScreen = () => {
                   {[
                     "Criptografia de ponta a ponta",
                     "Anonimato total nas respostas",
-                    "Inteligência exclusiva Augusto Cury"
+                    "Apoio emocional guiado por IA"
                   ].map((text, i) => (
                     <div key={i} className="flex items-center gap-3 text-[#444] text-sm">
                       <div className="w-5 h-5 rounded-full bg-[#F88A2B]/20 flex items-center justify-center shrink-0">
@@ -232,26 +232,6 @@ const EnterpriseWelcomeJourneyScreen = () => {
             </div>
           </section>
         </div>
-
-        {/* Quote Section */}
-        <section>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-[#F88A2B05] border border-[#F88A2B10] rounded-[32px] p-12 text-center space-y-8 relative overflow-hidden"
-          >
-            <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
-              <p className="text-2xl lg:text-3xl font-medium italic text-[#111] leading-relaxed" style={{ fontFamily: "'Playfair Display', serif" }}>
-                “Uma mente saudável aprende a desacelerar sem perder a intensidade de viver.”
-              </p>
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#F88A2B]">Dr. Augusto Cury</span>
-                <div className="w-10 h-0.5 bg-[#F88A2B]/20 rounded-full" />
-              </div>
-            </div>
-          </motion.div>
-        </section>
 
       </main>
     </div>

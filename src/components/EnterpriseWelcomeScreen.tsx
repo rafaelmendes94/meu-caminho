@@ -120,8 +120,7 @@ export default function EnterpriseWelcomeScreen() {
                     <span className="h-px w-10" style={{ background: ORANGE, opacity: 0.3 }} />
                   </div>
                   <p className="text-[15px] lg:text-[18px] leading-relaxed text-[#666] max-w-xl mx-auto lg:mx-0">
-                    Você recebeu acesso a uma jornada de evolução emocional guiada pelo método do Dr.
-                    Augusto Cury. Suas respostas individuais, conversas e reflexões são privadas.
+                    Você recebeu acesso a uma jornada de evolução emocional com foco em saúde mental. Suas respostas individuais, conversas e reflexões são privadas.
                   </p>
                 </section>
 
@@ -182,7 +181,7 @@ export default function EnterpriseWelcomeScreen() {
                     }
                   >
                     <Item>Suas respostas individuais</Item>
-                    <Item>Suas conversas com o Cury Digital</Item>
+                    <Item>Suas conversas com a IA</Item>
                     <Item>Seu resultado emocional pessoal</Item>
                     <Item>Sua trilha e evolução privada</Item>
                   </Card>

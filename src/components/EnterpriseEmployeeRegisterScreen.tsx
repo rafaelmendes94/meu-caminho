@@ -25,7 +25,7 @@ const EnterpriseEmployeeRegisterScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "colaborador@empresa.com", // Mockado conforme pedido
+    email: "",
     password: "",
     confirmPassword: ""
   });
@@ -202,7 +202,7 @@ const EnterpriseEmployeeRegisterScreen = () => {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { title: "Experiência privada", desc: "Sua jornada emocional é individual e protegida.", icon: Lock },
-            { title: "IA confidencial", desc: "Conversas com o Cury Digital são privadas.", icon: Brain },
+            { title: "IA confidencial", desc: "Conversas com a IA são privadas.", icon: Brain },
             { title: "Dados coletivos", desc: "A organização vê apenas tendências agregadas.", icon: Sparkles }
           ].map((item, i) => (
             <motion.div 
