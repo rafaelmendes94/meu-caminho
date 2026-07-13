@@ -102,10 +102,10 @@ const HistoryScreen = () => {
           {/* Stats SaaS Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Atividades Concluídas", value: "47", Icon: CheckCircle2, color: "#F88A2B", bg: "bg-orange-50" },
-              { label: "Dias Seguidos", value: "12", Icon: TrendingUp, color: "#9B8AC9", bg: "bg-purple-50" },
-              { label: "Tempo de Cuidado", value: "7.2h", Icon: Clock, color: "#7FBF9F", bg: "bg-green-50" },
-              { label: "Nível de Evolução", value: "Lvl 3", Icon: Award, color: "#E0A93A", bg: "bg-yellow-50" },
+              { label: "Atividades Concluídas", value: "—", Icon: CheckCircle2, color: "#F88A2B", bg: "bg-orange-50" },
+              { label: "Dias Seguidos", value: "—", Icon: TrendingUp, color: "#9B8AC9", bg: "bg-purple-50" },
+              { label: "Tempo de Cuidado", value: "—", Icon: Clock, color: "#7FBF9F", bg: "bg-green-50" },
+              { label: "Nível de Evolução", value: "—", Icon: Award, color: "#E0A93A", bg: "bg-yellow-50" },
             ].map((stat, i) => (
               <motion.div 
                 key={i}
@@ -243,9 +243,9 @@ const HistoryScreen = () => {
 
             <div className="grid grid-cols-3 gap-2 mt-4">
               {[
-                { v: "47", l: "atividades", c: brand },
-                { v: "12", l: "dias seguidos", c: "#9B8AC9" },
-                { v: "7h", l: "tempo total", c: "#7FBF9F" },
+                { v: "—", l: "atividades", c: brand },
+                { v: "—", l: "dias seguidos", c: "#9B8AC9" },
+                { v: "—", l: "tempo total", c: "#7FBF9F" },
               ].map((s, i) => (
                 <div key={i} className="bg-white rounded-2xl py-3 text-center border border-black/5 shadow-sm">
                   <p className="text-[18px] font-bold" style={{ color: s.c }}>{s.v}</p>
