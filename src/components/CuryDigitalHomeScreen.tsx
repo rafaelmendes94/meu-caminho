@@ -67,7 +67,7 @@ const CuryDigitalHomeScreen = () => {
  <Link to={al("/home")} className="w-10 h-10 rounded-full bg-white/85 border border-white flex items-center justify-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.08)] active:scale-95 transition" style={{ color: ink700 }}>
  <ChevL/>
  </Link>
- <p className="text-[14px]" style={{ color: ink700 }}>Cury Digital</p>
+ <p className="text-[14px]" style={{ color: ink700 }}>Conversa com IA</p>
  <Link to={al("/cury-digital/historico")} className="w-10 h-10 rounded-full bg-white/85 border border-white flex items-center justify-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.08)] active:scale-95 transition">
  <Clock/>
  </Link>
@@ -81,7 +81,7 @@ const CuryDigitalHomeScreen = () => {
  Como sua mente<br/>está hoje?
  </h1>
  <p className="mt-2.5 text-[13px] leading-[1.55] mx-auto max-w-[260px]" style={{ color: ink600 }}>
- O Cury Digital está aqui para conversar com você.
+ A IA está aqui para conversar com você.
  </p>
  </section>
 
@@ -135,7 +135,7 @@ const CuryDigitalHomeScreen = () => {
  </div>
  </section>
 
- {/* Estado emocional + Insight Cury */}
+ {/* Estado emocional + Insight da IA */}
  <section className="px-5 mt-5 grid grid-cols-2 gap-3">
  <div className="bg-white rounded-2xl p-3.5 border border-black/5 shadow-[0_8px_22px_-14px_rgba(0,0,0,0.10)]">
  <p className="text-[10.5px] uppercase tracking-[0.12em]" style={{ color: ink500 }}>Seu estado atual</p>
