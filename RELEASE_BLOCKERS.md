@@ -36,11 +36,11 @@ Infra completa: (a) `organization_settings` já armazena flags `rh_*`, (b) UI de
 
 ## 🟡 Médios
 
-### BLK-10 — Export LGPD/GDPR sob demanda
-`data_export_requests` existe mas sem edge function que gere ZIP e envie link. **Est.:** 3h.
+### BLK-10 — Export LGPD/GDPR sob demanda ✅ RESOLVIDO
+`MyPrivacyScreen` já gera o export completo do usuário (profile, check-ins, pulses, consents, tickets) em JSON com download imediato + registro em `data_export_requests` (status/tamanho). Fluxo server-side com e-mail fica para pós-MVP quando o domínio for configurado.
 
-### BLK-11 — Filtros/timeline em `platform_audit_logs`
-UI existe, filtros por ator/ação/org ausentes. **Est.:** 2h.
+### BLK-11 — Filtros/timeline em `platform_audit_logs` ✅ RESOLVIDO
+`PlatformAuditScreen` já implementa filtros combinados (ação, empresa, ator, data inicial/final), toggle Tabela↔Timeline e export CSV do resultado filtrado.
 
 ## Não-blockers (fora do MVP)
 
