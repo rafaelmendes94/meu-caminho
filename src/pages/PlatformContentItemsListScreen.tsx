@@ -35,20 +35,21 @@ export function ContentItemsListPage({ type, title, extraActions }: { type: Cont
     if (s === "published") payload.published_at = new Date().toISOString();
     const { error } = await supabase.from("content_items").update(payload).eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Atualizado."); void load();
+    toast.success(s === "published" ? "Conteúdo publicado." : s === "archived" ? "Conteúdo arquivado." : "Conteúdo despublicado.");
+    void load();
   };
   const duplicate = async (r: Row) => {
     const { id, ...rest } = r as any;
     const copy = { ...rest, title: r.title + " (cópia)", slug: r.slug + "-copia-" + Date.now().toString(36), status: "draft", published_at: null };
     const { error } = await supabase.from("content_items").insert(copy);
     if (error) return toast.error(error.message);
-    toast.success("Duplicado."); void load();
+    toast.success("Conteúdo duplicado."); void load();
   };
   const remove = async (id: string) => {
     if (!confirm("Excluir permanentemente?")) return;
     const { error } = await supabase.from("content_items").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Excluído."); void load();
+    toast.success("Conteúdo excluído."); void load();
   };
 
   return (
