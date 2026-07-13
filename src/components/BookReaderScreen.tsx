@@ -62,33 +62,11 @@ type Block =
   | { kind: "p"; text: string }
   | { kind: "quote"; text: string };
 
-const BOOK = {
-  id: "o-vendedor-de-sonhos",
-  title: "O Vendedor de Sonhos",
-  author: "Augusto Cury",
-  chapters: [
-    {
-      id: "c1",
-      title: "A coragem de sonhar",
-      blocks: [
-        { kind: "h1", text: "A coragem de sonhar" },
-        { kind: "p", text: "Há momentos em que a vida se silencia e nos convida a olhar para dentro. Não é o silêncio do vazio, mas o silêncio fértil — aquele em que as ideias mais simples encontram caminho até o coração." },
-        { kind: "p", text: "Quando aprendemos a habitar esse silêncio, descobrimos que os sonhos não são fugas da realidade — são a forma mais nobre de transformá-la. Sonhar é um ato de coragem em uma época que celebra a pressa e despreza a contemplação." },
-        { kind: "quote", text: "Quem perde a capacidade de sonhar perde antes a capacidade de viver." },
-        { kind: "p", text: "A vida intensa não nasce de grandes feitos, mas de pequenos gestos de quem decide acreditar. E talvez seja por isso que, ao reencontrar um sonho esquecido, sentimos um arrepio que não sabemos nomear: é a alma reconhecendo um endereço antigo." },
-      ],
-    },
-    {
-      id: "c2",
-      title: "O território do silêncio",
-      blocks: [
-        { kind: "h1", text: "O território do silêncio" },
-        { kind: "p", text: "Há um lugar dentro de nós onde o barulho do mundo não entra. Esse lugar não tem endereço, mas tem caminho — e ele se chama atenção plena." },
-        { kind: "quote", text: "O silêncio é a linguagem em que a alma finalmente se reconhece." },
-        { kind: "p", text: "Cultivar o silêncio interior é um ato revolucionário. É dizer ao mundo: hoje, eu volto para casa. E essa casa é você mesmo, em sua versão mais íntegra." },
-      ],
-    },
-  ],
+const BOOK: { id: string; title: string; author: string; chapters: { id: string; title: string; blocks: Block[] }[] } = {
+  id: "",
+  title: "Leitura indisponível",
+  author: "—",
+  chapters: [],
 };
 
 export default function BookReaderScreen() {
@@ -170,7 +148,11 @@ export default function BookReaderScreen() {
             maxWidth: width === 'compact' ? '650px' : width === 'normal' ? '900px' : '100%'
           }}
         >
-          {renderPageContent()}
+          {BOOK.chapters.length === 0 ? (
+            <div className="text-center py-24 opacity-60" style={{ color: t.text, fontFamily: ff, fontSize: fs }}>
+              O conteúdo desta leitura ainda não foi disponibilizado.
+            </div>
+          ) : renderPageContent()}
         </div>
       </div>
 
@@ -178,11 +160,11 @@ export default function BookReaderScreen() {
       <div className={`relative z-30 px-6 py-5 transition-opacity duration-300 shrink-0 ${chromeVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`} style={{ background: t.bg }}>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: t.muted }}>
-            <span>Capítulo 1 de {BOOK.chapters.length}</span>
-            <span>45% concluído</span>
+            <span>{BOOK.chapters.length > 0 ? `Capítulo 1 de ${BOOK.chapters.length}` : "—"}</span>
+            <span>0% concluído</span>
           </div>
           <div className="h-1.5 rounded-full bg-black/5 overflow-hidden mb-6">
-            <div className="h-full bg-[#F88A2B] shadow-[0_0_10px_rgba(248,138,43,0.3)] transition-all duration-300" style={{ width: "45%" }} />
+            <div className="h-full bg-[#F88A2B] shadow-[0_0_10px_rgba(248,138,43,0.3)] transition-all duration-300" style={{ width: "0%" }} />
           </div>
           <div className="flex items-center justify-between gap-4">
              <button onClick={() => setShowToc(true)} className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm border border-black/5 transition-all active:scale-95" style={{ background: t.paper, color: t.text }}><List size={18}/> Sumário</button>
