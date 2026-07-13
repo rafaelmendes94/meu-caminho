@@ -1,6 +1,5 @@
 import { Link } from"react-router-dom";
 import heroImg from"@/assets/trilha/diagnostico-final-hero.jpg";
-import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const ink900 ="#111111";
@@ -42,18 +41,8 @@ const FlagJ = ({ c = ink600 }: { c?: string }) => <svg width="18" height="18" vi
 
 // Antes/Agora rows
 type Row = { label: string; v: number; icon: React.ReactNode };
-const before: Row[] = [
- { label:"Ansiedade alta", v: 78, icon: <Cloud c={brand}/> },
- { label:"Pensamentos acelerados", v: 82, icon: <Mind c={brand}/> },
- { label:"Baixa clareza mental", v: 70, icon: <CloudM c={brand}/> },
- { label:"Desgaste emocional", v: 75, icon: <Battery2 c={brand}/> },
-];
-const now: Row[] = [
- { label:"Mais equilíbrio emocional", v: 85, icon: <Leaf c={sage}/> },
- { label:"Respostas conscientes", v: 80, icon: <Person c={sage}/> },
- { label:"Clareza emocional", v: 88, icon: <Sun c={sage}/> },
- { label:"Relações mais saudáveis", v: 82, icon: <HeartG c={sage}/> },
-];
+const before: Row[] = [];
+const now: Row[] = [];
 
 type J = { label: string; sub?: string; icon: React.ReactNode; state:"done"|"final" };
 const journey: J[] = [
@@ -64,11 +53,7 @@ const journey: J[] = [
  { label:"Evolução\nemocional", icon: <StarFill s={18}/>, state:"final" },
 ];
 
-const insights = [
- { title:"Você desacelerou sua mente e ganhou mais paz interior.", color: lilac, icon: <Mind c={lilac}/> },
- { title:"Desenvolveu consciência sobre suas emoções.", color: sage, icon: <Leaf c={sage}/> },
- { title:"Aprendeu a reagir com mais clareza e equilíbrio.", color: brand, icon: <HeartG c={brand}/> },
-];
+const insights: Array<{ title: string; color: string; icon: React.ReactNode }> = [];
 
 const Bar = ({ v, c, soft }: { v: number; c: string; soft?: string }) => (
  <div className="mt-1.5 h-[5px] w-full rounded-full overflow-hidden" style={{ background: soft ??"#F0E9E1" }}>
@@ -236,21 +221,7 @@ const DiagnosticoFinalScreen = () => {
  </div>
  </section>
 
- {/* CURY REFLECTION */}
- <section className="px-5 mt-3">
- <div className="relative overflow-hidden rounded-[28px] px-3 py-3 flex items-center gap-3"
- style={{ background:"linear-gradient(135deg, #FFF8F3, #F6EFE8)", border:"1px solid rgba(255,255,255,0.9)", boxShadow:"0 4px 22px -12px rgba(248,138,43,0.18)" }}>
- <div className="absolute -top-10 -right-10 w-[160px] h-[160px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.10), transparent 70%)" }}/>
- <img src={curyImg} alt="Augusto Cury" className="relative w-[80px] h-[80px] rounded-2xl object-cover ring-1 ring-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)] shrink-0"/>
- <div className="flex-1 min-w-0 relative">
- <Quote/>
- <p style={serif} className="mt-1 text-[13px] leading-[1.4] text-[#111]">
- A mente que se conhece se transforma. E a vida acompanha.
- </p>
- <p className="mt-1.5 text-[10px] tracking-[0.18em] uppercase" style={{ color: brand }}>— Augusto Cury</p>
- </div>
- </div>
- </section>
+  {/* Insight do mentor — aguarda conteúdo dinâmico (FEATURE-B20) */}
 
  {/* MICROCOPY */}
  <section className="px-6 mt-5 text-center">
