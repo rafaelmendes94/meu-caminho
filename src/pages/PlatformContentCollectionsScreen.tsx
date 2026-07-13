@@ -37,7 +37,7 @@ export default function PlatformContentCollectionsScreen() {
       ? await supabase.from("content_collections").update(payload).eq("id", editing.id)
       : await supabase.from("content_collections").insert(payload);
     if (error) return toast.error(error.message);
-    toast.success("Salvo."); setEditing(null); void load();
+    toast.success("Coleção salva."); setEditing(null); void load();
   };
 
   const togglePublish = async (r: Row) => {
@@ -50,7 +50,7 @@ export default function PlatformContentCollectionsScreen() {
     if (!confirm("Excluir esta coleção? Os vínculos com itens serão removidos.")) return;
     const { error } = await supabase.from("content_collections").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Excluída."); void load();
+    toast.success("Coleção excluída."); void load();
   };
 
   return (

@@ -107,7 +107,7 @@ const PlatformOrganizationsScreen = () => {
     await supabase.from("platform_audit_logs" as any).insert({
       action: actionLabel, entity_type: "organization", entity_id: id, metadata: { ...dbPatch, reason: _reason ?? null },
     });
-    toast.success("Atualizado.");
+    toast.success("Empresa atualizada.");
     load();
   };
 
