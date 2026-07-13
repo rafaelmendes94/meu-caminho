@@ -30,56 +30,8 @@ const Search = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
 
 const filters = ["Todos","Ansiedade","Autocontrole","Relacionamentos","Sono","Clareza emocional"];
 
-const items = [
- {
- icon: <Brain c={lilac}/>,
- iconBg:"#EFEAF8",
- title:"Ansiedade e pensamentos acelerados",
- insight:"Você aprendeu a observar sua mente sem julgamentos.",
- state:"Mente acelerada",
- stateColor: brand,
- stateBg:"#FFF1E1",
- when:"Hoje",
- time:"10:32",
- saved: true,
- },
- {
- icon: <Moon c={lilac}/>,
- iconBg:"#EFEAF8",
- title:"Dificuldade para dormir",
- insight:"Exploramos hábitos noturnos que acalmam a mente.",
- state:"Cansaço emocional",
- stateColor: lilac,
- stateBg:"#EFEAF8",
- when:"Ontem",
- time:"22:15",
- saved: false,
- },
- {
- icon: <Leaf c={sage}/>,
- iconBg: sageBg,
- title:"Como desacelerar minha mente",
- insight:"Técnicas práticas de respiração e atenção plena.",
- state:"Clareza em evolução",
- stateColor: sage,
- stateBg: sageBg,
- when:"12/06",
- time:"21:08",
- saved: true,
- },
- {
- icon: <HeartO c={brand}/>,
- iconBg:"#FFF1E1",
- title:"Relacionamentos e desgaste emocional",
- insight:"Falamos sobre limites e vínculos saudáveis.",
- state:"Sensível",
- stateColor: brand,
- stateBg:"#FFF1E1",
- when:"10/06",
- time:"18:42",
- saved: false,
- },
-];
+type HistoryItem = { icon: React.ReactNode; iconBg: string; title: string; insight: string; state: string; stateColor: string; stateBg: string; when: string; time: string; saved: boolean };
+const items: HistoryItem[] = [];
 
 const HistoricoIAScreen = () => {
  const [filterOpen, setFilterOpen] = useState(false);
@@ -143,11 +95,11 @@ const HistoricoIAScreen = () => {
 
  {/* Stats summary */}
  <section className="px-5 mt-4 grid grid-cols-3 gap-2">
- {[
- { v:"12", l:"conversas", c: brand },
- { v:"7", l:"insights", c: lilac },
- { v:"+34%", l:"clareza", c: sage },
- ].map((s, i) => (
+  {[
+  { v:"0", l:"conversas", c: brand },
+  { v:"0", l:"insights", c: lilac },
+  { v:"—", l:"clareza", c: sage },
+  ].map((s, i) => (
  <div key={i} className="bg-white rounded-2xl py-3 text-center border border-black/5 shadow-[0_4px_14px_-10px_rgba(0,0,0,0.08)]">
  <p className="text-[18px] leading-none" style={{ ...serif, color: s.c }}>{s.v}</p>
  <p className="text-[10px] mt-1.5" style={{ color: ink600 }}>{s.l}</p>
@@ -197,23 +149,7 @@ const HistoricoIAScreen = () => {
  ))}
  </section>
 
- {/* Insight Cury */}
- <section className="px-5 mt-6">
- <div className="rounded-2xl p-4 border border-black/5 shadow-[0_10px_26px_-18px_rgba(0,0,0,0.12)] relative overflow-hidden" style={{ background:"linear-gradient(160deg, #FFFFFF 0%, #F6EFE8 100%)" }}>
- <div className="flex items-start gap-3">
- <div className="flex-1">
- <Quote s={16}/>
- <p className="mt-2 text-[14px] leading-[1.45]" style={{ color: ink900, ...serif, fontStyle:"italic" }}>
- "A mente registra aquilo que repetimos emocionalmente."
- </p>
- <p className="mt-2 text-[10.5px]" style={{ color: brand }}>— Augusto Cury</p>
- </div>
- <div className="w-[68px] h-[68px] rounded-full overflow-hidden border-2 border-white shadow-[0_4px_10px_-2px_rgba(0,0,0,0.12)] shrink-0">
- <img src={curyImg} alt="Augusto Cury" className="w-full h-full object-cover"/>
- </div>
- </div>
- </div>
- </section>
+ {/* Insight do mentor oculto até haver conteúdo real do CMS. */}
 
  <div className="h-[40px]"/>
  </div>
