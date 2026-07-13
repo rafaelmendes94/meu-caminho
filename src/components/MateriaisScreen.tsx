@@ -46,12 +46,13 @@ type Mat = {
  img: string; imgOverlay?:"play" |"minutes"; minutes?: string;
 };
 
+// Materiais reais serão carregados via CMS (content_items type=material) — sem mocks.
 const materiais: Mat[] = [
- { type:"PDF REFLEXIVO", typeColor: sage, TypeIcon: () => <FileIco c={sage}/>, title:"Exercícios reflexivos", desc:"Atividades práticas para identificar e transformar pensamentos acelerados.", meta:"—", status:"locked", img: matPdf },
- { type:"ÁUDIO GUIADO", typeColor: brand, TypeIcon: () => <Headphone c={brand}/>, title:"Respiração e presença", desc:"Áudio guiado para acalmar a mente e recuperar o foco.", meta:"—", status:"locked", img: matAudio },
- { type:"CHECKLIST", typeColor: lilac, TypeIcon: () => <CheckBoxIco c={lilac}/>, title:"Checklist de clareza mental", desc:"Passos práticos para organizar seus pensamentos e prioridades.", meta:"—", status:"locked", img: matChecklist },
- { type:"DIÁRIO EMOCIONAL", typeColor: brand, TypeIcon: () => <Pencil c={brand}/>, title:"Diário emocional", desc:"Espaço para registrar pensamentos, emoções e aprendizados.", meta:"—", status:"locked", img: matDiario },
- { type:"EXERCÍCIO DO DIA", typeColor:"#C28B3A", TypeIcon: () => <Sparkle c="#C28B3A"/>, title:"Prática de desaceleração", desc:"Exercício rápido para aplicar hoje e sentir a diferença.", meta:"—", status:"locked", img: matPratica },
+ { type:"MATERIAL", typeColor: sage, TypeIcon: () => <FileIco c={sage}/>, title:"Material 1", desc:"—", meta:"—", status:"locked", img: matPdf },
+ { type:"MATERIAL", typeColor: brand, TypeIcon: () => <Headphone c={brand}/>, title:"Material 2", desc:"—", meta:"—", status:"locked", img: matAudio },
+ { type:"MATERIAL", typeColor: lilac, TypeIcon: () => <CheckBoxIco c={lilac}/>, title:"Material 3", desc:"—", meta:"—", status:"locked", img: matChecklist },
+ { type:"MATERIAL", typeColor: brand, TypeIcon: () => <Pencil c={brand}/>, title:"Material 4", desc:"—", meta:"—", status:"locked", img: matDiario },
+ { type:"MATERIAL", typeColor:"#C28B3A", TypeIcon: () => <Sparkle c="#C28B3A"/>, title:"Material 5", desc:"—", meta:"—", status:"locked", img: matPratica },
 ];
 
 const StatusAction = ({ status }: { status: Status }) => {
