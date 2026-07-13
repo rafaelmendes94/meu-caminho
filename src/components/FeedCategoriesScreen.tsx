@@ -82,7 +82,7 @@ const FeedCategoriesScreen = () => {
  Encontre o conteúdo que sua mente precisa hoje.
  </h1>
  <p className="mt-2 text-[13px] text-[#666] leading-snug">
- Sete territórios emocionais. Curados por Augusto Cury.
+ Explore territórios emocionais curados para você.
  </p>
  </section>
 
@@ -114,6 +114,8 @@ const FeedCategoriesScreen = () => {
  </div>
  </section>
 
+ {featured ? (
+ <>
  {/* Featured large card */}
  <section className="mt-6 fade-up">
  <Link to="/feed" className="relative block rounded-[24px] overflow-hidden h-[210px]" style={{ boxShadow:"0 18px 40px -18px rgba(248,138,43,0.45), inset 0 0 0 1px rgba(17,17,17,0.05)" }}>
@@ -146,7 +148,7 @@ const FeedCategoriesScreen = () => {
 
  {/* Two-up */}
  <section className="mt-3 grid grid-cols-2 gap-3 fade-up">
- {[a, b].map((c) => (
+ {[a, b].filter(Boolean).map((c) => (
  <Link key={c.key} to="/feed" className="relative block rounded-[20px] overflow-hidden h-[170px]" style={{ boxShadow:"0 10px 26px -14px rgba(17,17,17,0.3), inset 0 0 0 1px rgba(17,17,17,0.05)" }}>
  <img src={c.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%)" }} />
@@ -192,19 +194,14 @@ const FeedCategoriesScreen = () => {
  </Link>
  ))}
  </section>
-
- {/* Insight */}
- <section className="mt-6 mb-2 fade-up">
- <div className="relative rounded-[22px] p-5 overflow-hidden" style={{ background:"linear-gradient(135deg, #FFFFFF 0%, #FFF6EE 100%)", boxShadow:"0 10px 28px -14px rgba(248,138,43,0.3), inset 0 0 0 1px rgba(248,138,43,0.12)" }}>
- <p className="text-[15px] leading-[1.4] text-[#111]" style={{ ...serif, fontWeight: 500 }}>
-"Quem conhece o território da própria mente nunca se perde no mundo."
+ </>
+ ) : (
+ <section className="mt-8 fade-up rounded-[22px] border border-[#EFE3D5] bg-white/70 backdrop-blur p-8 text-center">
+ <p className="text-[13px] text-[#7A6A5C] leading-relaxed">
+ Territórios emocionais serão exibidos aqui em breve.
  </p>
- <div className="mt-2 flex items-center gap-2">
- <span className="w-5 h-px bg-[#F88A2B]" />
- <span className="text-[11.5px] font-semibold text-[#F88A2B]">Augusto Cury</span>
- </div>
- </div>
  </section>
+ )}
  </div>
 
  </div>
