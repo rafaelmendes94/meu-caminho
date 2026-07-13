@@ -19,20 +19,9 @@ const Leaf = ({ c = sage }: { c?: string }) => <svg width="20" height="20" viewB
 const Trend = ({ c = sage }: { c?: string }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>;
 const Chat = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 4V6z"/></svg>;
 
-const cards = [
-  { icon: <Moon/>, iconBg: "#EFEAF8", title: "Você desacelera melhor à noite", sub: "Seu estado emocional melhora após 20h.", chip: "Padrão recorrente", chipColor: lilac, chipBg: "#EFEAF8" },
-  { icon: <Brain/>, iconBg: "#FFF1E1", title: "Seus pensamentos aceleram em períodos de pressão", sub: "Identificamos esse padrão nas últimas conversas.", chip: "Atenção", chipColor: brand, chipBg: "#FFF1E1" },
-  { icon: <Leaf/>, iconBg: sageBg, title: "Exercícios respiratórios reduzem sua ansiedade", sub: "Você responde bem a práticas curtas e simples.", chip: "Funciona para você", chipColor: sage, chipBg: sageBg },
-  { icon: <Trend/>, iconBg: sageBg, title: "Você evoluiu em autocontrole emocional", sub: "Sua clareza emocional aumentou 34%.", chip: "+34%", chipColor: sage, chipBg: sageBg },
-];
-
-const points = [
-  { x: 10, y: 70, label: "10/05" },
-  { x: 90, y: 60, label: "20/05" },
-  { x: 165, y: 55, label: "30/05" },
-  { x: 235, y: 42, label: "10/06" },
-  { x: 300, y: 22, label: "Hoje" },
-];
+type InsightCard = { icon: React.ReactNode; iconBg: string; title: string; sub: string; chip: string; chipColor: string; chipBg: string };
+const cards: InsightCard[] = [];
+const points: { x: number; y: number; label: string }[] = [];
 
 const InsightsIAScreen = () => {
   const al = useAudienceLink();
@@ -49,7 +38,7 @@ const InsightsIAScreen = () => {
             <p className="mt-2 text-[12.5px]" style={{ color: ink600 }}>Padrões e aprendizados que a IA percebeu na sua jornada.</p>
           </section>
 
-          <section className="px-5 mt-4 grid grid-cols-2 gap-2.5">
+          {cards.length > 0 ? <section className="px-5 mt-4 grid grid-cols-2 gap-2.5">
             {cards.map((c, i) => (
               <Link key={i} to={al("/cury-digital/chat")} className="bg-white rounded-2xl p-3.5 border border-black/5 shadow-sm active:scale-[0.98] transition flex flex-col">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: c.iconBg }}>{c.icon}</div>
@@ -61,12 +50,12 @@ const InsightsIAScreen = () => {
                 </span>
               </Link>
             ))}
-          </section>
+          </section> : <section className="px-5 mt-4"><div className="rounded-2xl p-6 border border-dashed border-black/10 text-center"><p className="text-[12.5px]" style={{ color: ink600 }}>Seus insights aparecerão aqui após algumas conversas.</p></div></section>}
 
-          <section className="px-5 mt-5">
+          {points.length > 0 && <section className="px-5 mt-5">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[12px]" style={{ color: ink600 }}>Sua evolução emocional</p>
-              <p className="text-[10.5px]" style={{ color: sage }}>+34% clareza</p>
+              <p className="text-[10.5px]" style={{ color: sage }}>—</p>
             </div>
             <div className="bg-white rounded-2xl p-4 border border-black/5 shadow-sm">
               <svg viewBox="0 0 320 110" className="w-full h-auto block">
@@ -101,16 +90,9 @@ const InsightsIAScreen = () => {
                 ))}
               </div>
             </div>
-          </section>
+          </section>}
 
-          <section className="px-5 mt-4">
-            <div className="rounded-2xl p-4 border border-black/5" style={{ background: "linear-gradient(160deg, #FFFFFF, #F6EFE8)" }}>
-              <p className="text-[10.5px] uppercase tracking-[0.12em]" style={{ color: brand }}>Resumo da jornada</p>
-              <p className="mt-1.5 text-[13px] leading-[1.5]" style={{ color: ink700 }}>
-                Sua mente está mais leve à noite, e você desenvolveu ferramentas reais de autocontrole. Continue cultivando essa clareza.
-              </p>
-            </div>
-          </section>
+          {/* Resumo gerado por IA oculto até haver conteúdo real. */}
         </div>
 
         <div className="mt-8 px-5 pb-12 lg:hidden">

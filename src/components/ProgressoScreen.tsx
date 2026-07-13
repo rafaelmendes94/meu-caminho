@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import heroImg from "@/assets/trilha/progresso-hero.jpg";
-import curyImg from "@/assets/trilha/cury.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
 
 const ink900 = "#111111";
@@ -52,26 +51,13 @@ const Ring = ({ value }: { value: number }) => {
 };
 
 type Emo = { Icon: () => JSX.Element; iconBg: string; label: string; before: string; now: string; pct: number; nowColor: string };
-const emocoes: Emo[] = [
-  { Icon: () => <Spiral/>, iconBg: "#FBE9D5", label: "Ansiedade", before: "Alta", now: "Moderada", pct: 55, nowColor: "#C28B3A" },
-  { Icon: () => <Sun/>, iconBg: "#FDECDA", label: "Clareza mental", before: "Baixa", now: "Melhorando", pct: 65, nowColor: sage },
-  { Icon: () => <Lotus/>, iconBg: "#EFEAF7", label: "Autocontrole", before: "Instável", now: "Consistente", pct: 78, nowColor: sage },
-  { Icon: () => <Heart/>, iconBg: "#FBE4E4", label: "Relações", before: "Desgastadas", now: "Mais saudáveis", pct: 50, nowColor: sage },
-];
-
+// Progressos reais serão carregados via CMS/backend. Mocks removidos.
+const emocoes: Emo[] = [];
 const days = ["S","T","Q","Q","S","S","D"];
-const dayState = ["done","done","done","done","done","done","today"];
-const barVals = [40, 70, 55, 50, 35, 55, 95];
-
+const dayState: string[] = [];
+const barVals: number[] = [];
 type Step = { label: string; sub?: string; state: "done" | "current" | "locked" };
-const steps: Step[] = [
-  { label: "Diagnóstico Inicial", sub: "Concluído", state: "done" },
-  { label: "Curso 1 — Inteligência Emocional", sub: "Concluído", state: "done" },
-  { label: "Prova Final", sub: "Em andamento", state: "current" },
-  { label: "Curso 2 — Desenvolvimento da Mente", state: "locked" },
-  { label: "Curso 3 — Gestão das Emoções", state: "locked" },
-  { label: "Diagnóstico Final", state: "locked" },
-];
+const steps: Step[] = [];
 
 const ProgressoScreen = () => {
   const al = useAudienceLink();
@@ -116,28 +102,28 @@ const ProgressoScreen = () => {
           {/* STATS GRID */}
           <section className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-6 mb-8 lg:mb-12">
             <div className="rounded-[28px] bg-white border border-black/5 p-6 flex flex-col items-center justify-center text-center shadow-sm">
-              <Ring value={35} />
+              <Ring value={0} />
               <p className="text-[11px] lg:text-[13px] mt-4 font-bold text-[#111] uppercase tracking-wider">Progresso<br/>geral</p>
             </div>
             <div className="rounded-[28px] bg-white border border-black/5 p-6 flex flex-col items-center justify-center text-center shadow-sm">
               <span className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-[#F88A2B]/10 flex items-center justify-center mb-1">
                 <Flame c={brand} s={28}/>
               </span>
-              <p style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">12 <span className="text-[12px] lg:text-[14px] font-sans font-medium text-[#666]">dias</span></p>
+              <p style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">0 <span className="text-[12px] lg:text-[14px] font-sans font-medium text-[#666]">dias</span></p>
               <p className="text-[11px] lg:text-[13px] font-bold text-[#111] uppercase tracking-wider">Sequência</p>
             </div>
             <div className="rounded-[28px] bg-white border border-black/5 p-6 flex flex-col items-center justify-center text-center shadow-sm">
               <span className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-[#8FB17D]/10 flex items-center justify-center mb-1">
                 <Clock c={sage} s={28}/>
               </span>
-              <p style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">6h <span className="text-[12px] lg:text-[14px] font-sans font-medium text-[#666]">42m</span></p>
+              <p style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">0h <span className="text-[12px] lg:text-[14px] font-sans font-medium text-[#666]">00m</span></p>
               <p className="text-[11px] lg:text-[13px] font-bold text-[#111] uppercase tracking-wider">Dedicado</p>
             </div>
             <div className="rounded-[28px] bg-white border border-black/5 p-6 flex flex-col items-center justify-center text-center shadow-sm">
               <span className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-[#9B8AC9]/10 flex items-center justify-center mb-1">
                 <Book c={lilac} s={28}/>
               </span>
-              <p style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">8 <span className="text-[12px] lg:text-[14px] font-sans font-medium text-[#666]">aulas</span></p>
+              <p style={serif} className="text-[24px] lg:text-[32px] text-[#111] font-bold">0 <span className="text-[12px] lg:text-[14px] font-sans font-medium text-[#666]">aulas</span></p>
               <p className="text-[11px] lg:text-[13px] font-bold text-[#111] uppercase tracking-wider">Concluídas</p>
             </div>
           </section>
@@ -155,7 +141,7 @@ const ProgressoScreen = () => {
                   <span>Antes</span><span>Agora</span>
                 </div>
 
-                <ul className="space-y-8">
+                {emocoes.length > 0 ? <ul className="space-y-8">
                   {emocoes.map((e) => (
                     <li key={e.label} className="flex items-center gap-4 lg:gap-6">
                       <span className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{ background: e.iconBg }}>
@@ -173,7 +159,7 @@ const ProgressoScreen = () => {
                       </div>
                     </li>
                   ))}
-                </ul>
+                </ul> : <p className="text-[13px] text-[#999] py-8 text-center">Sem dados de evolução emocional ainda.</p>}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -183,34 +169,18 @@ const ProgressoScreen = () => {
                   <div className="grid grid-cols-7 gap-2 mb-8">
                     {days.map((d, i) => (
                       <div key={i} className="flex flex-col items-center gap-3">
-                        <span className="text-[11px] font-bold" style={{ color: dayState[i] ==="today" ? brand : "#999" }}>{d}</span>
-                        <div className="w-4 h-4 lg:w-5 lg:h-5 rounded-full" style={{ background: i === 6 ? brand : sage, boxShadow: i === 6 ? `0 0 10px rgba(248,138,43,0.4)` : "none" }} />
+                        <span className="text-[11px] font-bold" style={{ color: "#999" }}>{d}</span>
+                        <div className="w-4 h-4 lg:w-5 lg:h-5 rounded-full bg-[#F2ECE5]" />
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#F88A2B]/5 border border-[#F88A2B]/10">
-                    <Flame c={brand} s={20}/>
-                    <div>
-                      <p className="text-[14px] font-bold text-[#111]">12 dias seguidos</p>
-                      <p className="text-[12px] text-[#666] font-medium">Continue assim!</p>
-                    </div>
-                  </div>
+                  <p className="text-[12px] text-[#999] text-center">Sem histórico de sequência ainda.</p>
                 </div>
 
                 <div className="rounded-[32px] bg-white border border-black/5 p-6 lg:p-8 shadow-sm">
                   <h3 style={serif} className="text-[18px] lg:text-[22px] text-[#111] font-bold">Esta semana</h3>
                   <p className="text-[12px] lg:text-[14px] text-[#666] font-medium mt-1 mb-6">Seu progresso diário</p>
-                  <div className="h-[80px] flex items-end justify-between gap-2 mb-4 px-2">
-                    {barVals.map((v, i) => {
-                      const isMax = i === barVals.length - 1;
-                      return (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                          <div className="w-full rounded-t-xl transition-all duration-700" style={{ height: `${v}%`, background: isMax ? brand : sage, opacity: isMax ? 1 : 0.4 }} />
-                          <span className="text-[10px] font-bold text-[#999]">{days[i]}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <p className="h-[80px] flex items-center justify-center text-[12px] text-[#999] mb-4">Sem dados desta semana ainda.</p>
                 </div>
               </div>
             </div>
@@ -221,7 +191,7 @@ const ProgressoScreen = () => {
                 <h3 style={serif} className="text-[22px] lg:text-[28px] text-[#111] font-bold">Sua jornada</h3>
                 <p className="text-[13px] lg:text-[15px] text-[#666] font-medium mt-1 mb-10">Cada etapa concluída te aproxima da maestria emocional.</p>
 
-                <ol className="relative space-y-2">
+                {steps.length > 0 ? <ol className="relative space-y-2">
                   <div className="absolute left-[20px] top-6 bottom-6 w-0.5 bg-black/5" />
                   {steps.map((s, i) => {
                     const done = s.state ==="done";
@@ -238,20 +208,10 @@ const ProgressoScreen = () => {
                       </li>
                     );
                   })}
-                </ol>
+                </ol> : <p className="text-[13px] text-[#999] text-center py-8">Sua jornada aparecerá aqui quando os cursos forem publicados.</p>}
               </div>
 
-              {/* CURY INSIGHT */}
-              <div className="relative overflow-hidden rounded-[32px] p-8 lg:p-10 flex items-center gap-6" style={{ background:"linear-gradient(135deg, #FFF8F3, #F6EFE8)", border: "1px solid rgba(248,138,43,0.1)" }}>
-                <div className="flex-1 min-w-0 relative z-10">
-                  <Quote/>
-                  <p style={serif} className="mt-4 text-[16px] lg:text-[20px] italic leading-relaxed text-[#111] font-medium">
-                    "A verdadeira evolução acontece quando aprendemos a cuidar da nossa mente diariamente."
-                  </p>
-                  <p className="mt-4 text-[12px] lg:text-[14px] tracking-[0.25em] uppercase font-bold text-[#F88A2B]"> — Augusto Cury</p>
-                </div>
-                <img src={curyImg} alt="Augusto Cury" className="relative z-10 w-24 h-24 lg:w-32 lg:h-32 rounded-3xl object-cover shadow-xl ring-4 ring-white shrink-0"/>
-              </div>
+              {/* Insight do mentor oculto até haver citação real. */}
             </div>
           </div>
         </div>
