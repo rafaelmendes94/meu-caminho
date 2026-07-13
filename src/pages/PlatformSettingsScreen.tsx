@@ -128,7 +128,7 @@ const SECTIONS: {
     description: "Limites por edge function.",
     icon: Timer,
     defaults: {
-      cury_chat_per_day: 200,
+      ai_chat_per_day: 200,
       executive_ai_per_day: 100,
       generate_dna_per_month: 5,
       send_invite_per_day: 300,
@@ -624,7 +624,7 @@ const PlatformSettingsScreen = () => {
         ]} />;
       case "rate_limits":
         return <NumberGrid v={value} set={updateValue} fields={[
-          { key: "cury_chat_per_day", label: "cury-chat / dia" },
+          { key: "ai_chat_per_day", label: "ai-chat / dia" },
           { key: "executive_ai_per_day", label: "executive-ai / dia" },
           { key: "generate_dna_per_month", label: "generate-dna / mês" },
           { key: "send_invite_per_day", label: "send-invite / dia" },
