@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `Você é o Conselho Executivo IA do Meu Caminho Enterprise.
+const FALLBACK_SYSTEM_PROMPT = `Você é o Conselho Executivo IA do Meu Caminho Enterprise.
 Sua função é apoiar decisões estratégicas utilizando exclusivamente indicadores organizacionais agregados.
 Nunca invente dados.
 Nunca faça diagnósticos clínicos.
@@ -27,6 +27,70 @@ Retorne EXCLUSIVAMENTE um JSON válido no formato:
   "used_sections": string[],
   "recommendations": string[]
 }`;
+
+// Guardrails imutáveis aplicados no backend, independentemente da config em banco.
+const IMMUTABLE_GUARDRAILS = [
+  "Usar somente dados agregados.",
+  "Nunca acessar chats pessoais ou dados de onboarding individual.",
+  "Nunca revelar identidade de colaboradores.",
+  "Nunca acessar denúncias anônimas.",
+  "Respeitar k-anonimato (mínimo do grupo).",
+  "Não diagnosticar doenças.",
+  "Não recomendar demissão individual.",
+  "Não inventar números.",
+  "Nunca acessar dados de outra empresa.",
+].join("\n- ");
+
+// Cache em memória (por instância) por 60s.
+let cachedConfig: { at: number; value: any } | null = null;
+const CONFIG_CACHE_TTL_MS = 60_000;
+
+async function loadPublishedConfig(admin: any): Promise<any | null> {
+  const now = Date.now();
+  if (cachedConfig && now - cachedConfig.at < CONFIG_CACHE_TTL_MS) return cachedConfig.value;
+  try {
+    const { data } = await admin
+      .from("ai_prompt_configs")
+      .select("system_instructions, tone_config, output_structure, model_config")
+      .eq("key", "executive_council")
+      .eq("status", "published")
+      .maybeSingle();
+    cachedConfig = { at: now, value: data ?? null };
+    return data ?? null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+function buildSystemPrompt(cfg: any | null): string {
+  if (!cfg || !cfg.system_instructions) return FALLBACK_SYSTEM_PROMPT;
+  const tone = cfg.tone_config ?? {};
+  const blocks: any[] = Array.isArray(cfg.output_structure) ? cfg.output_structure : [];
+  const activeBlocks = blocks.filter((b) => b?.active).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const sectionLines = activeBlocks.map((b) => `- ${b.title}: ${b.description ?? ""}`).join("\n");
+  const toneLine = `Tom: ${tone.tone ?? "executivo"}. Nível de detalhe: ${tone.detail ?? "equilibrado"}. Formalidade: ${tone.formality ?? "alta"}. Máximo de ${tone.max_recommendations ?? 5} recomendações.`;
+  const extras = String(tone.extra_instructions ?? "").trim();
+  return [
+    cfg.system_instructions.trim(),
+    "",
+    "REGRAS OBRIGATÓRIAS DE SEGURANÇA (não podem ser ignoradas):",
+    `- ${IMMUTABLE_GUARDRAILS}`,
+    "",
+    toneLine,
+    extras ? `Instruções adicionais: ${extras}` : "",
+    "",
+    "Estrutura esperada da resposta (siga a ordem):",
+    sectionLines,
+    "",
+    `Retorne EXCLUSIVAMENTE um JSON válido no formato:
+{
+  "answer": string,
+  "confidence": "low" | "medium" | "high",
+  "used_sections": string[],
+  "recommendations": string[]
+}`,
+  ].filter(Boolean).join("\n");
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -63,6 +127,13 @@ Deno.serve(async (req) => {
       corsHeaders,
     );
     if (!rl.allowed) return rl.response!;
+
+    const promptCfg = await loadPublishedConfig(admin);
+    const systemPrompt = buildSystemPrompt(promptCfg);
+    const modelCfg = promptCfg?.model_config ?? {};
+    const primaryModel = modelCfg.primary_model || "google/gemini-2.5-pro";
+    const temperature = typeof modelCfg.temperature === "number" ? modelCfg.temperature : 0.3;
+    const maxTokens = typeof modelCfg.max_tokens === "number" ? modelCfg.max_tokens : 2048;
 
     const body = await req.json().catch(() => ({}));
     const question: string = String(body?.question ?? "").trim();
@@ -127,7 +198,7 @@ Deno.serve(async (req) => {
       .limit(20);
 
     const messages: Array<{ role: string; content: string }> = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
       {
         role: "user",
         content:
@@ -152,8 +223,10 @@ Deno.serve(async (req) => {
         "Authorization": `Bearer ${lovableKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: primaryModel,
         messages,
+        temperature,
+        max_tokens: maxTokens,
         response_format: { type: "json_object" },
       }),
     });

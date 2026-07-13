@@ -131,6 +131,107 @@ export type Database = {
           },
         ]
       }
+      ai_prompt_configs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          examples: Json
+          guardrails: Json
+          id: string
+          key: string
+          model_config: Json
+          name: string
+          output_structure: Json
+          published_at: string | null
+          status: string
+          suggested_questions: Json
+          system_instructions: string
+          tone_config: Json
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          examples?: Json
+          guardrails?: Json
+          id?: string
+          key: string
+          model_config?: Json
+          name: string
+          output_structure?: Json
+          published_at?: string | null
+          status?: string
+          suggested_questions?: Json
+          system_instructions?: string
+          tone_config?: Json
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          examples?: Json
+          guardrails?: Json
+          id?: string
+          key?: string
+          model_config?: Json
+          name?: string
+          output_structure?: Json
+          published_at?: string | null
+          status?: string
+          suggested_questions?: Json
+          system_instructions?: string
+          tone_config?: Json
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      ai_prompt_versions: {
+        Row: {
+          change_note: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          prompt_config_id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          prompt_config_id: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          prompt_config_id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_prompt_versions_prompt_config_id_fkey"
+            columns: ["prompt_config_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompt_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage_daily: {
         Row: {
           count: number
