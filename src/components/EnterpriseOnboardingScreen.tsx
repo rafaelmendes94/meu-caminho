@@ -33,12 +33,12 @@ const EnterpriseOnboardingScreen = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    companyName: "Grupo Alpha Executive",
-    segment: "Tecnologia e Serviços",
-    employeeCount: "250-500",
-    rhContact: "Marina Costa",
-    rhEmail: "marina.costa@grupoalpha.com",
-    domain: "grupoalpha.com"
+    companyName: "",
+    segment: "",
+    employeeCount: "",
+    rhContact: "",
+    rhEmail: "",
+    domain: ""
   });
 
   const [checklist, setChecklist] = useState({
