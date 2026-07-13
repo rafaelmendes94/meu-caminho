@@ -40,7 +40,7 @@ const ProvaFinalScreen = () => {
   const al = useAudienceLink();
   const navigate = useNavigate();
   const location = useLocation();
-  const [selected, setSelected] = useState<string | null>("c");
+  const [selected, setSelected] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const total = 5;
   const pct = (step / total) * 100;
