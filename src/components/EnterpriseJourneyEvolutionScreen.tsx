@@ -26,27 +26,11 @@ const EnterpriseJourneyEvolutionScreen = () => {
   const isRH = location.pathname.startsWith('/enterprise/rh');
   const Layout = isRH ? EnterpriseRHLayout : EnterpriseUserLayout;
 
-  const timelineData = [
-    { month: "Janeiro", label: "Início da jornada", insight: "Primeiros passos na conscientização emocional coletiva.", status: "neutral" },
-    { month: "Fevereiro", label: "Aumento de adesão", insight: "O time começa a integrar o cuidado emocional na rotina.", status: "positive" },
-    { month: "Março", label: "Melhora de clareza", insight: "Redução de ruídos e maior foco na gestão de pensamentos.", status: "positive" },
-    { month: "Abril", label: "Redução de sobrecarga", insight: "Melhora nos indicadores de recuperação e descanso mental.", status: "positive" },
-    { month: "Maio", label: "Crescimento sustentável", insight: "A cultura emocional atinge um patamar de maturidade elevado.", status: "highlight" },
-  ];
-
-  const indicators = [
-    { label: "Equilíbrio Emocional", value: 85, color: "#F88A2B" },
-    { label: "Clareza Coletiva", value: 78, color: "#F88A2B" },
-    { label: "Energia Sustentável", value: 82, color: "#F88A2B" },
-    { label: "Recuperação Mental", value: 90, color: "#F88A2B" },
-  ];
-
-  const transformations = [
-    { title: "Diálogo Aberto", desc: "Mais abertura para conversas emocionais." },
-    { title: "Consciência", desc: "Maior consciência sobre desgaste." },
-    { title: "Liderança", desc: "Lideranças mais preventivas." },
-    { title: "Valorização", desc: "Recuperação valorizada." }
-  ];
+  const timelineData: Array<{ month: string; label: string; insight: string; status: string }> = [];
+  const indicators: Array<{ label: string; value: number; color: string }> = [];
+  const transformations: Array<{ title: string; desc: string }> = [];
+  const aiReading: string | null = null;
+  const growthLabel: string | null = null;
 
   return (
     <Layout title="Evolução da Jornada">
@@ -95,9 +79,9 @@ const EnterpriseJourneyEvolutionScreen = () => {
                     </div>
                     <div className="space-y-4">
                         <div className="h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-[#F88A2B] w-[85%]" />
+                            <div className="h-full bg-[#F88A2B]" style={{ width: "0%" }} />
                         </div>
-                        <p className="text-[#999] text-[10px] font-bold uppercase tracking-widest">+12% vs mês anterior</p>
+                        <p className="text-[#999] text-[10px] font-bold uppercase tracking-widest">{growthLabel ?? "Sem histórico consolidado"}</p>
                     </div>
                 </div>
             </div>
@@ -114,6 +98,11 @@ const EnterpriseJourneyEvolutionScreen = () => {
               </h3>
             </div>
 
+            {timelineData.length === 0 ? (
+              <div className="bg-white rounded-[24px] p-6 shadow-sm border border-black/5 text-[13px] text-[#666]">
+                Ainda não há marcos consolidados na jornada emocional coletiva. A linha do tempo aparece conforme a organização acumula ciclos de check-in e pulse.
+              </div>
+            ) : (
             <div className="relative pl-6 space-y-6">
               <div className="absolute left-[11px] top-2 bottom-2 w-[1.5px] bg-gradient-to-b from-[#F88A2B] via-[#F88A2B]/20 to-transparent" />
               
@@ -142,6 +131,7 @@ const EnterpriseJourneyEvolutionScreen = () => {
                 </motion.div>
               ))}
             </div>
+            )}
           </div>
 
           {/* Right Column: Indicators & AI */}
@@ -153,6 +143,11 @@ const EnterpriseJourneyEvolutionScreen = () => {
               </h3>
             </div>
 
+            {indicators.length === 0 ? (
+              <div className="bg-white rounded-[32px] p-8 shadow-sm border border-black/5 text-[13px] text-[#666]">
+                Sem métricas de evolução consolidadas ainda.
+              </div>
+            ) : (
             <div className="bg-white rounded-[32px] p-8 shadow-sm border border-black/5 space-y-8">
               {indicators.map((indicator, index) => (
                 <div key={index} className="space-y-3">
@@ -172,6 +167,7 @@ const EnterpriseJourneyEvolutionScreen = () => {
                 </div>
               ))}
             </div>
+            )}
 
             {/* AI Reading */}
             <div className="bg-[#F88A2B05] border border-[#F88A2B10] rounded-[32px] p-8 space-y-5 relative overflow-hidden">
@@ -185,11 +181,12 @@ const EnterpriseJourneyEvolutionScreen = () => {
                 <h4 className="font-bold text-[#111] text-[15px]">Leitura da IA</h4>
               </div>
               <p className="text-[14px] text-[#666] font-medium leading-relaxed italic">
-                “A curva demonstra uma estabilização positiva nos indicadores de saúde emocional coletiva do time este mês.”
+                {aiReading ?? "Sem leitura consolidada da IA para o período atual."}
               </p>
             </div>
 
             {/* Transformations Grid */}
+            {transformations.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {transformations.map((item, index) => (
                 <div key={index} className="bg-white p-4 rounded-[20px] border border-black/5 shadow-sm text-center">
@@ -198,6 +195,7 @@ const EnterpriseJourneyEvolutionScreen = () => {
                 </div>
               ))}
             </div>
+            )}
           </div>
         </div>
 
