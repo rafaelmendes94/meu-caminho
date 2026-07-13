@@ -1,6 +1,5 @@
 import { Link } from"react-router-dom";
 import thumb from"@/assets/trilha/curso2-thumb.jpg";
-import cury from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const ink900 ="#111111";
@@ -144,18 +143,7 @@ const CursoDesbloqueadoScreen = () => {
  </div>
  </div>
 
- {/* Cury insight */}
- <div className="relative mt-3 overflow-hidden rounded-[20px] px-4 py-3 flex items-center gap-3" style={{ background:"linear-gradient(135deg,#FFF8F3,#F6EFE8)", border:"1px solid rgba(255,255,255,0.9)" }}>
- <div className="absolute -top-6 -right-6 w-[120px] h-[120px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.10), transparent 70%)" }}/>
- <div className="relative flex-1 min-w-0">
- <Quote/>
- <p style={serif} className="mt-0.5 text-[12.5px] italic leading-[1.4] text-[#111]">
-"Grandes mudanças acontecem quando aprendemos a governar a mente."
- </p>
- <p className="mt-1 text-[9.5px] tracking-[0.18em] uppercase" style={{ color: brand }}>— Augusto Cury</p>
- </div>
- <img src={cury} alt="Augusto Cury" className="relative w-[64px] h-[64px] rounded-full object-cover ring-1 ring-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)]"/>
- </div>
+  {/* Insight do mentor — aguarda conteúdo dinâmico (FEATURE-B20) */}
  </div>
 
  {/* CTA */}

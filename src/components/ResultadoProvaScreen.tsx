@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import hero from "@/assets/trilha/resultado-hero.jpg";
-import cury from "@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
@@ -106,19 +105,7 @@ const ResultadoProvaScreen = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-12 lg:mt-16 mb-20">
-            {/* CURY QUOTE */}
-            <div className="relative overflow-hidden rounded-[32px] p-8 flex items-center gap-6" style={{ background: "linear-gradient(135deg,#FFF8F3,#F6EFE8)", border: "1px solid rgba(0,0,0,0.05)" }}>
-              <div className="relative flex-1 min-w-0">
-                <Quote/>
-                <p style={serif} className="mt-3 text-[16px] lg:text-[22px] italic leading-relaxed text-[#111] font-medium">
-                  "A mente que se conhece, se transforma. E a vida acompanha."
-                </p>
-                <p className="mt-3 text-[12px] lg:text-[14px] tracking-[0.2em] uppercase font-bold text-[#F88A2B]">— Augusto Cury</p>
-              </div>
-              <img src={cury} alt="Augusto Cury" className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-3xl object-cover shadow-xl ring-4 ring-white"/>
-            </div>
-
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 mt-12 lg:mt-16 mb-20 max-w-2xl mx-auto">
             {/* CONTINUAR */}
             <div className="relative overflow-hidden rounded-[32px] p-8 flex items-center gap-6" style={{ background: "linear-gradient(135deg,#F2F8EE,#E8F1E1)", border: "1px solid rgba(143,177,125,0.15)" }}>
               <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl bg-white flex items-center justify-center shrink-0 shadow-lg shadow-green-900/10">

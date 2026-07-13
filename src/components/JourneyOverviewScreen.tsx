@@ -4,7 +4,6 @@ import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useLocation } from "react-router-dom";
 import journeyHero from"@/assets/trilha/journey-hero.jpg";
 import lockImg from"@/assets/trilha/lock-illustration.jpg";
-import curyImg from"@/assets/trilha/cury-portrait.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
 
 const ink900 ="#111111";
@@ -201,7 +200,7 @@ const JourneyOverviewScreen = () => {
               onClick={async () => {
                 const shareData = {
                   title:"Minha Jornada — Meu Caminho",
-                  text:"Estou evoluindo no Domínio Emocional com Augusto Cury.",
+                  text:"Confira minha jornada em Meu Caminho.",
                   url: typeof window !=="undefined" ? window.location.href :"",
                 };
                 try {
@@ -313,30 +312,7 @@ const JourneyOverviewScreen = () => {
  </Link>
  </section>
 
- {/* Insight editorial */}
- <section className="mt-10 mb-2 max-w-4xl mx-auto">
- <div
- className="relative rounded-[32px] bg-white p-8 lg:p-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 overflow-hidden"
- style={{ boxShadow:"0 10px 30px rgba(0,0,0,0.03), inset 0 0 0 1px rgba(0,0,0,0.04)" }}
- >
- <span
- aria-hidden
- className="absolute -top-4 left-6 text-[80px] leading-none"
- style={{ ...serif, color: brand, opacity: 0.15 }}
- >
- “
- </span>
- <div className="flex-1 min-w-0 pl-4 pt-4 text-center lg:text-left relative z-10">
- <p className="text-[18px] lg:text-[22px] leading-relaxed text-[#111]" style={{ ...serif, fontStyle:"italic", fontWeight: 500 }}>
- A maior revolução acontece silenciosamente dentro da mente.
- </p>
- <p className="mt-4 text-[11px] font-bold tracking-[0.3em]" style={{ color: brand }}>— DR. AUGUSTO CURY</p>
- </div>
- <div className="w-[80px] h-[80px] lg:w-[100px] lg:h-[100px] rounded-full overflow-hidden shrink-0 ring-4 ring-[#F88A2B08] shadow-sm relative z-10">
- <img src={curyImg} alt="Augusto Cury" className="w-full h-full object-cover" loading="lazy" />
- </div>
- </div>
- </section>
+  {/* Insight editorial — aguarda conteúdo dinâmico (FEATURE-B20) */}
           </div>
         </div>
       </main>

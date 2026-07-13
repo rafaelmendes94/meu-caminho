@@ -1,7 +1,6 @@
 import { Link } from"react-router-dom";
 import heroImg from"@/assets/trilha/proxima-hero.jpg";
 import thumb from"@/assets/trilha/relacoes-thumb.jpg";
-import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const ink900 ="#111111";
@@ -39,11 +38,7 @@ const Brain = ({ c = lilac }: { c?: string }) => <svg width="20" height="20" vie
 const HeartFill = ({ c = brand }: { c?: string }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>;
 const People = ({ c ="#fff" }: { c?: string }) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="9" r="2.5"/><circle cx="17" cy="10" r="2"/><path d="M3 19c1-3 4-4.5 6-4.5s5 1.5 6 4.5"/><path d="M15 18.5c.7-2 2.5-3 4-3"/><path d="M11 6c.7-1 1.7-1.5 2.5-1.5" opacity="0.6"/></svg>;
 
-const insights = [
- { icon: <Leaf c={sage}/>, text:"Você desenvolveu mais clareza emocional.", bg: sageBg },
- { icon: <Brain c={lilac}/>, text:"Aprendeu a desacelerar sua mente.", bg:"#EFEAF8" },
- { icon: <HeartFill c={brand}/>, text:"Agora está pronto para aprofundar suas relações.", bg:"#FFF1E1" },
-];
+const insights: Array<{ icon: JSX.Element; text: string; bg: string }> = [];
 
 const ProximaTrilhaScreen = () => {
  return (
@@ -155,21 +150,7 @@ const ProximaTrilhaScreen = () => {
  </div>
  </section>
 
- {/* CURY */}
- <section className="px-5 mt-3">
- <div className="relative overflow-hidden rounded-[24px] px-3 py-3 flex items-center gap-3"
- style={{ background:"linear-gradient(135deg, #FFF8F3, #F6EFE8)", border:"1px solid rgba(255,255,255,0.9)", boxShadow:"0 4px 22px -12px rgba(248,138,43,0.18)" }}>
- <div className="absolute -top-10 -right-10 w-[160px] h-[160px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.10), transparent 70%)" }}/>
- <img src={curyImg} alt="Augusto Cury" className="relative w-[78px] h-[78px] rounded-2xl object-cover ring-1 ring-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)] shrink-0"/>
- <div className="flex-1 min-w-0 relative">
- <Quote c={brand} s={18}/>
- <p style={serif} className="mt-1 text-[13px] leading-[1.4] text-[#111]">
- Pessoas emocionalmente inteligentes constroem relações mais saudáveis.
- </p>
- <p className="mt-1 text-[10px] tracking-[0.18em] uppercase" style={{ color: brand }}>— Augusto Cury</p>
- </div>
- </div>
- </section>
+  {/* Insight do mentor — aguarda conteúdo dinâmico (FEATURE-B20) */}
 
  {/* JOURNEY CONTINUES */}
  <section className="px-5 mt-3">

@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import heroImg from "@/assets/trilha/mudanca-jornada-hero.jpg";
-import curyImg from "@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { MediaDesktopLayout } from "./layouts/MediaDesktopLayout";
@@ -193,20 +192,7 @@ const MudancaJornadaScreen = () => {
             </div>
           </section>
 
-          {/* CURY */}
-          <section className="px-5 mt-4">
-            <div className="relative overflow-hidden rounded-[28px] px-3 py-3 flex items-center gap-3" style={{ background: "linear-gradient(135deg,#FFF8F3,#F6EFE8)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 4px 22px -12px rgba(248,138,43,0.20)" }}>
-              <div className="absolute -top-10 -right-10 w-[160px] h-[160px] rounded-full" style={{ background: "radial-gradient(circle, rgba(248,138,43,0.10), transparent 70%)" }}/>
-              <img src={curyImg} alt="Augusto Cury" className="relative w-[78px] h-[78px] rounded-2xl object-cover ring-1 ring-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)] shrink-0"/>
-              <div className="relative flex-1 min-w-0">
-                <div className="absolute -top-2 -right-1"><Quote/></div>
-                <p style={serif} className="text-[12.5px] leading-[1.4] text-[#111] italic">
-                  "A evolução emocional muda não apenas o que sentimos, mas também os caminhos que escolhemos."
-                </p>
-                <p className="mt-1.5 text-[10px] tracking-[0.18em] uppercase" style={{ color: brand }}>— Augusto Cury</p>
-              </div>
-            </div>
-          </section>
+          {/* Insight do mentor — aguarda conteúdo dinâmico (FEATURE-B20) */}
 
           {/* MINI CARDS */}
           <section className="px-5 mt-4">

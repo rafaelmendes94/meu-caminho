@@ -126,13 +126,7 @@ const ProvaFinalScreen = () => {
             })}
           </div>
 
-          <div className={`mb-12 lg:mb-8 text-center px-4`}>
-            <Quote c={brand}/>
-            <p style={serif} className="mt-4 text-[15px] lg:text-[22px] italic leading-relaxed text-[#444] max-w-xl mx-auto">
-              "O autoconhecimento é o início da liberdade emocional."
-            </p>
-            <p className="mt-3 text-[11px] lg:text-[14px] tracking-[0.25em] font-bold uppercase" style={{ color: brand }}>— Augusto Cury</p>
-          </div>
+          {/* Insight do mentor — aguarda conteúdo dinâmico (FEATURE-B20) */}
         </div>
       </div>
 
