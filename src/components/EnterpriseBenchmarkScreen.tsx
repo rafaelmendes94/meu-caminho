@@ -84,7 +84,7 @@ const EnterpriseBenchmarkScreen = () => {
                   stroke="url(#indicator-gradient)"
                   strokeWidth="12"
                   strokeDasharray="464.95"
-                  strokeDashoffset={464.95 * (1 - 0.74)}
+                  strokeDashoffset={464.95 * (1 - ((maturityScore ?? 0) / 100))}
                   strokeLinecap="round"
                   className="transition-all duration-1000 ease-out"
                 />
@@ -97,23 +97,23 @@ const EnterpriseBenchmarkScreen = () => {
               </svg>
               
               <div className="relative z-10">
-                <span className="text-5xl font-playfair font-bold text-[#0B0908]">74</span>
+                <span className="text-5xl font-playfair font-bold text-[#0B0908]">{maturityScore ?? "—"}</span>
                 <span className="text-[#0B0908]/30 text-lg">/100</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-center gap-2 text-[#F88A2B]">
-                <TrendingUp className="w-5 h-5" />
-                <span className="font-bold">+9% este mês</span>
-              </div>
+              {maturityDeltaLabel ? (
+                <div className="flex items-center justify-center gap-2 text-[#F88A2B]">
+                  <TrendingUp className="w-5 h-5" />
+                  <span className="font-bold">{maturityDeltaLabel}</span>
+                </div>
+              ) : null}
               <p className="text-[#0B0908]/60 text-sm leading-relaxed">
-                A organização demonstra evolução consistente em clareza emocional e equilíbrio coletivo.
+                {maturityScore == null
+                  ? "Ainda não há maturidade emocional consolidada para esta organização."
+                  : "Leitura agregada da maturidade emocional coletiva."}
               </p>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                <CheckCircle2 className="w-3 h-3" />
-                Tendência: crescimento sustentável
-              </div>
             </div>
           </div>
         </section>
@@ -123,6 +123,11 @@ const EnterpriseBenchmarkScreen = () => {
           <h3 className="text-sm font-bold uppercase tracking-widest text-[#0B0908]/40 ml-1">
             Comparativo organizacional
           </h3>
+          {benchmarkData.length === 0 ? (
+            <div className="bg-white rounded-3xl p-6 border border-[#0B0908]/5 text-[13px] text-[#666]">
+              Sem indicadores comparativos disponíveis. Assim que houver volume mínimo por segmento interno, o comparativo aparece aqui.
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {benchmarkData.map((item, index) => (
               <div key={index} className="bg-white rounded-3xl p-6 border border-[#0B0908]/5 space-y-4">
@@ -159,6 +164,7 @@ const EnterpriseBenchmarkScreen = () => {
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* PONTOS FORTES CULTURAIS */}
@@ -166,6 +172,11 @@ const EnterpriseBenchmarkScreen = () => {
           <h3 className="text-sm font-bold uppercase tracking-widest text-[#0B0908]/40 ml-1">
             Pontos fortes culturais
           </h3>
+          {strengths.length === 0 ? (
+            <div className="bg-white rounded-2xl p-4 border border-[#0B0908]/5 text-[13px] text-[#666]">
+              Sem pontos fortes consolidados no período.
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {strengths.map((item, index) => (
               <div key={index} className="bg-white rounded-2xl p-4 border border-[#0B0908]/5 flex items-start gap-4">
@@ -178,6 +189,7 @@ const EnterpriseBenchmarkScreen = () => {
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* OPORTUNIDADES DE EVOLUÇÃO */}
@@ -185,6 +197,11 @@ const EnterpriseBenchmarkScreen = () => {
           <h3 className="text-sm font-bold uppercase tracking-widest text-[#0B0908]/40 ml-1">
             Oportunidades de evolução
           </h3>
+          {opportunities.length === 0 ? (
+            <div className="bg-white rounded-2xl p-4 border border-[#0B0908]/5 text-[13px] text-[#666]">
+              Sem oportunidades consolidadas no período.
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {opportunities.map((item, index) => (
               <div key={index} className="bg-white rounded-2xl p-4 border border-[#0B0908]/5 flex items-start gap-4">
@@ -197,6 +214,7 @@ const EnterpriseBenchmarkScreen = () => {
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* EVOLUÇÃO HISTÓRICA */}
@@ -205,6 +223,11 @@ const EnterpriseBenchmarkScreen = () => {
             Evolução histórica
           </h3>
           <div className="bg-white rounded-3xl p-8 border border-[#0B0908]/5 space-y-8">
+            {historyData.length === 0 ? (
+              <p className="text-[13px] text-[#666]">
+                Sem histórico consolidado ainda. A evolução aparece após múltiplos ciclos de agregados internos.
+              </p>
+            ) : (
             <div className="h-48 w-full flex items-end justify-between gap-2 px-2">
               {historyData.map((data, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center gap-3 group">
@@ -223,11 +246,12 @@ const EnterpriseBenchmarkScreen = () => {
                 </div>
               ))}
             </div>
+            )}
             
             <div className="pt-6 border-t border-[#0B0908]/5 flex items-start gap-4">
               <LineChart className="w-5 h-5 text-[#F88A2B] mt-0.5" />
               <p className="text-xs text-[#0B0908]/60 leading-relaxed">
-                A empresa demonstra evolução contínua de maturidade emocional coletiva.
+                Leitura consolidada da evolução da maturidade emocional coletiva ao longo do tempo.
               </p>
             </div>
           </div>
