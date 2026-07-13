@@ -22,34 +22,12 @@ const EnterpriseBenchmarkScreen = () => {
     });
   };
 
-  const benchmarkData = [
-    { label: "Equilíbrio emocional", value: 3.8, benchmark: 4.0, unit: "" },
-    { label: "Clareza emocional", value: 74, benchmark: 78, unit: "%" },
-    { label: "Sobrecarga percebida", value: 41, benchmark: 35, unit: "%", inverse: true },
-    { label: "Energia sustentável", value: 64, benchmark: 70, unit: "%" },
-  ];
-
-  const strengths = [
-    "Alta adesão ao cuidado emocional.",
-    "Boa evolução de clareza coletiva.",
-    "Uso consistente da jornada emocional.",
-    "Crescimento gradual da percepção de equilíbrio.",
-  ];
-
-  const opportunities = [
-    "Reduzir aceleração mental em áreas operacionais.",
-    "Criar maior recuperação emocional entre ciclos intensos.",
-    "Fortalecer momentos de escuta coletiva.",
-    "Expandir conteúdos sobre clareza emocional.",
-  ];
-
-  const historyData = [
-    { month: "Janeiro", value: 61 },
-    { month: "Fevereiro", value: 64 },
-    { month: "Março", value: 67 },
-    { month: "Abril", value: 71 },
-    { month: "Maio", value: 74 },
-  ];
+  const benchmarkData: Array<{ label: string; value: number; benchmark: number; unit: string; inverse?: boolean }> = [];
+  const strengths: string[] = [];
+  const opportunities: string[] = [];
+  const historyData: Array<{ month: string; value: number }> = [];
+  const maturityScore: number | null = null;
+  const maturityDeltaLabel: string | null = null;
 
   return (
     <EnterpriseRHLayout title="Comparativo interno por segmento">
