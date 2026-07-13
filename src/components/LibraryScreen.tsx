@@ -152,10 +152,9 @@ export default function LibraryScreen() {
   <p className="text-[11.5px] text-[#666666] truncate">Sua biblioteca para evoluir sempre</p>
   </div>
   <button onClick={() => setSearchOpen(true)} className="w-10 h-10 rounded-full bg-white border border-[#EFE3D5] flex items-center justify-center shadow-[0_4px_14px_rgba(0,0,0,0.04)]"><SearchI s={17}/></button>
-  <button onClick={() => setNotifOpen(true)} className="relative w-10 h-10 rounded-full bg-white border border-[#EFE3D5] flex items-center justify-center shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
-  <Bell/>
-  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center" style={{ background:"#F88A2B" }}>3</span>
-  </button>
+   <button onClick={() => setNotifOpen(true)} className="relative w-10 h-10 rounded-full bg-white border border-[#EFE3D5] flex items-center justify-center shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+   <Bell/>
+   </button>
   </div>
  )}
 
@@ -174,9 +173,6 @@ export default function LibraryScreen() {
             Explore os livros que acompanham sua evolução emocional. Uma curadoria exclusiva de Augusto Cury para seu desenvolvimento.
           </p>
         </div>
-        <button className="mt-8 self-start inline-flex items-center gap-2 h-12 px-6 rounded-full bg-[#F88A2B] text-white text-[13px] font-bold shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all">
-          Explorar livros <Chev s={14}/>
-        </button>
       </div>
     </div>
   </div>
@@ -248,9 +244,6 @@ export default function LibraryScreen() {
   <p className="text-sm text-white/60 mt-2 font-medium">Continue sua jornada com obras fundamentais para sua evolução.</p>
   </div>
   </div>
-  <button className="h-12 px-8 rounded-full bg-white text-[#1F140A] text-[13px] font-bold shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-  Acessar Novidades <Chev s={14}/>
-  </button>
   </div>
   </div>
   </div>
@@ -338,15 +331,9 @@ function BookCard({ b, delay, isEnterprise }: { b: Book; delay: number; isEnterp
   {locked ? (
   <p className="mt-2 text-[11px] text-[#999] font-medium leading-snug">Disponível para<br/>colaboradores Enterprise</p>
  ) : (
- <>
- <div className="mt-2.5 h-[3px] rounded-full bg-[#F2E7DA] overflow-hidden">
- <div className="h-full rounded-full" style={{ width: `${b.progress}%`, background:"linear-gradient(90deg,#FFB36B,#F88A2B)" }} />
- </div>
- <div className="mt-2 flex items-center justify-between text-[10.5px]">
- <span className="text-[#444444] font-medium">{b.progress}% concluído</span>
- </div>
- <div className="mt-1.5 flex items-center gap-1 text-[10.5px] text-[#666666]"><Clock/> {b.duration}</div>
- </>
+ b.duration ? (
+ <div className="mt-2 flex items-center gap-1 text-[10.5px] text-[#666666]"><Clock/> {b.duration}</div>
+ ) : null
  )}
  </div>
  </Link>
