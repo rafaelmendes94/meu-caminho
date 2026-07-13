@@ -21,7 +21,7 @@ const Timer = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
 const Speed = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13" r="8" /><path d="m12 13 4-3M9 2h6" /></svg>);
 const List = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><circle cx="4" cy="6" r="1" fill="currentColor" /><circle cx="4" cy="12" r="1" fill="currentColor" /><circle cx="4" cy="18" r="1" fill="currentColor" /></svg>);
 
-const COVER ="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=900&q=85";
+const COVER = "";
 
 const fmt = (s: number) => {
  const h = Math.floor(s / 3600);
@@ -30,21 +30,14 @@ const fmt = (s: number) => {
  return h > 0 ? `${h}:${m.toString().padStart(2,"0")}:${r.toString().padStart(2,"0")}` : `${m}:${r.toString().padStart(2,"0")}`;
 };
 
-const chapters = [
- { n: 1, title:"Prefácio · O caminho começa dentro", dur:"08:24", done: true },
- { n: 2, title:"A mente que não para", dur:"22:18", done: true },
- { n: 3, title:"O território das emoções", dur:"31:42", current: true },
- { n: 4, title:"Domínio sem violência", dur:"27:09" },
- { n: 5, title:"A arte de pensar antes de sentir", dur:"29:55" },
- { n: 6, title:"Reconstruir a paz interior", dur:"24:30" },
-];
+const chapters: { n: number; title: string; dur: string; done?: boolean; current?: boolean }[] = [];
 
 const AudiobookScreen = () => {
- const total = 31 * 60 + 42;
- const [t, setT] = useState(11 * 60 + 8);
- const [playing, setPlaying] = useState(true);
+ const total = 1;
+ const [t, setT] = useState(0);
+ const [playing, setPlaying] = useState(false);
  const [speed, setSpeed] = useState(1);
- const [saved, setSaved] = useState(true);
+ const [saved, setSaved] = useState(false);
 
  useEffect(() => {
  if (!playing) return;
@@ -52,10 +45,8 @@ const AudiobookScreen = () => {
  return () => clearInterval(id);
  }, [playing, speed, total]);
 
- const progress = t / total;
- const totalBookSec = 6 * 60 * 60 + 18 * 60;
- const listenedSec = (8 * 60 + 24) + (22 * 60 + 18) + t;
- const bookProgress = listenedSec / totalBookSec;
+ const progress = 0;
+ const bookProgress = 0;
 
  return (
  <main className="h-screen min-h-[100dvh] w-full flex items-center justify-center bg-[#F7F4F2] overflow-hidden font-display">
@@ -106,27 +97,23 @@ const AudiobookScreen = () => {
  <div className="relative w-full aspect-[3/4] rounded-[14px] overflow-hidden ring-1 ring-black/10" style={{
  boxShadow:"0 26px 50px -18px rgba(58,28,8,0.55), inset 0 0 0 1px rgba(255,255,255,0.15), -10px 0 0 -6px rgba(122,74,26,0.18), -18px 0 0 -12px rgba(122,74,26,0.10)",
  }}>
- <img src={COVER} alt="Capa do audiolivro" className="w-full h-full object-cover" />
+ {COVER ? <img src={COVER} alt="Capa do audiolivro" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-[#3A2818]" />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(160deg, rgba(0,0,0,0) 40%, rgba(40,20,5,0.55) 100%)" }} />
  {/* spine highlight */}
  <span className="absolute inset-y-0 left-0 w-[6px]" style={{ background:"linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0))" }} />
  {/* title overlay */}
  <div className="absolute inset-x-3 bottom-3 text-white">
- <p className="text-[9px] uppercase tracking-[0.24em] text-white/80 font-bold">Augusto Cury</p>
- <p className="mt-1 text-[15px] leading-[1.05]" style={{ ...serif, fontWeight: 600 }}>Você é Insubstituível</p>
+ <p className="text-[9px] uppercase tracking-[0.24em] text-white/80 font-bold">—</p>
+ <p className="mt-1 text-[15px] leading-[1.05]" style={{ ...serif, fontWeight: 600 }}>Audiolivro</p>
  </div>
  </div>
  </div>
 
  {/* Title */}
  <div className="mt-7 text-center text-[#2A1A0A]">
- <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#7A4A1A] font-bold">Capítulo 3 de 6</p>
- <h1 className="mt-1.5 text-[24px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>
- O território das emoções
- </h1>
- <p className="mt-1.5 text-[12.5px] text-[#5A3A1F]">
- Augusto Cury · Narrado por Bruno Magnata
- </p>
+ <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#7A4A1A] font-bold">—</p>
+ <h1 className="mt-1.5 text-[24px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>Audiolivro indisponível</h1>
+ <p className="mt-1.5 text-[12.5px] text-[#5A3A1F]">Conteúdo será liberado em breve</p>
  </div>
 
  {/* Book progress */}
@@ -190,9 +177,12 @@ const AudiobookScreen = () => {
  <section className="mt-7">
  <div className="flex items-center justify-between mb-3">
  <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#7A4A1A]">Capítulos</h2>
- <span className="text-[11px] text-[#7A4A1A]/70 font-semibold">6 · 6h 18min</span>
+ <span className="text-[11px] text-[#7A4A1A]/70 font-semibold">{chapters.length} capítulos</span>
  </div>
  <div className="rounded-[20px] overflow-hidden bg-white/55 backdrop-blur ring-1 ring-black/5" style={{ boxShadow:"0 10px 28px -16px rgba(122,74,26,0.35)" }}>
+ {chapters.length === 0 && (
+ <div className="px-4 py-6 text-center text-[12px] text-[#7A4A1A]/70">Nenhum capítulo disponível ainda.</div>
+ )}
  {chapters.map((c) => {
  const active = c.current;
  return (
@@ -219,18 +209,7 @@ const AudiobookScreen = () => {
  </div>
  </section>
 
- {/* Quote */}
- <section className="mt-6">
- <div className="relative rounded-[22px] p-5 overflow-hidden bg-white/55 backdrop-blur ring-1 ring-black/5" style={{ boxShadow:"0 10px 28px -16px rgba(122,74,26,0.35)" }}>
- <p className="text-[15px] leading-[1.4] text-[#2A1A0A]" style={{ ...serif, fontWeight: 500 }}>
-"Quem domina o próprio território emocional já caminhou metade do caminho."
- </p>
- <div className="mt-2 flex items-center gap-2">
- <span className="w-5 h-px bg-[#F88A2B]" />
- <span className="text-[11.5px] font-semibold text-[#F88A2B]">Augusto Cury</span>
- </div>
- </div>
- </section>
+ {/* Quote section removida — sem dados reais */}
  </div>
 
  {/* Sticky CTA */}

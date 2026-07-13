@@ -4,26 +4,13 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
 const sans = { fontFamily: "'Inter', system-ui, sans-serif" };
 
-const week = [
-  { d: "S", m: 14, on: true },
-  { d: "T", m: 22, on: true },
-  { d: "Q", m: 8, on: true },
-  { d: "Q", m: 30, on: true },
-  { d: "S", m: 18, on: true },
-  { d: "S", m: 26, on: true, today: true },
+const week: { d: string; m: number; on: boolean; today?: boolean }[] = [
+  { d: "S", m: 0, on: false }, { d: "T", m: 0, on: false }, { d: "Q", m: 0, on: false },
+  { d: "Q", m: 0, on: false }, { d: "S", m: 0, on: false }, { d: "S", m: 0, on: false, today: true },
   { d: "D", m: 0, on: false },
 ];
-
-const finished = [
-  { t: "Ansiedade", a: "A. Cury", c: "#C28A3E" },
-  { t: "O Código", a: "A. Cury", c: "#7B5E3B" },
-  { t: "Pais Brilhantes", a: "A. Cury", c: "#A87B4E" },
-];
-
-const insights = [
-  { q: "A coragem não é a ausência do medo, mas a decisão de seguir.", c: "Cap. 03 · O vendedor de sonhos" },
-  { q: "Quem sabe esperar, encontra no tempo o seu maior aliado.", c: "Cap. 02 · Reescrevendo a história" },
-];
+const finished: { t: string; a: string; c: string }[] = [];
+const insights: { q: string; c: string }[] = [];
 
 const Icon = {
   Back: () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>),
@@ -59,8 +46,10 @@ function Ring({ pct }: { pct: number }) {
 }
 
 export default function ReadingProgressScreen() {
-  const pct = 0.62;
+  const pct = 0;
   const max = Math.max(...week.map(w => w.m));
+  const weekMax = max || 1;
+  const weekMin = week.reduce((a, w) => a + w.m, 0);
 
   return (
     <AppUserLayout>
@@ -108,9 +97,9 @@ export default function ReadingProgressScreen() {
         {/* stat row */}
         <div className="grid grid-cols-3 gap-3 mb-10 fade-up">
           {[
-            { i: <Icon.Flame />, v: "12", l: "dias seguidos" },
-            { i: <Icon.Clock />, v: "5h 20m", l: "esta semana" },
-            { i: <Icon.Note />, v: "11", l: "insights" },
+            { i: <Icon.Flame />, v: "—", l: "dias seguidos" },
+            { i: <Icon.Clock />, v: "—", l: "esta semana" },
+            { i: <Icon.Note />, v: String(insights.length), l: "insights" },
           ].map((s, i) => (
             <div key={i} className="rounded-2xl p-4 text-center" style={{ background: "rgba(244,231,206,0.05)", border: "1px solid rgba(244,231,206,0.08)" }}>
               <div className="grid place-items-center mb-2 opacity-80" style={{ color: "#F8B05A" }}>{s.i}</div>
@@ -128,8 +117,8 @@ export default function ReadingProgressScreen() {
               <div className="text-[18px]" style={serif}>Esta semana</div>
             </div>
             <div className="text-right">
-              <div className="text-[18px]" style={serif}>118 min</div>
-              <div className="text-[10px] opacity-55">+24% vs anterior</div>
+              <div className="text-[18px]" style={serif}>{weekMin} min</div>
+              <div className="text-[10px] opacity-55">semana atual</div>
             </div>
           </div>
 
@@ -138,7 +127,7 @@ export default function ReadingProgressScreen() {
               <div key={i} className="flex-1 flex flex-col items-center gap-2">
                 <div className="w-full flex items-end justify-center h-full">
                   <div className="bar w-[14px] rounded-full" style={{
-                    height: `${Math.max(6, (w.m / max) * 100)}%`,
+                    height: `${Math.max(6, (w.m / weekMax) * 100)}%`,
                     animationDelay: `${i * 0.08}s`,
                     background: w.today
                       ? "linear-gradient(180deg, #F8B05A, #C28A3E)"
@@ -153,7 +142,7 @@ export default function ReadingProgressScreen() {
         </div>
 
         {/* insights saved */}
-        <div className="fade-up mb-10">
+        {insights.length > 0 && (<div className="fade-up mb-10">
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-[18px]" style={serif}>Insights marcados</h2>
             <Link to="/biblioteca/salvos" className="text-[11px] opacity-60">Ver todos</Link>
@@ -169,13 +158,13 @@ export default function ReadingProgressScreen() {
               </div>
             ))}
           </div>
-        </div>
+        </div>)}
 
         {/* finished books */}
         <div className="fade-up mb-6">
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-[18px]" style={serif}>Livros concluídos</h2>
-            <span className="text-[11px] opacity-55">3 deste ciclo</span>
+            <span className="text-[11px] opacity-55">{finished.length} deste ciclo</span>
           </div>
           <div className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2" style={{ scrollbarWidth: "none" }}>
             {finished.map((b, i) => (

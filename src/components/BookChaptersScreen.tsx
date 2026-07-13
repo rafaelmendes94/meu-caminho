@@ -14,15 +14,7 @@ type Chapter = {
   notes?: number;
 };
 
-const chapters: Chapter[] = [
-  { n: 1, title: "O despertar interior", subtitle: "Quando a mente se abre ao silêncio", minutes: 12, progress: 1, status: "done", notes: 3 },
-  { n: 2, title: "Reescrevendo a história", subtitle: "Curar a memória que dói", minutes: 18, progress: 1, status: "done", notes: 2 },
-  { n: 3, title: "A coragem da entrega", subtitle: "Soltar o que pesa, abraçar o que liberta", minutes: 22, progress: 1, status: "done", notes: 5 },
-  { n: 4, title: "O território dos sonhos", subtitle: "Construir pontes entre o medo e a fé", minutes: 16, progress: 0.62, status: "current", notes: 1 },
-  { n: 5, title: "A sabedoria do tempo", subtitle: "Aprender a esperar com paz", minutes: 20, progress: 0, status: "todo" },
-  { n: 6, title: "O poder do silêncio", subtitle: "Quando ouvir é a maior resposta", minutes: 14, progress: 0, status: "todo" },
-  { n: 7, title: "Recomeços possíveis", subtitle: "A leveza de uma nova página", minutes: 24, progress: 0, status: "todo" },
-];
+const chapters: Chapter[] = [];
 
 const Icon = {
   Back: () => (
@@ -86,13 +78,13 @@ export default function BookChaptersScreen() {
 
         {/* Hero */}
         <div className="fade-up mb-8">
-          <div className="text-[10px] tracking-[0.4em] uppercase mb-3" style={{ color: "#9A6B2C" }}>Augusto Cury</div>
-          <h1 className="text-[34px] leading-[1.1] mb-3" style={serif}>O vendedor de sonhos</h1>
-          <p className="text-[13px] leading-relaxed opacity-70 max-w-[320px]">Uma jornada em sete capítulos pela coragem de recomeçar e pela arte de viver com profundidade.</p>
+          <div className="text-[10px] tracking-[0.4em] uppercase mb-3" style={{ color: "#9A6B2C" }}>—</div>
+          <h1 className="text-[34px] leading-[1.1] mb-3" style={serif}>Sumário</h1>
+          <p className="text-[13px] leading-relaxed opacity-70 max-w-[320px]">Selecione um livro na biblioteca para ver seus capítulos.</p>
         </div>
 
         {/* Progress card */}
-        <div className="fade-up rounded-3xl p-5 mb-8 relative overflow-hidden" style={{ background: "linear-gradient(160deg, #1B130D 0%, #2A1D12 100%)", color: "#F4E7CE" }}>
+        {current && (<div className="fade-up rounded-3xl p-5 mb-8 relative overflow-hidden" style={{ background: "linear-gradient(160deg, #1B130D 0%, #2A1D12 100%)", color: "#F4E7CE" }}>
           <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full" style={{ background: "radial-gradient(closest-side, rgba(248,176,90,0.35), transparent 70%)" }} />
           <div className="flex items-center justify-between mb-4 relative">
             <div className="text-[10px] tracking-[0.32em] uppercase" style={{ color: "#F8B05A" }}>Em leitura</div>
@@ -109,7 +101,7 @@ export default function BookChaptersScreen() {
             <div className="flex gap-5 text-[11px]">
               <div><div className="text-[15px]" style={serif}>{done}/{total}</div><div className="opacity-60">capítulos</div></div>
               <div><div className="text-[15px]" style={serif}>{Math.floor(remaining/60)}h{remaining%60 ? ` ${remaining%60}m` : ""}</div><div className="opacity-60">restante</div></div>
-              <div><div className="text-[15px]" style={serif}>11</div><div className="opacity-60">reflexões</div></div>
+              <div><div className="text-[15px]" style={serif}>—</div><div className="opacity-60">reflexões</div></div>
             </div>
           </div>
 
@@ -117,7 +109,7 @@ export default function BookChaptersScreen() {
             <span className="absolute inset-0 shimmer opacity-50" />
             <span className="relative flex items-center gap-2">Continuar leitura <Icon.ArrowR /></span>
           </Link>
-        </div>
+        </div>)}
 
         {/* Section title */}
         <div className="flex items-end justify-between mb-5 fade-up">
@@ -127,6 +119,9 @@ export default function BookChaptersScreen() {
 
         {/* Chapter list */}
         <ol className="space-y-3">
+          {chapters.length === 0 && (
+            <li className="rounded-2xl p-6 text-center text-[12px] opacity-60" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>Capítulos indisponíveis.</li>
+          )}
           {chapters.map((c, i) => (
             <li key={c.n} className="fade-up" style={{ animationDelay: `${0.05 * i}s` }}>
               <Link to={c.status === "todo" ? "/biblioteca/bloqueado" : "/biblioteca/leitor"}
@@ -179,24 +174,7 @@ export default function BookChaptersScreen() {
         </ol>
 
         {/* Saved reflections */}
-        <div className="mt-10 fade-up">
-          <div className="flex items-end justify-between mb-4">
-            <h2 className="text-[18px]" style={serif}>Reflexões salvas</h2>
-            <Link to="/biblioteca/salvos" className="text-[11px] opacity-60">Ver todas</Link>
-          </div>
-          <div className="space-y-3">
-            {[
-              { q: "A coragem não é a ausência do medo, mas a decisão de seguir apesar dele.", c: "Cap. 03 · A coragem da entrega" },
-              { q: "Quem sabe esperar, encontra no tempo o seu maior aliado.", c: "Cap. 02 · Reescrevendo a história" },
-            ].map((r, i) => (
-              <div key={i} className="rounded-2xl p-4" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
-                <div className="text-[10px] tracking-[0.28em] uppercase mb-2" style={{ color: "#9A6B2C" }}>Reflexão</div>
-                <p className="text-[14px] leading-relaxed mb-2" style={{ ...serif, fontStyle: "italic" }}>"{r.q}"</p>
-                <div className="text-[11px] opacity-55">{r.c}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Reflexões salvas — desativado até termos backend real */}
       </div>
 
       {/* Floating CTA */}
