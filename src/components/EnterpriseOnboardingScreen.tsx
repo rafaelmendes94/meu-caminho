@@ -368,7 +368,7 @@ const EnterpriseOnboardingScreen = () => {
                       <div className="relative">
                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0B0908]/20" />
                          <input 
-                            placeholder="ex: @grupoalpha.com" 
+                            placeholder="ex: @suaempresa.com" 
                             className="w-full h-12 pl-12 rounded-xl bg-[#F7F4F2] border-none text-sm outline-none focus:ring-2 focus:ring-[#F88A2B]/10"
                          />
                       </div>
