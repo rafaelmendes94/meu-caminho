@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,11 +7,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import type { ReactNode } from "react";
-import PlatformSearchScreen from "./pages/PlatformSearchScreen";
-import PlatformDocsScreen from "./pages/PlatformDocsScreen";
-import PlatformAccountScreen from "./pages/PlatformAccountScreen";
-import PlatformSecurityScreen from "./pages/PlatformSecurityScreen";
-import EnterpriseCuryDigitalScreen from "./components/EnterpriseCuryDigitalScreen.tsx";
+const PlatformSearchScreen = lazy(() => import("./pages/PlatformSearchScreen"));
+const PlatformDocsScreen = lazy(() => import("./pages/PlatformDocsScreen"));
+const PlatformAccountScreen = lazy(() => import("./pages/PlatformAccountScreen"));
+const PlatformSecurityScreen = lazy(() => import("./pages/PlatformSecurityScreen"));
+const EnterpriseCuryDigitalScreen = lazy(() => import("./components/EnterpriseCuryDigitalScreen.tsx"));
 import CanalDiretoRHScreen from "./components/CanalDiretoRHScreen.tsx";
 import CanalDiretoMensagemScreen from "./components/CanalDiretoMensagemScreen.tsx";
 import CanalDiretoConfirmacaoScreen from "./components/CanalDiretoConfirmacaoScreen.tsx";
@@ -84,119 +85,112 @@ import HistoryScreen from "./components/HistoryScreen.tsx";
 import DownloadsScreen from "./components/DownloadsScreen.tsx";
 import FavoritesScreen from "./components/FavoritesScreen.tsx";
 import SubscriptionScreen from "./components/SubscriptionScreen.tsx";
-import EnterpriseWelcomeScreen from "./components/EnterpriseWelcomeScreen.tsx";
+const EnterpriseWelcomeScreen = lazy(() => import("./components/EnterpriseWelcomeScreen.tsx"));
 import PrivacyEnterpriseScreen from "./components/PrivacyEnterpriseScreen.tsx";
-import EnterpriseHomeScreen from "./components/EnterpriseHomeScreen.tsx";
-import EnterpriseCheckinIntroScreen from "./components/EnterpriseCheckinIntroScreen.tsx";
-import EnterpriseCheckinScreen from "./components/EnterpriseCheckinScreen.tsx";
-import EnterpriseCheckinResultScreen from "./components/EnterpriseCheckinResultScreen.tsx";
-import EnterpriseLibraryScreen from "./components/EnterpriseLibraryScreen.tsx";
-import EnterpriseRHDashboardScreen from "./components/EnterpriseRHDashboardScreen.tsx";
-import EnterpriseCapacityPulseScreen from "./components/EnterpriseCapacityPulseScreen.tsx";
-import EnterpriseAlertsScreen from "./components/EnterpriseAlertsScreen.tsx";
-import EnterpriseReportScreen from "./components/EnterpriseReportScreen.tsx";
-import EnterpriseRHAccessScreen from "./components/EnterpriseRHAccessScreen.tsx";
-import EnterpriseTeamManagementScreen from "./components/EnterpriseTeamManagementScreen.tsx";
-import EnterpriseCompanySettingsScreen from "./components/EnterpriseCompanySettingsScreen.tsx";
-import EnterpriseDepartmentDetailScreen from "./components/EnterpriseDepartmentDetailScreen.tsx";
-import EnterpriseActionPlanScreen from "./components/EnterpriseActionPlanScreen.tsx";
-import EnterpriseAdminIntegrationScreen from "./components/EnterpriseAdminIntegrationScreen.tsx";
-import EnterpriseBenchmarkScreen from "./components/EnterpriseBenchmarkScreen.tsx";
-import EnterpriseLeadershipOverviewScreen from "./components/EnterpriseLeadershipOverviewScreen.tsx";
-import EnterpriseEmotionalMapScreen from "./components/EnterpriseEmotionalMapScreen.tsx";
-import EnterpriseLeadershipMessageScreen from "./components/EnterpriseLeadershipMessageScreen.tsx";
-import EnterpriseJourneyEvolutionScreen from "./components/EnterpriseJourneyEvolutionScreen.tsx";
-import EnterpriseLeadershipHealthScreen from "./components/EnterpriseLeadershipHealthScreen.tsx";
-import EnterprisePermissionsScreen from "./components/EnterprisePermissionsScreen.tsx";
-import EnterpriseIntegrationsScreen from "./components/EnterpriseIntegrationsScreen.tsx";
-import EnterpriseNotificationsScreen from "./components/EnterpriseNotificationsScreen.tsx";
-import EnterpriseExportsScreen from "./components/EnterpriseExportsScreen.tsx";
-import EnterprisePrivacyCenterScreen from "./components/EnterprisePrivacyCenterScreen.tsx";
-import MyPrivacyScreen from "./pages/MyPrivacyScreen.tsx";
-import EnterpriseOnboardingScreen from "./components/EnterpriseOnboardingScreen.tsx";
-import EnterpriseEmptyStatesScreen from "./components/EnterpriseEmptyStatesScreen.tsx";
-import EnterpriseLoadingStatesScreen from "./components/EnterpriseLoadingStatesScreen.tsx";
-import EnterpriseNavigationSystemScreen from "./components/EnterpriseNavigationSystemScreen.tsx";
-import EnterpriseDesktopResponsiveScreen from "./components/EnterpriseDesktopResponsiveScreen.tsx";
-import EnterpriseSupportScreen from "./pages/EnterpriseSupportScreen.tsx";
-import EnterpriseRoadmapScreen from "./pages/EnterpriseRoadmapScreen.tsx";
-import EnterpriseLaunchCommunicationScreen from "./pages/EnterpriseLaunchCommunicationScreen.tsx";
-
-import EnterpriseStatusHealthScreen from "./components/EnterpriseStatusHealthScreen.tsx";
-import EnterpriseRHReportsScreen from "./components/EnterpriseRHReportsScreen.tsx";
-import EnterpriseRHReportDetailScreen from "./components/EnterpriseRHReportDetailScreen.tsx";
-import EnterpriseInviteEmployeesScreen from "./components/EnterpriseInviteEmployeesScreen.tsx";
-
-import EnterpriseInviteAcceptanceScreen from "./components/EnterpriseInviteAcceptanceScreen.tsx";
-import EnterpriseDepartmentsScreen from "./components/EnterpriseDepartmentsScreen.tsx";
-import EnterprisePrivacyConsentScreen from "./components/EnterprisePrivacyConsentScreen.tsx";
-import EnterpriseEmployeeRegisterScreen from "./components/EnterpriseEmployeeRegisterScreen.tsx";
-import EnterpriseWelcomeJourneyScreen from "./components/EnterpriseWelcomeJourneyScreen.tsx";
-import EnterpriseImportEmployeesScreen from "./components/EnterpriseImportEmployeesScreen.tsx";
-import EnterpriseLicensesScreen from "./components/EnterpriseLicensesScreen.tsx";
-import EnterpriseEmployeeAdminScreen from "./components/EnterpriseEmployeeAdminScreen.tsx";
-import EnterpriseAuditLogsScreen from "./components/EnterpriseAuditLogsScreen.tsx";
-import EnterpriseDomainAccessScreen from "./components/EnterpriseDomainAccessScreen.tsx";
-import EnterpriseDataRetentionScreen from "./pages/EnterpriseDataRetentionScreen.tsx";
-import EnterpriseComplianceScreen from "./pages/EnterpriseComplianceScreen.tsx";
-import EnterprisePoliciesScreen from "./pages/EnterprisePoliciesScreen.tsx";
-import EnterpriseUnitsScreen from "./pages/EnterpriseUnitsScreen.tsx";
-import EnterpriseOrgChartScreen from "./pages/EnterpriseOrgChartScreen.tsx";
-import EnterpriseOrganizationalDNAScreen from "./pages/EnterpriseOrganizationalDNAScreen.tsx";
-import EnterpriseWeeklyInsightsScreen from "./pages/EnterpriseWeeklyInsightsScreen.tsx";
-import EnterpriseExecutiveCouncilScreen from "./pages/EnterpriseExecutiveCouncilScreen.tsx";
-import EnterpriseMultiAdminsScreen from "./pages/EnterpriseMultiAdminsScreen.tsx";
-import EnterpriseIntelligentRitualsScreen from "./pages/EnterpriseIntelligentRitualsScreen.tsx";
-import EnterpriseOrganizationalScoreScreen from "./pages/EnterpriseOrganizationalScoreScreen.tsx";
-import EnterpriseImpactEngineScreen from "./pages/EnterpriseImpactEngineScreen.tsx";
-import EnterpriseRitualParticipationsScreen from "./pages/EnterpriseRitualParticipationsScreen.tsx";
-import EnterpriseAdminCenterScreen from "./pages/EnterpriseAdminCenterScreen.tsx";
-import EnterpriseBillingScreen from "./pages/EnterpriseBillingScreen.tsx";
-import EnterpriseCheckoutPlanScreen from "./pages/EnterpriseCheckoutPlanScreen.tsx";
-import EnterpriseCheckoutCompanyDataScreen from "./pages/EnterpriseCheckoutCompanyDataScreen.tsx";
-import EnterpriseCheckoutPaymentScreen from "./pages/EnterpriseCheckoutPaymentScreen.tsx";
-import EnterpriseCheckoutSuccessScreen from "./pages/EnterpriseCheckoutSuccessScreen.tsx";
-import EnterpriseRHLoginScreen from "./pages/EnterpriseRHLoginScreen.tsx";
-import EnterpriseRHWelcomeScreen from "./pages/EnterpriseRHWelcomeScreen.tsx";
-import EnterpriseSetupScreen from "./pages/EnterpriseSetupScreen.tsx";
-import EnterpriseAcceptInvitePage from "./pages/EnterpriseAcceptInvitePage.tsx";
-import OnboardingChatScreen from "./pages/OnboardingChatScreen.tsx";
-import OnboardingConcluidoScreen from "./pages/OnboardingConcluidoScreen.tsx";
-import PulseSettingsScreen from "./pages/PulseSettingsScreen.tsx";
-import PlatformAdminDashboardScreen from "./pages/PlatformAdminDashboardScreen.tsx";
-import PlatformOrganizationsScreen from "./pages/PlatformOrganizationsScreen.tsx";
-import PlatformOwnersScreen from "./pages/PlatformOwnersScreen.tsx";
-import PlatformOrganizationDetailScreen from "./pages/PlatformOrganizationDetailScreen.tsx";
-import PlatformSubscriptionsScreen from "./pages/PlatformSubscriptionsScreen.tsx";
-import PlatformPlansScreen from "./pages/PlatformPlansScreen.tsx";
-import PlatformAIUsageScreen from "./pages/PlatformAIUsageScreen.tsx";
-import PlatformAnalyticsScreen from "./pages/PlatformAnalyticsScreen.tsx";
-import PlatformSystemHealthScreen from "./pages/PlatformSystemHealthScreen.tsx";
-import PlatformBillingScreen from "./pages/PlatformBillingScreen.tsx";
-import PlatformSupportScreen from "./pages/PlatformSupportScreen.tsx";
-import PlatformAuditScreen from "./pages/PlatformAuditScreen.tsx";
-import PlatformSettingsScreen from "./pages/PlatformSettingsScreen.tsx";
-import PlatformContentDashboardScreen from "./pages/PlatformContentDashboardScreen.tsx";
-import PlatformContentAuthorsScreen from "./pages/PlatformContentAuthorsScreen.tsx";
-import PlatformContentCategoriesScreen from "./pages/PlatformContentCategoriesScreen.tsx";
-import PlatformContentTagsScreen from "./pages/PlatformContentTagsScreen.tsx";
-import PlatformContentBooksScreen from "./pages/PlatformContentItemsListScreen.tsx";
-import PlatformContentCoursesScreen from "./pages/PlatformContentCoursesScreen.tsx";
-import PlatformContentCourseBuilderScreen from "./pages/PlatformContentCourseBuilderScreen.tsx";
-import PlatformContentTracksScreen from "./pages/PlatformContentTracksScreen.tsx";
-import PlatformContentTrackBuilderScreen from "./pages/PlatformContentTrackBuilderScreen.tsx";
-import PlatformContentPodcastsScreen from "./pages/PlatformContentPodcastsScreen.tsx";
-import PlatformContentVideosScreen from "./pages/PlatformContentVideosScreen.tsx";
-import PlatformContentAudiosScreen from "./pages/PlatformContentAudiosScreen.tsx";
-import PlatformContentMaterialsScreen from "./pages/PlatformContentMaterialsScreen.tsx";
-import PlatformContentCollectionsScreen from "./pages/PlatformContentCollectionsScreen.tsx";
-import PlatformContentCollectionBuilderScreen from "./pages/PlatformContentCollectionBuilderScreen.tsx";
-import PlatformContentLibraryScreen from "./pages/PlatformContentLibraryScreen.tsx";
-
-
-
-
-
+const EnterpriseHomeScreen = lazy(() => import("./components/EnterpriseHomeScreen.tsx"));
+const EnterpriseCheckinIntroScreen = lazy(() => import("./components/EnterpriseCheckinIntroScreen.tsx"));
+const EnterpriseCheckinScreen = lazy(() => import("./components/EnterpriseCheckinScreen.tsx"));
+const EnterpriseCheckinResultScreen = lazy(() => import("./components/EnterpriseCheckinResultScreen.tsx"));
+const EnterpriseLibraryScreen = lazy(() => import("./components/EnterpriseLibraryScreen.tsx"));
+const EnterpriseRHDashboardScreen = lazy(() => import("./components/EnterpriseRHDashboardScreen.tsx"));
+const EnterpriseCapacityPulseScreen = lazy(() => import("./components/EnterpriseCapacityPulseScreen.tsx"));
+const EnterpriseAlertsScreen = lazy(() => import("./components/EnterpriseAlertsScreen.tsx"));
+const EnterpriseReportScreen = lazy(() => import("./components/EnterpriseReportScreen.tsx"));
+const EnterpriseRHAccessScreen = lazy(() => import("./components/EnterpriseRHAccessScreen.tsx"));
+const EnterpriseTeamManagementScreen = lazy(() => import("./components/EnterpriseTeamManagementScreen.tsx"));
+const EnterpriseCompanySettingsScreen = lazy(() => import("./components/EnterpriseCompanySettingsScreen.tsx"));
+const EnterpriseDepartmentDetailScreen = lazy(() => import("./components/EnterpriseDepartmentDetailScreen.tsx"));
+const EnterpriseActionPlanScreen = lazy(() => import("./components/EnterpriseActionPlanScreen.tsx"));
+const EnterpriseAdminIntegrationScreen = lazy(() => import("./components/EnterpriseAdminIntegrationScreen.tsx"));
+const EnterpriseBenchmarkScreen = lazy(() => import("./components/EnterpriseBenchmarkScreen.tsx"));
+const EnterpriseLeadershipOverviewScreen = lazy(() => import("./components/EnterpriseLeadershipOverviewScreen.tsx"));
+const EnterpriseEmotionalMapScreen = lazy(() => import("./components/EnterpriseEmotionalMapScreen.tsx"));
+const EnterpriseLeadershipMessageScreen = lazy(() => import("./components/EnterpriseLeadershipMessageScreen.tsx"));
+const EnterpriseJourneyEvolutionScreen = lazy(() => import("./components/EnterpriseJourneyEvolutionScreen.tsx"));
+const EnterpriseLeadershipHealthScreen = lazy(() => import("./components/EnterpriseLeadershipHealthScreen.tsx"));
+const EnterprisePermissionsScreen = lazy(() => import("./components/EnterprisePermissionsScreen.tsx"));
+const EnterpriseIntegrationsScreen = lazy(() => import("./components/EnterpriseIntegrationsScreen.tsx"));
+const EnterpriseNotificationsScreen = lazy(() => import("./components/EnterpriseNotificationsScreen.tsx"));
+const EnterpriseExportsScreen = lazy(() => import("./components/EnterpriseExportsScreen.tsx"));
+const EnterprisePrivacyCenterScreen = lazy(() => import("./components/EnterprisePrivacyCenterScreen.tsx"));
+const MyPrivacyScreen = lazy(() => import("./pages/MyPrivacyScreen.tsx"));
+const EnterpriseOnboardingScreen = lazy(() => import("./components/EnterpriseOnboardingScreen.tsx"));
+const EnterpriseEmptyStatesScreen = lazy(() => import("./components/EnterpriseEmptyStatesScreen.tsx"));
+const EnterpriseLoadingStatesScreen = lazy(() => import("./components/EnterpriseLoadingStatesScreen.tsx"));
+const EnterpriseNavigationSystemScreen = lazy(() => import("./components/EnterpriseNavigationSystemScreen.tsx"));
+const EnterpriseDesktopResponsiveScreen = lazy(() => import("./components/EnterpriseDesktopResponsiveScreen.tsx"));
+const EnterpriseSupportScreen = lazy(() => import("./pages/EnterpriseSupportScreen.tsx"));
+const EnterpriseRoadmapScreen = lazy(() => import("./pages/EnterpriseRoadmapScreen.tsx"));
+const EnterpriseLaunchCommunicationScreen = lazy(() => import("./pages/EnterpriseLaunchCommunicationScreen.tsx"));
+const EnterpriseStatusHealthScreen = lazy(() => import("./components/EnterpriseStatusHealthScreen.tsx"));
+const EnterpriseRHReportsScreen = lazy(() => import("./components/EnterpriseRHReportsScreen.tsx"));
+const EnterpriseRHReportDetailScreen = lazy(() => import("./components/EnterpriseRHReportDetailScreen.tsx"));
+const EnterpriseInviteEmployeesScreen = lazy(() => import("./components/EnterpriseInviteEmployeesScreen.tsx"));
+const EnterpriseInviteAcceptanceScreen = lazy(() => import("./components/EnterpriseInviteAcceptanceScreen.tsx"));
+const EnterpriseDepartmentsScreen = lazy(() => import("./components/EnterpriseDepartmentsScreen.tsx"));
+const EnterprisePrivacyConsentScreen = lazy(() => import("./components/EnterprisePrivacyConsentScreen.tsx"));
+const EnterpriseEmployeeRegisterScreen = lazy(() => import("./components/EnterpriseEmployeeRegisterScreen.tsx"));
+const EnterpriseWelcomeJourneyScreen = lazy(() => import("./components/EnterpriseWelcomeJourneyScreen.tsx"));
+const EnterpriseImportEmployeesScreen = lazy(() => import("./components/EnterpriseImportEmployeesScreen.tsx"));
+const EnterpriseLicensesScreen = lazy(() => import("./components/EnterpriseLicensesScreen.tsx"));
+const EnterpriseEmployeeAdminScreen = lazy(() => import("./components/EnterpriseEmployeeAdminScreen.tsx"));
+const EnterpriseAuditLogsScreen = lazy(() => import("./components/EnterpriseAuditLogsScreen.tsx"));
+const EnterpriseDomainAccessScreen = lazy(() => import("./components/EnterpriseDomainAccessScreen.tsx"));
+const EnterpriseDataRetentionScreen = lazy(() => import("./pages/EnterpriseDataRetentionScreen.tsx"));
+const EnterpriseComplianceScreen = lazy(() => import("./pages/EnterpriseComplianceScreen.tsx"));
+const EnterprisePoliciesScreen = lazy(() => import("./pages/EnterprisePoliciesScreen.tsx"));
+const EnterpriseUnitsScreen = lazy(() => import("./pages/EnterpriseUnitsScreen.tsx"));
+const EnterpriseOrgChartScreen = lazy(() => import("./pages/EnterpriseOrgChartScreen.tsx"));
+const EnterpriseOrganizationalDNAScreen = lazy(() => import("./pages/EnterpriseOrganizationalDNAScreen.tsx"));
+const EnterpriseWeeklyInsightsScreen = lazy(() => import("./pages/EnterpriseWeeklyInsightsScreen.tsx"));
+const EnterpriseExecutiveCouncilScreen = lazy(() => import("./pages/EnterpriseExecutiveCouncilScreen.tsx"));
+const EnterpriseMultiAdminsScreen = lazy(() => import("./pages/EnterpriseMultiAdminsScreen.tsx"));
+const EnterpriseIntelligentRitualsScreen = lazy(() => import("./pages/EnterpriseIntelligentRitualsScreen.tsx"));
+const EnterpriseOrganizationalScoreScreen = lazy(() => import("./pages/EnterpriseOrganizationalScoreScreen.tsx"));
+const EnterpriseImpactEngineScreen = lazy(() => import("./pages/EnterpriseImpactEngineScreen.tsx"));
+const EnterpriseRitualParticipationsScreen = lazy(() => import("./pages/EnterpriseRitualParticipationsScreen.tsx"));
+const EnterpriseAdminCenterScreen = lazy(() => import("./pages/EnterpriseAdminCenterScreen.tsx"));
+const EnterpriseBillingScreen = lazy(() => import("./pages/EnterpriseBillingScreen.tsx"));
+const EnterpriseCheckoutPlanScreen = lazy(() => import("./pages/EnterpriseCheckoutPlanScreen.tsx"));
+const EnterpriseCheckoutCompanyDataScreen = lazy(() => import("./pages/EnterpriseCheckoutCompanyDataScreen.tsx"));
+const EnterpriseCheckoutPaymentScreen = lazy(() => import("./pages/EnterpriseCheckoutPaymentScreen.tsx"));
+const EnterpriseCheckoutSuccessScreen = lazy(() => import("./pages/EnterpriseCheckoutSuccessScreen.tsx"));
+const EnterpriseRHLoginScreen = lazy(() => import("./pages/EnterpriseRHLoginScreen.tsx"));
+const EnterpriseRHWelcomeScreen = lazy(() => import("./pages/EnterpriseRHWelcomeScreen.tsx"));
+const EnterpriseSetupScreen = lazy(() => import("./pages/EnterpriseSetupScreen.tsx"));
+const EnterpriseAcceptInvitePage = lazy(() => import("./pages/EnterpriseAcceptInvitePage.tsx"));
+const OnboardingChatScreen = lazy(() => import("./pages/OnboardingChatScreen.tsx"));
+const OnboardingConcluidoScreen = lazy(() => import("./pages/OnboardingConcluidoScreen.tsx"));
+const PulseSettingsScreen = lazy(() => import("./pages/PulseSettingsScreen.tsx"));
+const PlatformAdminDashboardScreen = lazy(() => import("./pages/PlatformAdminDashboardScreen.tsx"));
+const PlatformOrganizationsScreen = lazy(() => import("./pages/PlatformOrganizationsScreen.tsx"));
+const PlatformOwnersScreen = lazy(() => import("./pages/PlatformOwnersScreen.tsx"));
+const PlatformOrganizationDetailScreen = lazy(() => import("./pages/PlatformOrganizationDetailScreen.tsx"));
+const PlatformSubscriptionsScreen = lazy(() => import("./pages/PlatformSubscriptionsScreen.tsx"));
+const PlatformPlansScreen = lazy(() => import("./pages/PlatformPlansScreen.tsx"));
+const PlatformAIUsageScreen = lazy(() => import("./pages/PlatformAIUsageScreen.tsx"));
+const PlatformAnalyticsScreen = lazy(() => import("./pages/PlatformAnalyticsScreen.tsx"));
+const PlatformSystemHealthScreen = lazy(() => import("./pages/PlatformSystemHealthScreen.tsx"));
+const PlatformBillingScreen = lazy(() => import("./pages/PlatformBillingScreen.tsx"));
+const PlatformSupportScreen = lazy(() => import("./pages/PlatformSupportScreen.tsx"));
+const PlatformAuditScreen = lazy(() => import("./pages/PlatformAuditScreen.tsx"));
+const PlatformSettingsScreen = lazy(() => import("./pages/PlatformSettingsScreen.tsx"));
+const PlatformContentDashboardScreen = lazy(() => import("./pages/PlatformContentDashboardScreen.tsx"));
+const PlatformContentAuthorsScreen = lazy(() => import("./pages/PlatformContentAuthorsScreen.tsx"));
+const PlatformContentCategoriesScreen = lazy(() => import("./pages/PlatformContentCategoriesScreen.tsx"));
+const PlatformContentTagsScreen = lazy(() => import("./pages/PlatformContentTagsScreen.tsx"));
+const PlatformContentBooksScreen = lazy(() => import("./pages/PlatformContentItemsListScreen.tsx"));
+const PlatformContentCoursesScreen = lazy(() => import("./pages/PlatformContentCoursesScreen.tsx"));
+const PlatformContentCourseBuilderScreen = lazy(() => import("./pages/PlatformContentCourseBuilderScreen.tsx"));
+const PlatformContentTracksScreen = lazy(() => import("./pages/PlatformContentTracksScreen.tsx"));
+const PlatformContentTrackBuilderScreen = lazy(() => import("./pages/PlatformContentTrackBuilderScreen.tsx"));
+const PlatformContentPodcastsScreen = lazy(() => import("./pages/PlatformContentPodcastsScreen.tsx"));
+const PlatformContentVideosScreen = lazy(() => import("./pages/PlatformContentVideosScreen.tsx"));
+const PlatformContentAudiosScreen = lazy(() => import("./pages/PlatformContentAudiosScreen.tsx"));
+const PlatformContentMaterialsScreen = lazy(() => import("./pages/PlatformContentMaterialsScreen.tsx"));
+const PlatformContentCollectionsScreen = lazy(() => import("./pages/PlatformContentCollectionsScreen.tsx"));
+const PlatformContentCollectionBuilderScreen = lazy(() => import("./pages/PlatformContentCollectionBuilderScreen.tsx"));
+const PlatformContentLibraryScreen = lazy(() => import("./pages/PlatformContentLibraryScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
 
@@ -228,7 +222,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-        <Routes>
+        <Suspense fallback={null}><Routes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
           <Route path="/login" element={<Index />} />
@@ -474,7 +468,7 @@ const App = () => (
          <Route path="/admin/content/library" element={<PlatformAdmin><PlatformContentLibraryScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
-        </Routes>
+        </Routes></Suspense>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
