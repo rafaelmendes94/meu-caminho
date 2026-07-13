@@ -78,46 +78,21 @@ const CuryDigitalChatScreen = () => {
 
       <div className="flex-1 flex flex-col min-h-0">
         <div className={`flex-1 overflow-y-auto no-scrollbar px-5 lg:px-10 py-0 space-y-4 lg:pt-2`}>
-          {/* Day divider */}
-          <div className="flex items-center justify-center mb-2 mt-2">
-            <span className="text-[10px] uppercase tracking-widest font-bold px-4 py-1 rounded-full bg-black/5 text-[#999]">Hoje</span>
-          </div>
-
-          {/* User message */}
-          <div className="flex flex-col items-end animate-fade-in group">
-            <div className="max-w-[85%] lg:max-w-[70%] rounded-[24px] rounded-tr-md px-5 py-3.5 bg-[#F88A2B] text-white shadow-lg shadow-orange-500/10">
-              <p className="text-[14px] lg:text-[15px] leading-relaxed">Sinto que minha mente não desacelera ultimamente, parece um turbilhão constante.</p>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-[10px] text-[#999] font-medium">10:32</span>
-              <Check2/>
+          {/* Empty state — chat backend não implementado */}
+          <div className="flex flex-col items-center justify-center text-center px-6 py-10 gap-4">
+            <Orb s={56}/>
+            <div className="space-y-1 max-w-md">
+              <h3 className="text-[18px] lg:text-[22px] font-bold text-ink900" style={serif}>
+                O Cury Digital está sendo preparado.
+              </h3>
+              <p className="text-[13px] lg:text-[14px] text-ink600 leading-relaxed">
+                A conversa com a IA será liberada em breve. Enquanto isso, use os recursos abaixo para cuidar da sua mente.
+              </p>
             </div>
           </div>
 
-          {/* AI message */}
-          <div className="flex gap-3 lg:gap-4 animate-fade-in">
-            <Orb s={36}/>
-            <div className="flex-1 max-w-[85%] lg:max-w-[75%]">
-              <div className="rounded-[24px] rounded-tl-md px-5 py-4 bg-white border border-black/5 shadow-sm space-y-4">
-                <p className="text-[14px] lg:text-[15px] leading-relaxed text-[#111]">
-                  Compreendo perfeitamente. Pensamentos acelerados consomem uma energia emocional preciosa e roubam nossa capacidade de contemplar o belo.
-                </p>
-                <div className="h-px bg-black/5" />
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Dica do Expert</p>
-                  <p className="text-[14px] lg:text-[15px] leading-relaxed text-[#555] italic">
-                    "Tente não lutar contra seus pensamentos. Apenas observe-os como nuvens passando no céu, sem se identificar com eles por alguns instantes."
-                  </p>
-                </div>
-              </div>
-              <div className="mt-2 pl-1">
-                <span className="text-[10px] text-[#999] font-medium">10:33</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick actions in chat */}
-          <div className="ml-12 lg:ml-16 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+          {/* Quick actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
             {actions.map((a, i) => (
               <Link key={i} to={a.to} className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-black/5 hover:border-brand/30 hover:shadow-md transition-all group">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${i === 0 ? "bg-[#FFF1E1] text-brand" : i === 1 ? "bg-[#EFEAF8] text-lilac" : i === 2 ? "bg-[#E3ECDD] text-sage" : "bg-[#F7F4F2] text-brand"}`}>
@@ -135,25 +110,21 @@ const CuryDigitalChatScreen = () => {
         {/* Input Area */}
         <div className={`p-5 lg:p-8 ${isEnterprise ? 'bg-[#F7F4F2]' : 'bg-white'} lg:border-t-0 border-t border-black/5 shrink-0`}>
           <div className="max-w-4xl mx-auto relative">
-            <div className={`relative flex items-end gap-2 lg:gap-4 ${isEnterprise ? 'bg-white' : 'bg-[#F7F4F2]'} rounded-[28px] p-2 lg:p-3 border border-black/5 lg:shadow-xl lg:shadow-black/5`}>
-              <button className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors shrink-0">
+            <div className={`relative flex items-end gap-2 lg:gap-4 ${isEnterprise ? 'bg-white' : 'bg-[#F7F4F2]'} rounded-[28px] p-2 lg:p-3 border border-black/5 lg:shadow-xl lg:shadow-black/5 opacity-60`}>
+              <button disabled aria-disabled className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center shrink-0 cursor-not-allowed">
                 <Paperclip size={20} className="text-ink600" />
               </button>
               <textarea 
                 rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    // handle send
-                  }
-                }}
-                placeholder="Compartilhe o que está sentindo…"
-                className="flex-1 bg-transparent border-none outline-none text-[14px] lg:text-[16px] py-2 lg:py-3 resize-none max-h-40 min-h-[40px] placeholder:text-[#999]"
+                disabled
+                placeholder="Chat com a IA em breve…"
+                className="flex-1 bg-transparent border-none outline-none text-[14px] lg:text-[16px] py-2 lg:py-3 resize-none max-h-40 min-h-[40px] placeholder:text-[#999] cursor-not-allowed"
               />
-              <button className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center bg-[#F88A2B] text-white shadow-lg shadow-orange-500/30 hover:brightness-110 active:scale-95 transition-all shrink-0">
+              <button disabled aria-disabled className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center bg-[#F88A2B]/40 text-white shrink-0 cursor-not-allowed">
                 <SendIcon size={20} style={{ color: 'white' }} />
               </button>
             </div>
+            <p className="mt-2 text-center text-[11px] text-[#999]">A conversa com o Cury Digital será liberada em breve.</p>
           </div>
         </div>
       </div>
@@ -174,28 +145,11 @@ const CuryDigitalChatScreen = () => {
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-1">
-                <div className="p-4 rounded-2xl bg-brand/5 border border-brand/10 flex items-center gap-4 cursor-pointer">
-                  <Orb s={40}/>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-ink900 truncate">Cury Digital</p>
-                      <span className="text-[10px] font-medium text-brand">Agora</span>
-                    </div>
-                    <p className="text-[12px] text-ink600 truncate mt-0.5">Pensamentos acelerados consomem...</p>
-                  </div>
+                <div className="p-6 rounded-2xl bg-white border border-dashed border-black/10 text-center">
+                  <MessageSquare size={18} className="text-ink500 mx-auto mb-2" />
+                  <p className="text-[13px] font-bold text-ink900">Nenhuma conversa ainda</p>
+                  <p className="text-[11px] text-ink600 mt-1">Suas sessões com o Cury Digital aparecerão aqui.</p>
                 </div>
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="p-4 rounded-2xl hover:bg-black/[0.02] flex items-center gap-4 cursor-pointer transition-colors text-left">
-                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-ink600 font-bold shrink-0">H</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-ink900 truncate">Sessão anterior</p>
-                        <span className="text-[10px] font-medium text-ink500">Ontem</span>
-                      </div>
-                      <p className="text-[12px] text-ink500 truncate mt-0.5">Como lidar com a pressão no trabalho?</p>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           )}
