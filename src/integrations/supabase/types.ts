@@ -131,6 +131,30 @@ export type Database = {
           },
         ]
       }
+      ai_usage_daily: {
+        Row: {
+          count: number
+          function_name: string
+          updated_at: string
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          function_name: string
+          updated_at?: string
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          function_name?: string
+          updated_at?: string
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           acknowledged_at: string | null
