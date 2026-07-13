@@ -14,16 +14,12 @@ const Calendar = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const Clock = () => (<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>);
 const Spark = ({ s = 10 }: { s?: number }) => (<svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6L12 2z"/></svg>);
 
-const NEXT = [
- { id:"codigo", title:"O Código da Inteligência", days: 12, cover:"linear-gradient(180deg,#DCDCDC,#5E5E5E)", bg:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
- { id:"futuro", title:"O Futuro da Humanidade", days: 38, cover:"linear-gradient(180deg,#D8DEE2,#4A535B)", bg:"https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&q=70&auto=format&fit=crop" },
- { id:"pais", title:"Pais Brilhantes", days: 65, cover:"linear-gradient(180deg,#E6E1D6,#74695A)", bg:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400&q=70&auto=format&fit=crop" },
-];
+const NEXT: { id: string; title: string; days: number; cover: string; bg: string }[] = [];
 
 export default function BookLockedScreen() {
- const days = 12;
+ const days = 0;
  const totalDays = 30;
- const dayProgress = ((totalDays - days) / totalDays) * 100;
+ const dayProgress = 0;
 
  return (
    <AppUserLayout>
@@ -70,17 +66,13 @@ export default function BookLockedScreen() {
  <div className="relative w-full h-full rounded-[10px] overflow-hidden shadow-[0_24px_50px_rgba(80,55,30,0.30)]">
  {/* base cover */}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#DCDCDC 0%,#A8A8A8 60%,#5E5E5E 100%)" }} />
- <img
- src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=70&auto=format&fit=crop"
- alt=""
- className="absolute inset-0 w-full h-full object-cover mix-blend-soft-light opacity-70 blur-[2px]"
- />
+ {/* imagem de capa removida — sem dado real */}
  {/* desaturate / dim layer */}
  <div className="absolute inset-0 bg-[#1F140A]/35 backdrop-blur-[2px]" />
  {/* faded title */}
  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
- <div className="text-[8px] tracking-[0.32em] uppercase text-white/55">Augusto Cury</div>
- <div style={serif} className="mt-2 text-[16px] leading-[1.05] uppercase text-white/70">O Código<br/>da Inteligência</div>
+ <div className="text-[8px] tracking-[0.32em] uppercase text-white/55">—</div>
+ <div style={serif} className="mt-2 text-[16px] leading-[1.05] uppercase text-white/70">Livro bloqueado</div>
  </div>
  </div>
 
@@ -95,7 +87,7 @@ export default function BookLockedScreen() {
 
  {/* Title */}
  <div className="relative z-20 px-7 text-center fade-up">
- <p className="text-[10px] uppercase tracking-[0.3em] text-[#A88860] font-semibold flex items-center justify-center gap-1.5"><Calendar/> Disponível em {days} dias</p>
+ <p className="text-[10px] uppercase tracking-[0.3em] text-[#A88860] font-semibold flex items-center justify-center gap-1.5"><Calendar/> Data de liberação em breve</p>
  <h1 style={serif} className="mt-3 text-[28px] leading-[1.05] text-[#1F1A14]">
  Esse conhecimento<br/>
  <span className="italic" style={{ color:"#C28A3E" }}>chega no momento certo.</span>
@@ -110,11 +102,11 @@ export default function BookLockedScreen() {
  <div className="rounded-2xl bg-white/85 backdrop-blur border border-white/80 p-5 shadow-[0_14px_32px_rgba(0,0,0,0.10)]">
  <div className="flex items-center justify-between mb-3">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#8A7868]">Liberação programada</p>
- <span className="text-[10.5px] text-[#C28A3E] font-semibold">27 mai · 2026</span>
+ <span className="text-[10.5px] text-[#C28A3E] font-semibold">—</span>
  </div>
  <div className="flex items-end justify-between">
  <div>
- <div style={serif} className="text-[44px] leading-none text-[#1F1A14] tabular-nums">{days}</div>
+ <div style={serif} className="text-[44px] leading-none text-[#1F1A14] tabular-nums">—</div>
  <div className="text-[10px] uppercase tracking-[0.22em] text-[#8A7868] mt-1">dias restantes</div>
  </div>
  <div className="flex-1 ml-5">
@@ -122,7 +114,7 @@ export default function BookLockedScreen() {
  <div className="h-full rounded-full" style={{ width: `${dayProgress}%`, background:"linear-gradient(90deg,#FFD7B0,#C28A3E)", boxShadow:"0 0 12px rgba(194,138,62,0.45)" }}/>
  </div>
  <div className="mt-2 flex items-center justify-between text-[10px] text-[#8A7868]">
- <span>Ciclo 02</span>
+ <span>—</span>
  <span className="tabular-nums">{Math.round(dayProgress)}%</span>
  </div>
  </div>
@@ -139,19 +131,20 @@ export default function BookLockedScreen() {
  </div>
  <div className="flex-1 min-w-0">
  <div className="text-[12.5px] font-semibold text-[#1F1A14]">Assinatura Premium</div>
- <div className="text-[10.5px] text-[#8A7868] mt-0.5">3 de 7 livros desbloqueados</div>
+ <div className="text-[10.5px] text-[#8A7868] mt-0.5">Progresso indisponível</div>
  </div>
  <button className="text-[11px] text-[#F88A2B] font-semibold flex items-center gap-1">Detalhes <ArrowR s={11}/></button>
  </div>
  <div className="mt-3 grid grid-cols-7 gap-1.5">
  {Array.from({ length: 7 }).map((_, i) => (
- <div key={i} className="h-1.5 rounded-full" style={{ background: i < 3 ?"linear-gradient(90deg,#FFB36B,#F88A2B)" :"#EADFD2" }}/>
+ <div key={i} className="h-1.5 rounded-full" style={{ background: "#EADFD2" }}/>
  ))}
  </div>
  </div>
  </div>
 
  {/* Próximos livros */}
+ {NEXT.length > 0 && (<>
  <div className="relative z-20 px-5 mt-6 pb-3 flex items-center justify-between">
  <h2 style={serif} className="text-[18px] text-[#1F1A14]">Próximos livros</h2>
  <span className="text-[10.5px] text-[#8A7868]">na sua jornada</span>
@@ -178,14 +171,9 @@ export default function BookLockedScreen() {
  ))}
  </div>
  </div>
+ </>)}
 
- {/* Quote */}
- <div className="relative z-20 px-6 pb-5 fade-up">
- <p style={serif} className="text-center text-[15px] leading-[1.4] italic text-[#5C4E42]">
- “A pressa é inimiga da sabedoria. Cada livro chega na hora em que você está pronto para recebê-lo.”
- </p>
- <p className="mt-2 text-center text-[10.5px] text-[#C28A3E] tracking-[0.22em] uppercase">— Augusto Cury</p>
- </div>
+ {/* Citação removida — sem atribuição real */}
 
  {/* CTAs */}
  <div className="relative z-20 px-6 pb-10 fade-up">
