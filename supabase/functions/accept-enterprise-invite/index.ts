@@ -17,6 +17,12 @@ Deno.serve(async (req) => {
     const { token, full_name, password, accepted_privacy } = body ?? {};
     if (!token || !password) return json({ error: "token and password required" }, 400);
     if (!accepted_privacy) return json({ error: "privacy_consent_required" }, 400);
+    if (typeof password !== "string" || password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      return json({ error: "weak_password" }, 400);
+    }
+    if (full_name && (typeof full_name !== "string" || full_name.trim().length < 3)) {
+      return json({ error: "invalid_full_name" }, 400);
+    }
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
     const token_hash = await sha256(token);
