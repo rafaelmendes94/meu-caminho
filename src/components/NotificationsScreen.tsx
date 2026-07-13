@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { ChevronLeft, Bell, Settings, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Bell, Settings, CheckCircle2, Trash2, ChevronRight } from "lucide-react";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
