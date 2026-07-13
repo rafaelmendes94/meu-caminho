@@ -46,6 +46,49 @@ export default function EnterpriseCheckinResultScreen() {
   const pct = (v: number) => Math.round((v / 5) * 100);
   const balancePct = balance ? Math.round((balance / 5) * 100) : 0;
 
+  // Dynamic ISO week reference
+  const isoWeek = (() => {
+    const d = last ? new Date(last.created_at) : new Date();
+    const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const day = target.getUTCDay() || 7;
+    target.setUTCDate(target.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+    return Math.ceil((((target.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  })();
+
+  // Dynamic diagnosis title based on balance
+  const diagnosis = (() => {
+    if (!last || balance == null) {
+      return { pre: "Seu primeiro registro", highlight: "começou.", tone: "neutro" };
+    }
+    if (balance >= 4) return { pre: "Sua mente está em", highlight: "bom ritmo.", tone: "positivo" };
+    if (balance >= 3) return { pre: "Sua semana pede um pouco mais de", highlight: "atenção.", tone: "atento" };
+    if (balance >= 2) return { pre: "Sua mente pediu um pouco mais de", highlight: "pausa.", tone: "pausa" };
+    return { pre: "Sua mente precisa de", highlight: "cuidado agora.", tone: "cuidado" };
+  })();
+
+  // Dynamic reflection based on lowest dimension
+  const reflection = (() => {
+    if (!last) {
+      return {
+        text: "Perceber já é o primeiro passo para reorganizar a mente.",
+        author: "Dr. Augusto Cury",
+      };
+    }
+    const dims = [
+      { k: "mood", v: last.mood_score },
+      { k: "energy", v: last.energy_score },
+      { k: "stress_inv", v: 6 - last.stress_score },
+    ].sort((a, b) => a.v - b.v);
+    const worst = dims[0].k;
+    const map: Record<string, string> = {
+      mood: "A serenidade não vem da ausência de problemas, mas da forma como aprendemos a caminhar por eles.",
+      energy: "Às vezes, parar para descansar é a forma mais rápida de avançar.",
+      stress_inv: "Você não precisa carregar tudo hoje. Respire, e devolva ao tempo o que é do tempo.",
+    };
+    return { text: map[worst], author: "Dr. Augusto Cury" };
+  })();
+
   return (
     <EnterpriseUserLayout title="Resultado Check-in">
       <div className="animate-fade-in relative z-10 w-full lg:max-w-6xl mx-auto">
@@ -87,8 +130,8 @@ export default function EnterpriseCheckinResultScreen() {
                         Diagnóstico da Semana
                       </div>
                       <h1 className="text-[32px] lg:text-[40px] font-bold text-[#111] leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                        Sua mente pediu <br className="hidden lg:block"/>
-                        um pouco mais de <span className="text-[#F88A2B]">pausa.</span>
+                        {diagnosis.pre} <br className="hidden lg:block"/>
+                        <span className="text-[#F88A2B]">{diagnosis.highlight}</span>
                       </h1>
                     </div>
                   </div>
@@ -104,12 +147,11 @@ export default function EnterpriseCheckinResultScreen() {
                   <div className="h-px w-full bg-black/5" />
 
                   {/* Quick Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                     {[
-                      { label: "Check-in", val: "Completo", icon: ShieldCheck },
+                      { label: "Check-in", val: last ? "Concluído" : "—", icon: ShieldCheck },
                       { label: "Privacidade", val: "Total", icon: Lock },
-                      { label: "Tempo", val: "2min", icon: Timer },
-                      { label: "Frequência", val: "Ideal", icon: Heart }
+                      { label: "Registros", val: String(history.length), icon: Heart },
                     ].map((stat, i) => (
                       <div key={i} className="space-y-1">
                         <div className="flex items-center gap-1.5 text-[#999]">
@@ -130,7 +172,7 @@ export default function EnterpriseCheckinResultScreen() {
                     Pulso Emocional
                   </h2>
                   <span className="text-[11px] font-bold text-[#999] uppercase tracking-widest px-3 py-1 rounded-full bg-black/[0.03]">
-                    Referência: Semana 32
+                    Referência: Semana {isoWeek}
                   </span>
                 </div>
 
@@ -185,12 +227,12 @@ export default function EnterpriseCheckinResultScreen() {
                       Reflexão da Semana
                     </h3>
                     <p className="text-[18px] lg:text-[22px] leading-relaxed text-[#111] italic font-bold">
-                      <span className="text-[#F88A2B]">“</span>Sua produtividade não é medida pelo quanto você corre, mas pela qualidade do silêncio que você consegue manter em meio ao caos.<span className="text-[#F88A2B]">”</span>
+                      <span className="text-[#F88A2B]">“</span>{reflection.text}<span className="text-[#F88A2B]">”</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-0.5 bg-[#F88A2B]" />
-                    <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#F88A2B]">Dr. Augusto Cury</span>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#F88A2B]">{reflection.author}</span>
                   </div>
                 </div>
               </div>
