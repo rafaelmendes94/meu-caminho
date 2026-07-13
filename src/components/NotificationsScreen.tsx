@@ -1,9 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
-import {
-  ChevronLeft, Flame, CalendarDays, Headphones, BookOpen, Sparkles, Bell, Settings,
-  CheckCircle2, Clock, Filter, Trash2, MoreHorizontal, ChevronRight, User
-} from "lucide-react";
+import { ChevronLeft, Bell, Settings, CheckCircle2, Trash2, ChevronRight } from "lucide-react";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
@@ -26,14 +23,8 @@ type Notif = {
   group: Group;
 };
 
-const ALL_NOTIFS: Notif[] = [
-  { id: "1", title: "Sequência de 12 dias!", desc: "Parabéns! Você mantém sua sequência de cuidado emocional.", time: "Agora", Icon: Flame, color: "#F88A2B", bg: "#FDECDA", unread: true, category: "jornada", group: "hoje" },
-  { id: "2", title: "Resumo semanal disponível", desc: "Veja o seu progresso da semana e continue evoluindo.", time: "2h", Icon: CalendarDays, color: "#9B8AC9", bg: "#EFEAF7", unread: true, category: "jornada", group: "hoje" },
-  { id: "3", title: "Novo áudio do dia", desc: "Uma nova mensagem para fortalecer sua mente.", time: "1d", Icon: Headphones, color: "#8FB17D", bg: "#E3ECDD", category: "conteudos", group: "semana" },
-  { id: "4", title: "Novo conteúdo no Clube do Livro", desc: "Um novo capítulo foi liberado para sua leitura.", time: "2d", Icon: BookOpen, color: "#B58A5A", bg: "#F6EFE8", category: "conteudos", group: "semana" },
-  { id: "5", title: "Pequena reflexão para você", desc: "Uma motivação curta para começar bem o dia.", time: "5d", Icon: Sparkles, color: "#9B8AC9", bg: "#EFEAF7", category: "jornada", group: "anteriores" },
-  { id: "6", title: "Atualização do app", desc: "Melhorias na experiência da Trilha Personalizada.", time: "1sem", Icon: Bell, color: "#444", bg: "#ECE7E2", category: "novidades", group: "anteriores" },
-];
+// Notifications backend not implemented yet; screen renders empty state instead of mock data.
+const ALL_NOTIFS: Notif[] = [];
 
 const filters = [
   { id: "todas", label: "Todas" },

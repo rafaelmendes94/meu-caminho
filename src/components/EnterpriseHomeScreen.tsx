@@ -79,6 +79,13 @@ export default function EnterpriseHomeScreen() {
   const userName = profile?.display_name || profile?.full_name || "colaborador";
   const [lastCheckin, setLastCheckin] = useState<{ mood_score: number; energy_score: number; stress_score: number; created_at: string } | null>(null);
 
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  })();
+
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -136,7 +143,7 @@ export default function EnterpriseHomeScreen() {
           </div>
           <div>
             <h2 className="text-[22px] font-bold text-[#111] leading-tight flex items-center gap-x-1.5 whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Boa noite, {userName}
+              {greeting}, {userName}
             </h2>
             <p className="text-[12px] text-[#666] font-medium leading-tight">
               Sua jornada emocional continua hoje.
@@ -194,39 +201,7 @@ export default function EnterpriseHomeScreen() {
 
         <PulseWidget />
 
-        {/* Weekly Moment - Compact Grid */}
-        <section className="lg:max-w-3xl">
-          <h4 className="text-[12px] font-bold tracking-wider text-[#999] uppercase mb-3">Seu momento esta semana</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-black/5">
-              <div className="h-8 w-8 rounded-lg bg-[#F88A2B0D] flex items-center justify-center shrink-0">
-                <Zap className="h-4 w-4 text-[#F88A2B]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-[#999] uppercase font-bold tracking-wider">Mente</span>
-                <span className="text-[12px] font-bold text-[#111]">Acelerada</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-black/5">
-              <div className="h-8 w-8 rounded-lg bg-[#F88A2B0D] flex items-center justify-center shrink-0">
-                <Sparkles className="h-4 w-4 text-[#F88A2B]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-[#999] uppercase font-bold tracking-wider">Clareza</span>
-                <span className="text-[12px] font-bold text-[#111]">Em evolução</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-black/5">
-              <div className="h-8 w-8 rounded-lg bg-[#F88A2B0D] flex items-center justify-center shrink-0">
-                <Brain className="h-4 w-4 text-[#F88A2B]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-[#999] uppercase font-bold tracking-wider">Equilíbrio</span>
-                <span className="text-[12px] font-bold text-[#111]">Estável</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Weekly Moment removed: no real data source; avoiding mock content. */}
 
         {/* Continue Journey - More Compact Grid */}
         <section className="space-y-4">
