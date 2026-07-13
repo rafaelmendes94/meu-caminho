@@ -25,7 +25,7 @@ const EnterpriseEmployeeRegisterScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "colaborador@empresa.com", // Mockado conforme pedido
+    email: "",
     password: "",
     confirmPassword: ""
   });
