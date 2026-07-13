@@ -25,32 +25,10 @@ type Item = {
  lastSeen: string;
 };
 
-const HERO: Item = {
- id:"h",
- type:"Curso",
- title:"Inteligência emocional na prática",
- meta:"Módulo 3 · Aula 2 · Augusto Cury",
- img:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=900&q=75&auto=format&fit=crop",
- progress: 64,
- remaining:"12 min restantes",
- to:"/aula",
- lastSeen:"agora",
-};
-
-const ITEMS: Item[] = [
- { id:"1", type:"Áudio", title:"A coragem de recomeçar", meta:"Augusto Cury · 12 min", img:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop", progress: 38, remaining:"7 min restantes", to:"/player/audio", lastSeen:"há 2h" },
- { id:"2", type:"Audiolivro", title:"Você é Insubstituível", meta:"Cap. 3 · A mente que não para", img:"https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=70&auto=format&fit=crop", progress: 22, remaining:"4h 51min restantes", to:"/player/audiolivro", lastSeen:"ontem" },
- { id:"3", type:"Vídeo", title:"O território das emoções", meta:"Reflexão · 4 min", img:"https://images.unsplash.com/photo-1499346030926-9a72daac6c63?w=600&q=70&auto=format&fit=crop", progress: 78, remaining:"55s restantes", to:"/conteudo/video", lastSeen:"ontem" },
- { id:"4", type:"Podcast", title:"Reconstruir a paz interior", meta:"Episódio 12 · 32 min", img:"https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600&q=70&auto=format&fit=crop", progress: 51, remaining:"16 min restantes", to:"/player/podcast", lastSeen:"3 dias" },
- { id:"5", type:"Leitura", title:"Quando o silêncio fala mais alto", meta:"Leitura · 6 min", img:"https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=70&auto=format&fit=crop", progress: 12, remaining:"5 min restantes", to:"/conteudo/leitura", lastSeen:"5 dias" },
-];
-
-const QUICK: Item[] = [
- { id:"q1", type:"Áudio", title:"Treine sua mente", meta:"18 min", img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=400&q=70&auto=format&fit=crop", progress: 14, remaining:"15 min", to:"/player/audio", lastSeen:"" },
- { id:"q2", type:"Vídeo", title:"Pensar antes de sentir", meta:"7 min", img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70&auto=format&fit=crop", progress: 60, remaining:"3 min", to:"/conteudo/video", lastSeen:"" },
- { id:"q3", type:"Áudio", title:"O preço da pressa", meta:"9 min", img:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop", progress: 33, remaining:"6 min", to:"/player/audio", lastSeen:"" },
- { id:"q4", type:"Vídeo", title:"Domínio sem violência", meta:"5 min", img:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&q=70&auto=format&fit=crop", progress: 80, remaining:"1 min", to:"/conteudo/video", lastSeen:"" },
-];
+// Sem histórico real conectado: listas iniciam vazias.
+const HERO: Item | null = null;
+const ITEMS: Item[] = [];
+const QUICK: Item[] = [];
 
 export default function ContinueWatchingScreen() {
  return (
