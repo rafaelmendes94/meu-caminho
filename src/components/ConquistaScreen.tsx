@@ -1,6 +1,5 @@
 import { Link, useLocation } from"react-router-dom";
 import certBg from"@/assets/trilha/certificado-bg.jpg";
-import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { useDisplayUser } from "@/hooks/use-display-user";
 
@@ -82,12 +81,7 @@ const HeartI = ({ c = ink600 }: { c?: string }) => <svg width="14" height="14" v
 const SeedI = ({ c = ink600 }: { c?: string }) => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22V10"/><path d="M12 10c-3 0-6-2-6-5 3 0 6 2 6 5z"/><path d="M12 10c3 0 6-2 6-5-3 0-6 2-6 5z"/></svg>;
 const StarFill = ({ c ="#fff", s = 18 }: { c?: string; s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill={c}><path d="M12 3l2.7 5.5 6 .9-4.4 4.3 1 6L12 17l-5.4 2.7 1-6L3.3 9.4l6-.9z"/></svg>;
 
-const insights = [
- { icon: <Book c={lilac}/>, num:"42", label:"aulas\nconcluídas", bg:"#EFEAF8" },
- { icon: <ClockI c={sage}/>, num:"18h", label:"de dedicação", bg: sageBg },
- { icon: <Hands c={brand}/>, num:"12", label:"práticas emocionais\nrealizadas", bg:"#FFE8D5" },
- { icon: <Trend c={lilac}/>, num:"", label:"Evolução emocional\nconsistente", bg:"#EFEAF8" },
-];
+const insights: { icon: React.ReactNode; num: string; label: string; bg: string }[] = [];
 
 const journey = [
  { label:"Diagnóstico\nInicial", icon: <Clipboard/>, ring:"#EFEAF8" },
@@ -174,16 +168,16 @@ const ConquistaScreen = () => {
  <p className="mt-3 text-[9px] tracking-[0.24em] font-semibold" style={{ color: gold }}>TRILHA CONCLUÍDA</p>
  <p style={serif} className="mt-0.5 text-[16px] text-[#111]">Inteligência Emocional</p>
 
- <div className="mt-3 grid grid-cols-2 gap-2 text-center">
- <div>
- <p className="text-[8.5px] tracking-[0.22em] font-semibold" style={{ color: gold }}>DATA</p>
- <p className="mt-0.5 text-[11px]" style={{ color: ink700 }}>Junho de 2025</p>
- </div>
- <div>
- <p className="text-[8.5px] tracking-[0.22em] font-semibold" style={{ color: gold }}>NÍVEL EMOCIONAL ALCANÇADO</p>
- <p className="mt-0.5 text-[11px]" style={{ color: ink700 }}>Nível 4<br/><span className="text-[10px]" style={{ color: ink600 }}>Consciência Emocional</span></p>
- </div>
- </div>
+  <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+  <div>
+  <p className="text-[8.5px] tracking-[0.22em] font-semibold" style={{ color: gold }}>DATA</p>
+  <p className="mt-0.5 text-[11px]" style={{ color: ink700 }}>—</p>
+  </div>
+  <div>
+  <p className="text-[8.5px] tracking-[0.22em] font-semibold" style={{ color: gold }}>NÍVEL EMOCIONAL ALCANÇADO</p>
+  <p className="mt-0.5 text-[11px]" style={{ color: ink700 }}>—</p>
+  </div>
+  </div>
 
  {/* signature */}
  <div className="mt-4 flex flex-col items-center">
@@ -203,8 +197,8 @@ const ConquistaScreen = () => {
  </div>
  </section>
 
- {/* INSIGHTS */}
- <section className="px-5 mt-5">
+  {/* INSIGHTS */}
+  {insights.length > 0 && <section className="px-5 mt-5">
  <p className="text-center text-[10px] tracking-[0.22em] font-semibold" style={{ color:"#7A6B5C" }}>INSIGHTS DA SUA JORNADA</p>
  <div className="mt-3 grid grid-cols-4 gap-2">
  {insights.map((it, i) => (
@@ -215,23 +209,9 @@ const ConquistaScreen = () => {
  </div>
  ))}
  </div>
- </section>
+  </section>}
 
- {/* CURY */}
- <section className="px-5 mt-3">
- <div className="relative overflow-hidden rounded-[24px] px-3 py-3 flex items-center gap-3"
- style={{ background:"linear-gradient(135deg, #FFF8F3, #F6EFE8)", border:"1px solid rgba(255,255,255,0.9)", boxShadow:"0 4px 22px -12px rgba(248,138,43,0.18)" }}>
- <div className="absolute -top-10 -right-10 w-[160px] h-[160px] rounded-full" style={{ background:"radial-gradient(circle, rgba(217,174,83,0.14), transparent 70%)" }}/>
- <img src={curyImg} alt="Augusto Cury" className="relative w-[78px] h-[78px] rounded-2xl object-cover ring-1 ring-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)] shrink-0"/>
- <div className="flex-1 min-w-0 relative">
- <Quote c={brand} s={18}/>
- <p style={serif} className="mt-1 text-[13px] leading-[1.4] text-[#111]">
- Grandes mudanças começam quando aprendemos a cuidar silenciosamente da mente.
- </p>
- <p className="mt-1 text-[10px] tracking-[0.18em] uppercase" style={{ color: brand }}>— Augusto Cury</p>
- </div>
- </div>
- </section>
+  {/* Reflexão do mentor oculta até haver citação real. */}
 
  {/* JOURNEY */}
  <section className="px-5 mt-3">
