@@ -66,7 +66,8 @@ type Post = {
  when: string;
 };
 
-const FALLBACK_IMG = "https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=900&q=80";
+// Sem imagem de fallback externa: usa string vazia até integração real de mídia via CMS.
+const FALLBACK_IMG = "";
 const CMS_TYPE_TO_POST: Record<CmsItem["type"], PostType> = {
   book: "livro", podcast: "podcast", video: "video", audio: "audio",
   material: "reflexao", track: "ia", course: "exercicio",
