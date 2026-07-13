@@ -3109,6 +3109,10 @@ export type Database = {
         Args: { _organization_id: string }
         Returns: Json
       }
+      get_executive_context_admin: {
+        Args: { _organization_id: string }
+        Returns: Json
+      }
       get_my_organization: {
         Args: never
         Returns: {

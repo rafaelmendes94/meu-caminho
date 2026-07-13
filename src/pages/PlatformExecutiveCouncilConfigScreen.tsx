@@ -359,7 +359,7 @@ export default function PlatformExecutiveCouncilConfigScreen() {
         {tab === "questions" && <QuestionsTab config={config} setConfig={setConfig} />}
         {tab === "examples" && <ExamplesTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} updateModel={updateModel} />}
-        {tab === "chat" && <ComingSoonTab title="Testar no Chat" description="Ambiente de teste em modo isolado com dados agregados chega na próxima sub-fase." />}
+        {tab === "chat" && <ChatTestTab configVersion={config.version} configStatus={config.status} />}
         {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
 
         {/* Note for publish */}
@@ -641,6 +641,206 @@ function ComingSoonTab({ title, description }: { title: string; description: str
       <p className="mt-1 text-sm text-slate-500 max-w-md mx-auto">{description}</p>
     </Card>
   );
+}
+
+type TestOrg = { id: string; name: string; slug: string };
+type TestMetrics = {
+  model: string;
+  elapsed_ms: number;
+  tokens_in: number;
+  tokens_out: number;
+  tokens_total: number;
+  estimated_cost_usd: number;
+  config_source: "draft" | "published";
+  config_version: number | null;
+  config_status: string | null;
+};
+type TestResponse = {
+  answer: string;
+  confidence: "low" | "medium" | "high";
+  used_sections: string[];
+  recommendations: string[];
+};
+type TestExchange = {
+  id: string;
+  question: string;
+  response?: TestResponse;
+  metrics?: TestMetrics;
+  error?: string;
+  loading: boolean;
+};
+
+function ChatTestTab({ configVersion, configStatus }: { configVersion: number; configStatus: string }) {
+  const [orgs, setOrgs] = useState<TestOrg[]>([]);
+  const [orgId, setOrgId] = useState<string>("");
+  const [source, setSource] = useState<"draft" | "published">("draft");
+  const [question, setQuestion] = useState("");
+  const [exchanges, setExchanges] = useState<TestExchange[]>([]);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.rpc("get_platform_organizations");
+      if (error) { toast.error("Falha ao carregar empresas"); return; }
+      const list = ((data ?? []) as any[]).map((o) => ({ id: o.id, name: o.name, slug: o.slug }));
+      setOrgs(list);
+      if (list.length && !orgId) setOrgId(list[0].id);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function send() {
+    const q = question.trim();
+    if (!q) return;
+    if (!orgId) { toast.error("Selecione uma empresa para testar."); return; }
+    const id = uid();
+    setExchanges((prev) => [...prev, { id, question: q, loading: true }]);
+    setQuestion("");
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("executive-ai", {
+        body: {
+          question: q,
+          test_mode: true,
+          test_organization_id: orgId,
+          config_source: source,
+        },
+      });
+      if (error) throw error;
+      const payload = data as { response: TestResponse; metrics: TestMetrics; error?: string };
+      if ((payload as any)?.error) throw new Error(String((payload as any).error));
+      setExchanges((prev) => prev.map((e) => e.id === id
+        ? { ...e, loading: false, response: payload.response, metrics: payload.metrics }
+        : e));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setExchanges((prev) => prev.map((ex) => ex.id === id ? { ...ex, loading: false, error: msg } : ex));
+      toast.error(`Erro no teste: ${msg}`);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <Label>Empresa (contexto agregado)</Label>
+            <Select
+              value={orgId}
+              onChange={setOrgId}
+              options={orgs.map((o) => ({ value: o.id, label: o.name }))}
+            />
+          </div>
+          <div>
+            <Label>Fonte da configuração</Label>
+            <Select
+              value={source}
+              onChange={(v) => setSource(v as "draft" | "published")}
+              options={[
+                { value: "draft", label: `Rascunho atual (v${configVersion} · ${configStatus})` },
+                { value: "published", label: "Última versão publicada" },
+              ]}
+            />
+          </div>
+          <div className="flex items-end">
+            <div className="text-xs text-slate-500 leading-relaxed">
+              Modo isolado: nenhuma conversa é registrada, nenhum dado individual é acessado.
+              Somente o Super Admin executa este teste.
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="space-y-3">
+          {exchanges.length === 0 && (
+            <p className="text-sm text-slate-500">
+              Envie uma pergunta para simular o Conselho Executivo com a configuração selecionada.
+            </p>
+          )}
+          {exchanges.map((ex) => (
+            <div key={ex.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-semibold text-slate-500">Pergunta</p>
+                <p className="text-sm text-slate-800 mt-1">{ex.question}</p>
+              </div>
+              {ex.loading && <p className="text-sm text-slate-500">Consultando o Conselho…</p>}
+              {ex.error && <p className="text-sm text-rose-600">Erro: {ex.error}</p>}
+              {ex.response && (
+                <>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide font-semibold text-slate-500">Resposta</p>
+                    <p className="text-sm text-slate-800 mt-1 whitespace-pre-wrap">{ex.response.answer}</p>
+                  </div>
+                  {ex.response.recommendations.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide font-semibold text-slate-500">Recomendações</p>
+                      <ul className="mt-1 space-y-1 text-sm text-slate-700 list-disc pl-5">
+                        {ex.response.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 text-[11px]">
+                    <Chip label={`Confiança: ${ex.response.confidence}`} tone={
+                      ex.response.confidence === "high" ? "emerald" :
+                      ex.response.confidence === "medium" ? "amber" : "slate"
+                    } />
+                    {ex.metrics && (
+                      <>
+                        <Chip label={`Modelo: ${ex.metrics.model}`} />
+                        <Chip label={`${ex.metrics.elapsed_ms} ms`} />
+                        <Chip label={`${ex.metrics.tokens_in} in · ${ex.metrics.tokens_out} out`} />
+                        <Chip label={`~ US$ ${ex.metrics.estimated_cost_usd.toFixed(5)}`} />
+                        <Chip label={`Config: ${ex.metrics.config_source} v${ex.metrics.config_version ?? "?"}`} />
+                      </>
+                    )}
+                    {ex.response.used_sections.length > 0 && (
+                      <Chip label={`Seções: ${ex.response.used_sections.join(", ")}`} />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <Textarea
+            rows={2}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ex.: Quais riscos organizacionais devo priorizar neste trimestre?"
+          />
+          <button
+            onClick={send}
+            disabled={sending || !question.trim() || !orgId}
+            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50"
+          >
+            <Send className="w-4 h-4" /> {sending ? "Enviando…" : "Enviar"}
+          </button>
+          {exchanges.length > 0 && (
+            <button
+              onClick={() => setExchanges([])}
+              className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm text-slate-700 hover:bg-slate-50"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function Chip({ label, tone = "slate" }: { label: string; tone?: "slate" | "emerald" | "amber" }) {
+  const map: Record<string, string> = {
+    slate: "bg-slate-100 text-slate-700",
+    emerald: "bg-emerald-100 text-emerald-700",
+    amber: "bg-amber-100 text-amber-700",
+  };
+  return <span className={`px-2 py-0.5 rounded-full font-semibold ${map[tone]}`}>{label}</span>;
 }
 
 function HistoryTab({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {

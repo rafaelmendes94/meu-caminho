@@ -62,6 +62,38 @@ async function loadPublishedConfig(admin: any): Promise<any | null> {
   }
 }
 
+// Sem cache — sempre lê a última versão (draft ou published) para o modo de teste.
+async function loadConfigForTest(admin: any, source: "draft" | "published"): Promise<any | null> {
+  try {
+    const { data } = await admin
+      .from("ai_prompt_configs")
+      .select("system_instructions, tone_config, output_structure, model_config, status, version")
+      .eq("key", "executive_council")
+      .maybeSingle();
+    if (!data) return null;
+    // 'draft' testa exatamente o que está salvo (independente do status atual).
+    // 'published' só retorna se realmente estiver publicada.
+    if (source === "published" && data.status !== "published") return null;
+    return data;
+  } catch (_e) {
+    return null;
+  }
+}
+
+// Custo estimado (USD por 1M tokens) — apenas indicativo para o painel de testes.
+const MODEL_PRICING: Record<string, { in: number; out: number }> = {
+  "google/gemini-2.5-pro": { in: 1.25, out: 10 },
+  "google/gemini-2.5-flash": { in: 0.3, out: 2.5 },
+  "google/gemini-2.5-flash-lite": { in: 0.1, out: 0.4 },
+  "openai/gpt-5.5": { in: 5, out: 15 },
+};
+
+function estimateCostUsd(model: string, tokensIn: number, tokensOut: number): number {
+  const p = MODEL_PRICING[model];
+  if (!p) return 0;
+  return (tokensIn * p.in + tokensOut * p.out) / 1_000_000;
+}
+
 function buildSystemPrompt(cfg: any | null): string {
   if (!cfg || !cfg.system_instructions) return FALLBACK_SYSTEM_PROMPT;
   const tone = cfg.tone_config ?? {};
@@ -128,17 +160,117 @@ Deno.serve(async (req) => {
     );
     if (!rl.allowed) return rl.response!;
 
+    const body = await req.json().catch(() => ({}));
+    const question: string = String(body?.question ?? "").trim();
+    let conversationId: string | null = body?.conversation_id ?? null;
+    const testMode: boolean = body?.test_mode === true;
+    const testOrgId: string | null = body?.test_organization_id ?? null;
+    const configSource: "draft" | "published" =
+      body?.config_source === "draft" ? "draft" : "published";
+    if (!question) return json({ error: "missing_question" }, 400);
+
+    // Role lookup
+    const { data: roles } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    const roleSet = new Set((roles ?? []).map((r: { role: string }) => r.role));
+    const isPlatformAdmin = roleSet.has("platform_admin");
+
+    // ===== Test mode (somente platform_admin) =====
+    if (testMode) {
+      if (!isPlatformAdmin) return json({ error: "forbidden" }, 403);
+      if (!testOrgId) return json({ error: "missing_test_organization" }, 400);
+
+      const promptCfg = await loadConfigForTest(admin, configSource);
+      if (!promptCfg && configSource === "published") {
+        return json({ error: "no_published_config" }, 400);
+      }
+      const systemPrompt = buildSystemPrompt(promptCfg);
+      const modelCfg = promptCfg?.model_config ?? {};
+      const primaryModel = modelCfg.primary_model || "google/gemini-2.5-pro";
+      const temperature = typeof modelCfg.temperature === "number" ? modelCfg.temperature : 0.3;
+      const maxTokens = typeof modelCfg.max_tokens === "number" ? modelCfg.max_tokens : 2048;
+
+      const { data: ctx, error: ctxErr } = await userClient.rpc(
+        "get_executive_context_admin",
+        { _organization_id: testOrgId },
+      );
+      if (ctxErr) return json({ error: ctxErr.message }, 500);
+
+      const messages = [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content:
+            `MODO DE TESTE — Contexto organizacional agregado da empresa em avaliação:\n` +
+            JSON.stringify(ctx ?? {}, null, 2),
+        },
+        { role: "user", content: question },
+      ];
+
+      const startedAt = Date.now();
+      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${lovableKey}`,
+        },
+        body: JSON.stringify({
+          model: primaryModel,
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+          response_format: { type: "json_object" },
+        }),
+      });
+      const elapsedMs = Date.now() - startedAt;
+
+      if (!aiRes.ok) {
+        const errText = await aiRes.text();
+        if (aiRes.status === 429) return json({ error: "rate_limited" }, 429);
+        if (aiRes.status === 402) return json({ error: "credits_exhausted" }, 402);
+        return json({ error: "ai_gateway_error", details: errText }, aiRes.status);
+      }
+
+      const aiJson = await aiRes.json();
+      const raw = aiJson?.choices?.[0]?.message?.content ?? "";
+      let parsed: any = null;
+      try { parsed = typeof raw === "string" ? JSON.parse(raw) : raw; } catch { /* handled below */ }
+      if (!parsed || typeof parsed !== "object") {
+        return json({ error: "invalid_ai_response", raw }, 502);
+      }
+      const response = {
+        answer: String(parsed.answer ?? ""),
+        confidence: ["low", "medium", "high"].includes(parsed.confidence) ? parsed.confidence : "low",
+        used_sections: Array.isArray(parsed.used_sections) ? parsed.used_sections : [],
+        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
+      };
+      const usage = aiJson?.usage ?? {};
+      const tokensIn = Number(usage?.prompt_tokens ?? 0);
+      const tokensOut = Number(usage?.completion_tokens ?? 0);
+      const metrics = {
+        model: primaryModel,
+        elapsed_ms: elapsedMs,
+        tokens_in: tokensIn,
+        tokens_out: tokensOut,
+        tokens_total: tokensIn + tokensOut,
+        estimated_cost_usd: estimateCostUsd(primaryModel, tokensIn, tokensOut),
+        config_source: configSource,
+        config_version: promptCfg?.version ?? null,
+        config_status: promptCfg?.status ?? null,
+      };
+      // NÃO persistimos conversas nem mensagens em test_mode.
+      return json({ ok: true, test_mode: true, response, metrics });
+    }
+
+    // ===== Fluxo normal (owner/rh_admin) =====
     const promptCfg = await loadPublishedConfig(admin);
     const systemPrompt = buildSystemPrompt(promptCfg);
     const modelCfg = promptCfg?.model_config ?? {};
     const primaryModel = modelCfg.primary_model || "google/gemini-2.5-pro";
     const temperature = typeof modelCfg.temperature === "number" ? modelCfg.temperature : 0.3;
     const maxTokens = typeof modelCfg.max_tokens === "number" ? modelCfg.max_tokens : 2048;
-
-    const body = await req.json().catch(() => ({}));
-    const question: string = String(body?.question ?? "").trim();
-    let conversationId: string | null = body?.conversation_id ?? null;
-    if (!question) return json({ error: "missing_question" }, 400);
 
     const { data: profile } = await admin
       .from("profiles")
@@ -148,12 +280,6 @@ Deno.serve(async (req) => {
     const orgId = profile?.organization_id;
     if (!orgId) return json({ error: "no_organization" }, 400);
 
-    // Role check
-    const { data: roles } = await admin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    const roleSet = new Set((roles ?? []).map((r: { role: string }) => r.role));
     if (!roleSet.has("owner") && !roleSet.has("rh_admin")) {
       return json({ error: "forbidden" }, 403);
     }

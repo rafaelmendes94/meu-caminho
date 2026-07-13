@@ -33,7 +33,10 @@ Ambas com RLS restrita a `is_platform_admin()`; Edge Function usa `service_role`
 5. **Modelo e Limites** — modelo principal/fallback, temperatura, max_tokens,
    timeout, tentativas de correção de JSON, streaming. Chave de API nunca
    exposta.
-6. **Testar no Chat** — placeholder “Em breve” (Sub-fase B).
+6. **Testar no Chat** — ambiente isolado (Sub-fase B): seletor de empresa,
+   escolha entre rascunho e versão publicada, envio de perguntas, métricas de
+   execução (modelo, tempo, tokens in/out, custo estimado, versão da config).
+   Nenhuma conversa é persistida.
 7. **Histórico de Versões** — lista de snapshots; comparação/restauração na
    Sub-fase B.
 
@@ -61,9 +64,21 @@ individual, sem invenção de números, isolamento entre empresas.
 Somente `platform_admin` acessa `/admin/ai/*`. Owner/RH continuam consumindo o
 Conselho pelo RH; colaboradores não têm acesso.
 
-## Próximas sub-fases
+## Sub-fase B — Testar no Chat
 
-- **B** — Aba “Testar no Chat” com `test_mode`, seletor de empresa, métricas de
-  execução (tokens, custo, tempo, confiança).
+- A Edge Function `executive-ai` aceita `{ test_mode: true, test_organization_id, config_source: "draft" | "published" }`.
+- Somente `platform_admin` pode ativar o modo de teste; caso contrário, retorna `403`.
+- Contexto agregado é obtido via nova RPC `get_executive_context_admin(uuid)`,
+  gated por `is_platform_admin()`, com o mesmo payload agregado usado no fluxo
+  real (nunca dados individuais).
+- Em `test_mode` **não** há gravação em `executive_ai_conversations` nem em
+  `executive_ai_messages`.
+- A resposta inclui `metrics`: `model`, `elapsed_ms`, `tokens_in`, `tokens_out`,
+  `tokens_total`, `estimated_cost_usd`, `config_source`, `config_version`,
+  `config_status`.
+- O rate limit compartilhado da função continua sendo aplicado.
+
+## Próxima sub-fase
+
 - **C** — Edição do prompt por linguagem natural com diff antes/depois +
   aplicação apenas no draft + comparação/restauração de versões no histórico.
