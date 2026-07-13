@@ -64,12 +64,9 @@ async function loadUserData(userId: string) {
 
   let organization: Organization | null = null;
   if (profile?.organization_id) {
-    const { data: org } = await supabase
-      .from("organizations")
-        .select("id, name, slug, logo_url, subscription_status, licenses_total, licenses_used")
-      .eq("id", profile.organization_id)
-      .maybeSingle();
-    organization = (org as Organization) ?? null;
+    const { data: org } = await supabase.rpc("get_my_organization");
+    const row = Array.isArray(org) ? org[0] : org;
+    organization = (row as Organization) ?? null;
   }
 
   const roles = ((rolesData ?? []) as { role: AppRole }[]).map((r) => r.role);
