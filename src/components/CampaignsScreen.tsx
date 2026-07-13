@@ -25,67 +25,10 @@ type Campaign = {
  to: string;
 };
 
-const HERO: Campaign = {
- id:"janeiro",
- badge:"Campanha do mês",
- title:"Janeiro",
- italic:"Branco",
- subtitle:"Um movimento pela saúde emocional. 31 dias de reflexões guiadas por Augusto Cury.",
- img:"https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1000&q=75&auto=format&fit=crop",
- accent:"#F88A2B",
- glow:"rgba(248,138,43,0.45)",
- pieces: 31,
- duration:"Janeiro inteiro",
- to:"/feed",
-};
-
-const CAMPAIGNS: Campaign[] = [
- {
- id:"setembro",
- badge:"Em destaque",
- title:"Setembro",
- italic:"Amarelo",
- subtitle:"Falar é a melhor solução. Conteúdos sobre prevenção, escuta e cuidado.",
- img:"https://images.unsplash.com/photo-1500627964684-141351970a7f?w=900&q=75&auto=format&fit=crop",
- accent:"#E8B43A",
- glow:"rgba(232,180,58,0.5)",
- pieces: 18,
- duration:"Mês inteiro",
- to:"/feed",
- },
- {
- id:"trabalho",
- badge:"Especial",
- title:"Saúde emocional",
- italic:"no trabalho",
- subtitle:"Como reencontrar o sentido, lidar com pressão e proteger sua mente no dia a dia.",
- img:"https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&q=75&auto=format&fit=crop",
- accent:"#5B8DB8",
- glow:"rgba(91,141,184,0.45)",
- pieces: 12,
- duration:"4 semanas",
- to:"/feed",
- },
- {
- id:"outubro",
- badge:"Em breve",
- title:"Outubro",
- italic:"Rosa",
- subtitle:"Coragem, fé e o cuidado emocional na jornada feminina.",
- img:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=900&q=75&auto=format&fit=crop",
- accent:"#D87BA8",
- glow:"rgba(216,123,168,0.5)",
- pieces: 14,
- duration:"Outubro",
- to:"/feed",
- },
-];
-
-const PAST = [
- { id:"p1", title:"Maio das Mães", img:"https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?w=400&q=70&auto=format&fit=crop", count:"10 conteúdos" },
- { id:"p2", title:"Junho da Família", img:"https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=70&auto=format&fit=crop", count:"8 conteúdos" },
- { id:"p3", title:"Verão Sereno", img:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70&auto=format&fit=crop", count:"12 conteúdos" },
-];
+// Campanhas reais serão carregadas via CMS (marketing_campaigns) em integração futura.
+const HERO: Campaign | null = null;
+const CAMPAIGNS: Campaign[] = [];
+const PAST: { id: string; title: string; img: string; count: string }[] = [];
 
 export default function CampaignsScreen() {
  return (
