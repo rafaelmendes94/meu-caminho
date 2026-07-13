@@ -29,15 +29,9 @@ const Leaf = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" 
 const Shield = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" /></svg>);
 const Heart = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 6.6a5.5 5.5 0 0 0-9.3-2.4l-.5.5-.5-.5A5.5 5.5 0 1 0 2.7 12l8.3 8.3 8.3-8.3a5.5 5.5 0 0 0 1.5-5.4z" /></svg>);
 
-const categories: Cat[] = [
- { key:"ansiedade", title:"Ansiedade", count: 84, img:"https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=800&q=80", tone:"rgba(248,138,43,0.85)", glow:"rgba(248,138,43,0.4)", icon: <Wave /> },
- { key:"sono", title:"Sono", count: 42, img:"https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=800&q=80", tone:"rgba(96,84,168,0.85)", glow:"rgba(155,138,201,0.45)", icon: <Moon /> },
- { key:"relacoes", title:"Relações", count: 56, img:"https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=800&q=80", tone:"rgba(196,101,74,0.85)", glow:"rgba(232,168,124,0.45)", icon: <People /> },
- { key:"ie", title:"Inteligência emocional", count: 112, img:"https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80", tone:"rgba(74,103,65,0.85)", glow:"rgba(135,168,120,0.45)", icon: <Brain /> },
- { key:"mind", title:"Mindfulness", count: 67, img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80", tone:"rgba(74,138,158,0.85)", glow:"rgba(92,189,185,0.45)", icon: <Leaf /> },
- { key:"auto", title:"Autocontrole", count: 48, img:"https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80", tone:"rgba(58,52,82,0.88)", glow:"rgba(120,108,170,0.4)", icon: <Shield /> },
- { key:"saude", title:"Saúde mental", count: 95, img:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=800&q=80", tone:"rgba(216,108,127,0.85)", glow:"rgba(232,140,160,0.45)", icon: <Heart /> },
-];
+// Territórios emocionais reais serão carregados do CMS (cms_categories) em integração futura.
+void Wave; void Moon; void People; void Brain; void Leaf; void Shield; void Heart;
+const categories: Cat[] = [];
 
 const moods = ["Calmo","Ansioso","Cansado","Inspirado","Reflexivo"];
 
