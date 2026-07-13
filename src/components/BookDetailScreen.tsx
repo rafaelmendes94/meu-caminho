@@ -10,21 +10,8 @@ import {
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
 const sans = { fontFamily: "'Inter', system-ui, sans-serif" };
 
-const chapters = [
-  { n: 1, t: "O despertar interior", min: 12, status: "done" as const },
-  { n: 2, t: "Reescrevendo a história", min: 18, status: "done" as const },
-  { n: 3, t: "A coragem da entrega", min: 22, status: "done" as const },
-  { n: 4, t: "O território dos sonhos", min: 16, status: "current" as const, pct: 0.62 },
-  { n: 5, t: "A sabedoria do tempo", min: 20, status: "todo" as const },
-  { n: 6, t: "O poder do silêncio", min: 14, status: "todo" as const },
-  { n: 7, t: "Recomeços possíveis", min: 24, status: "todo" as const },
-];
-
-const quotes = [
-  "A coragem não é a ausência do medo, mas a decisão de seguir apesar dele.",
-  "Sonhar é a primeira forma de transformar a realidade.",
-  "Os grandes começos começam em silêncio.",
-];
+const chapters: { n: number; t: string; min: number; status: "done" | "current" | "todo"; pct?: number }[] = [];
+const quotes: string[] = [];
 
 // Reviews are now defined inside the component to handle context
 
@@ -34,16 +21,12 @@ export default function BookDetailScreen() {
   const [params] = useSearchParams();
   const slug = params.get("slug");
   const { item: cmsBook, author: cmsAuthor } = useCmsItemBySlug(slug);
-  const bookTitle = cmsBook?.title || "O vendedor de sonhos";
-  const bookAuthor = cmsAuthor?.name || "Augusto Cury";
-  const bookSubtitle = cmsBook?.subtitle || "Romance contemplativo · Edição premium";
-  const bookDescription = cmsBook?.long_description || cmsBook?.short_description || "Em uma narrativa que beira a poesia, Augusto Cury apresenta um homem que, ao perder tudo, decide vender o bem mais raro do mundo: sonhos. Uma jornada sobre o valor da vida, da coragem e da reconstrução interior.";
+  const bookTitle = cmsBook?.title || "Livro indisponível";
+  const bookAuthor = cmsAuthor?.name || "—";
+  const bookSubtitle = cmsBook?.subtitle || "";
+  const bookDescription = cmsBook?.long_description || cmsBook?.short_description || "";
   const bookCover = cmsBook?.cover_url || null;
-  const reviews = [
-    { name: "Marina S.", emotion: "Transformador", color: "#F8B05A", text: "Mudou a forma como eu enxergo meus próprios limites." },
-    { name: "Rafael T.", emotion: "Profundo", color: "#A8C5F0", text: "Cada capítulo é uma conversa franca com a alma." },
-    { name: isEnterprise ? "Juliana M." : "Rafael T.", emotion: "Emocionante", color: "#E89A9A", text: "Chorei. Ri. E principalmente: refleti." },
-  ];
+  const reviews: { name: string; emotion: string; color: string; text: string }[] = [];
 
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<"sobre" | "capitulos" | "frases" | "avaliacoes">("sobre");
@@ -116,9 +99,7 @@ export default function BookDetailScreen() {
 
           {/* meta row */}
           <div className="fade-up flex items-center justify-center gap-5 text-[11px] opacity-65 mb-6">
-            <span className="flex items-center gap-1.5"><Star size={12} fill="#F8B05A" color="#F8B05A" /> 4.9</span>
-            <span className="opacity-40">·</span>
-            <span className="flex items-center gap-1.5"><Clock size={12} /> {Math.floor(totalMin/60)}h {totalMin%60}m</span>
+            <span className="flex items-center gap-1.5"><Clock size={12} /> {totalMin > 0 ? `${Math.floor(totalMin/60)}h ${totalMin%60}m` : "—"}</span>
             <span className="opacity-40">·</span>
             <span className="flex items-center gap-1.5"><BookOpen size={12} /> {chapters.length} cap.</span>
           </div>
@@ -132,7 +113,7 @@ export default function BookDetailScreen() {
             <div className="h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(34,25,18,0.08)" }}>
               <div className="h-full" style={{ width: `${pct * 100}%`, background: "linear-gradient(90deg, #F8B05A, #C28A3E)" }} />
             </div>
-            <div className="text-[10px] opacity-55 mt-2">{done} de {chapters.length} capítulos · próximo: {chapters.find(c => c.status === "current")?.t}</div>
+            <div className="text-[10px] opacity-55 mt-2">{done} de {chapters.length} capítulos{chapters.find(c => c.status === "current") ? ` · próximo: ${chapters.find(c => c.status === "current")?.t}` : ""}</div>
           </div>
 
           {/* primary actions */}
@@ -187,28 +168,15 @@ export default function BookDetailScreen() {
                 <div className="text-[10px] tracking-[0.3em] uppercase opacity-60">Augusto Cury</div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {[["312", "páginas"], ["7", "capítulos"], ["5h 40m", "leitura"]].map(([v, l], i) => (
-                  <div key={i} className="rounded-xl p-3 text-center" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
-                    <div className="text-[16px]" style={serif}>{v}</div>
-                    <div className="text-[10px] opacity-55 mt-0.5">{l}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <h3 className="text-[14px] mb-3" style={serif}>Temas desta obra</h3>
-                <div className="flex flex-wrap gap-2">
-                  {["Reconstrução", "Coragem", "Sonhos", "Resiliência", "Sentido", "Recomeço"].map((t) => (
-                    <span key={t} className="px-3 py-1.5 rounded-full text-[11px]" style={{ background: "rgba(248,176,90,0.12)", color: "#9A6B2C", border: "1px solid rgba(194,138,62,0.2)" }}>{t}</span>
-                  ))}
-                </div>
-              </div>
+              {/* Estatísticas e temas serão carregados do CMS quando disponíveis */}
             </div>
           )}
 
           {tab === "capitulos" && (
             <ol className="fade-up space-y-2">
+              {chapters.length === 0 && (
+                <li className="rounded-xl p-6 text-center text-[12px] opacity-60" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>Capítulos ainda não disponíveis.</li>
+              )}
               {chapters.map((c) => (
                 <Link key={c.n} to={c.status === "todo" ? "/biblioteca/bloqueado" : "/biblioteca/leitor"}
                   className="flex items-center gap-4 rounded-xl p-3 transition-all hover:translate-x-1"
@@ -235,6 +203,9 @@ export default function BookDetailScreen() {
 
           {tab === "frases" && (
             <div className="fade-up space-y-3">
+              {quotes.length === 0 && (
+                <div className="rounded-2xl p-6 text-center text-[12px] opacity-60" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>Nenhuma frase destacada ainda.</div>
+              )}
               {quotes.map((q, i) => (
                 <div key={i} className="rounded-2xl p-5" style={{ background: "linear-gradient(160deg, #FFFDF8, #F4ECDF)", border: "1px solid rgba(194,138,62,0.18)" }}>
                   <Quote size={14} style={{ color: "#9A6B2C" }} className="opacity-60 mb-3" />
@@ -251,30 +222,11 @@ export default function BookDetailScreen() {
           {tab === "avaliacoes" && (
             <div className="fade-up space-y-5">
               {/* emotion summary */}
-              <div className="rounded-2xl p-5" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="text-[28px]" style={serif}>4.9</div>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => <Star key={i} size={11} fill="#F8B05A" color="#F8B05A" />)}
-                    </div>
-                    <div className="text-[10px] opacity-55 mt-1">2.847 leitores</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] tracking-[0.25em] uppercase opacity-55 mb-2">Sentimento</div>
-                    <div className="flex gap-1.5">
-                      {[
-                        { e: "Profundo", c: "#A8C5F0" },
-                        { e: "Inspirador", c: "#F8B05A" },
-                        { e: "Emocionante", c: "#E89A9A" },
-                      ].map((t) => (
-                        <span key={t.e} className="text-[9px] px-2 py-1 rounded-full" style={{ background: `${t.c}25`, color: "#221912" }}>{t.e}</span>
-                      ))}
-                    </div>
-                  </div>
+              {reviews.length === 0 && (
+                <div className="rounded-2xl p-6 text-center text-[12px] opacity-60" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
+                  Nenhuma reação ainda.
                 </div>
-              </div>
-
+              )}
               {reviews.map((r, i) => (
                 <div key={i} className="rounded-2xl p-4" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>
                   <div className="flex items-center justify-between mb-2">
