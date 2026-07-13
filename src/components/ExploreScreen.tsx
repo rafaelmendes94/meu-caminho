@@ -22,15 +22,9 @@ const Close = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
 const FILTERS = ["Todos","Áudios","Vídeos","Leituras","Podcasts","Reflexões"] as const;
 type Filter = typeof FILTERS[number];
 
-const TRENDING = [
- { tag:"Ansiedade noturna", count:"+32%" },
- { tag:"Reconstruir confiança", count:"+18%" },
- { tag:"Sono profundo", count:"+12%" },
- { tag:"Filhos e diálogo", count:"+9%" },
- { tag:"Pressão no trabalho", count:"+24%" },
-];
-
-const RECENTS = ["paz interior","augusto cury sono","perdoar","ansiedade no peito"];
+// Tendências e buscas recentes reais dependem de agregação de eventos de busca — em breve.
+const TRENDING: { tag: string; count: string }[] = [];
+const RECENTS: string[] = [];
 
 const QUICK = [
  { label:"Calma", emoji:"🌿", g:"linear-gradient(135deg,#D9EAD9,#A8C8A4)" },
@@ -249,7 +243,8 @@ export default function ExploreScreen() {
  </div>
  </div>
 
- {/* Trending */}
+ {/* Trending — oculto até haver agregação real de buscas */}
+ {TRENDING.length > 0 && (
  <div className="relative z-20 px-5 pb-5 fade-up">
  <div className="flex items-center justify-between mb-2.5">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#F88A2B] font-semibold flex items-center gap-1.5"><Spark size={11}/> Tendências emocionais</p>
@@ -266,8 +261,10 @@ export default function ExploreScreen() {
  ))}
  </div>
  </div>
+ )}
 
- {/* Recent searches */}
+ {/* Recent searches — oculto até persistirmos histórico real de buscas */}
+ {RECENTS.length > 0 && (
  <div className="relative z-20 px-5 pb-5 fade-up">
  <div className="flex items-center justify-between mb-2.5">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#8A7868]">Buscas recentes</p>
@@ -281,6 +278,7 @@ export default function ExploreScreen() {
  ))}
  </div>
  </div>
+ )}
  </>
  )}
 

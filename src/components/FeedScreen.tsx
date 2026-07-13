@@ -105,20 +105,8 @@ function mapCmsToPost(it: CmsItem): Post {
   };
 }
 
-const postsFallback: Post[] = [
- { id:"p1", type:"frase", to:"/feed/leitura", subtitle:"Reflexão do dia", badge:"2 min", quote:"A mente tranquila vê soluções onde os ansiosos veem problemas.", caption:"Pequenos pensamentos podem transformar grandes destinos.", image:"https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=900&q=80", inspires:"2.4k", reflections:"56", when:"há 1h" },
- { id:"p2", type:"meditacao", to:"/conteudo/detalhe", subtitle:"Meditação guiada", badge:"Respiração consciente", duration:"5 min", caption:"Pause. Respire. Sua mente também pede silêncio.", image:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80", inspires:"1.8k", reflections:"84", when:"há 3h" },
- { id:"p3", type:"video", to:"/feed/video", subtitle:"Insight em vídeo", badge:"Como acolher a ansiedade", duration:"1:24", caption:"Três passos suaves para acalmar pensamentos acelerados.", image:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=900&q=80", inspires:"3.6k", reflections:"142", when:"há 5h" },
- { id:"p4", type:"podcast", to:"/conteudo/detalhe", subtitle:"Podcast", badge:"Inteligência emocional · Ep. 12", duration:"32 min", caption:"Augusto Cury sobre os pilares da maturidade emocional.", image:"https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=900&q=80", inspires:"892", reflections:"37", when:"há 8h" },
- { id:"p5", type:"ia", to:"/cury-digital/sugestao", subtitle:"Cury IA observou hoje", badge:"Trilha emocional sugerida", quote:"Quem domina o próprio silêncio domina a si mesmo.", caption:"Sua mente pediu calma. Vamos cultivar autocontrole juntos.", image:"https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=900&q=80", inspires:"3.1k", reflections:"127", when:"há 12h" },
- { id:"p6", type:"exercicio", to:"/feed/leitura", subtitle:"Exercício de presença", badge:"5-4-3-2-1 sentidos", duration:"3 min", caption:"Um exercício rápido para voltar ao agora quando a mente acelera.", image:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80", inspires:"1.1k", reflections:"44", when:"há 9h" },
- { id:"p7", type:"livro", to:"/biblioteca/detalhe", subtitle:"Novo no Clube do Livro", badge:"Ansiedade — capítulo liberado", caption:"Mais um capítulo da sua jornada está disponível para leitura.", image:"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=900&q=80", inspires:"2.0k", reflections:"65", when:"ontem" },
- { id:"p8", type:"reflexao", to:"/feed/leitura", subtitle:"Reflexão noturna", badge:"3 min", caption:"Antes de dormir, agradeça por três coisas vividas hoje. Seu sono será mais leve.", image:"https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=900&q=80", inspires:"4.2k", reflections:"201", when:"ontem" },
- { id:"p9", type:"audio", to:"/conteudo/detalhe", subtitle:"Audiolivro", badge:"Mente Serena · Cap. 1", duration:"18 min", caption:"Comece o dia com uma narrativa serena de Augusto Cury.", image:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80", inspires:"1.5k", reflections:"48", when:"ontem" },
- { id:"p10", type:"frase", to:"/feed/leitura", subtitle:"Citação do dia", badge:"Augusto Cury", quote:"A maior revolução acontece silenciosamente dentro da mente.", caption:"Guarde para reler nos dias difíceis.", image:"https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=900&q=80", inspires:"5.1k", reflections:"234", when:"11/06" },
- { id:"p11", type:"corte", to:"/feed/cortes", subtitle:"Corte · 45s", badge:"O segredo da mente serena", duration:"0:45", caption:"Em menos de um minuto, um lembrete que muda o seu dia.", image:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=900&q=80", inspires:"6.2k", reflections:"312", when:"há 2h" },
- { id:"p12", type:"corte", to:"/feed/cortes", subtitle:"Corte · 1min", badge:"Pare de alimentar pensamentos ansiosos", duration:"1:02", caption:"Augusto Cury sobre o gestor da própria mente.", image:"https://images.unsplash.com/photo-1499728603263-13726abce5fd?auto=format&fit=crop&w=900&q=80", inspires:"4.7k", reflections:"189", when:"há 6h" },
-];
+// Sem posts hardcoded: quando o CMS não retorna itens, o feed exibe estado vazio.
+const postsFallback: Post[] = [];
 
 const filters = ["Tudo","Cortes","Reflexão","Áudio","Insight","Exercício","Meditação","Cury IA"] as const;
 const filterMap: Record<typeof filters[number], PostType[] | null> = {
@@ -444,14 +432,9 @@ const PostCard = ({ post, isEnterprise }: { post: Post; isEnterprise?: boolean }
 /* ───────────── Notifications ───────────── */
 
 type Notif = { id: string; icon:"inspire" |"reflect" |"book" |"ia" |"audio"; title: string; body: string; when: string; unread: boolean; to: string };
-const notifications: Notif[] = [
- { id:"n1", icon:"ia", title:"Cury IA preparou algo para você", body:"Uma trilha emocional foi sugerida para sua manhã.", when:"agora", unread: true, to:"/cury-digital/sugestao" },
- { id:"n2", icon:"book", title:"Novo capítulo liberado", body:"Ansiedade — capítulo 4 já está disponível.", when:"há 2h", unread: true, to:"/biblioteca/detalhe" },
- { id:"n3", icon:"inspire", title:"Sua reflexão inspirou 1.2k pessoas", body:"“A mente tranquila vê soluções...”", when:"há 5h", unread: true, to:"/feed/leitura" },
- { id:"n4", icon:"audio", title:"Meditação guiada disponível", body:"Respiração consciente — 5 min.", when:"ontem", unread: false, to:"/player/audio" },
- { id:"n5", icon:"reflect", title:"Augusto Cury respondeu sua reflexão", body:"“Que bonito perceber isso em você...”", when:"ontem", unread: false, to:"/feed" },
- { id:"n6", icon:"book", title:"Continue de onde parou", body:"Mente Serena — Cap. 1 (12 min restantes).", when:"12/06", unread: false, to:"/player/audiolivro" },
-];
+// Notificações reais vêm da tabela `notifications` (ver NotificacoesScreen).
+// Aqui mantemos apenas um array vazio para o dropdown quick-view.
+const notifications: Notif[] = [];
 const notifIcon = (i: Notif["icon"]) => {
  const m = {
  inspire: { I: Heart, c: brand, bg:"#F6E8D6" },
@@ -470,8 +453,8 @@ const FeedScreen = () => {
   const location = useLocation();
   const isEnterprise = location.pathname.startsWith('/enterprise');
   const LayoutComponent = isEnterprise ? (({ children, title }: { children: React.ReactNode, title?: string }) => <EnterpriseUserLayout title={title || "Feed"}>{children}</EnterpriseUserLayout>) : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
-  const { firstName: userName } = useDisplayUser();
-  const userAvatar = isEnterprise ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80";
+   const { firstName: userName, avatarUrl, initial } = useDisplayUser();
+   const userAvatar = avatarUrl || "";
 
  const [active, setActive] = useState<typeof filters[number]>("Tudo");
  const [searchOpen, setSearchOpen] = useState(false);
