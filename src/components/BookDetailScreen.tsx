@@ -162,13 +162,7 @@ export default function BookDetailScreen() {
                 </p>
               </div>
 
-              <div className="rounded-2xl p-5" style={{ background: "linear-gradient(160deg, #1B130D, #2A1D12)", color: "#F4E7CE" }}>
-                <Quote size={16} style={{ color: "#F8B05A" }} className="mb-3" />
-                <p className="text-[15px] leading-relaxed mb-3" style={{ ...serif, fontStyle: "italic" }}>"Os sonhos são a única coisa que ninguém pode roubar de você."</p>
-                <div className="text-[10px] tracking-[0.3em] uppercase opacity-60">Augusto Cury</div>
-              </div>
-
-              {/* Estatísticas e temas serão carregados do CMS quando disponíveis */}
+              {/* Citação destacada e estatísticas serão carregadas do CMS quando disponíveis */}
             </div>
           )}
 
