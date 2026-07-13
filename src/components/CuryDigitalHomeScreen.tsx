@@ -1,5 +1,4 @@
 import { Link } from"react-router-dom";
-import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
 

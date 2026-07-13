@@ -1,6 +1,5 @@
 import { Link, useLocation } from"react-router-dom";
 import { useState } from"react";
-import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const ink900 ="#111111";
