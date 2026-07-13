@@ -108,39 +108,20 @@ export const EnterpriseUserLayout = ({ children, title }: BaseLayoutProps) => {
           <div className="flex items-center gap-6">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-2xl bg-[#FBF9F7] flex items-center justify-center text-[#0B0908]/40 hover:bg-[#F88A2B]/10 hover:text-[#F88A2B] transition-all relative outline-none">
+                <button className="w-10 h-10 rounded-2xl bg-[#FBF9F7] flex items-center justify-center text-[#0B0908]/40 hover:bg-[#F88A2B]/10 hover:text-[#F88A2B] transition-all outline-none">
                   <Bell size={18} />
-                  <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#F88A2B] border-2 border-white" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 rounded-2xl p-0 overflow-hidden font-montserrat border-black/5 shadow-2xl">
                 <div className="p-4 border-b border-black/5 flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-[#111]">Notificações</h3>
-                  <span className="bg-[#F88A2B]/10 text-[#F88A2B] text-[10px] font-bold px-2 py-0.5 rounded-full">2 novas</span>
                 </div>
-                <div className="max-h-[320px] overflow-y-auto no-scrollbar">
-                  <div className="p-3 space-y-1">
-                    <button className="w-full text-left p-3 rounded-xl hover:bg-[#F9F8F6] transition-all flex gap-3 group">
-                      <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                        <Home size={18} className="text-[#F88A2B]" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#111] leading-tight mb-1">Sequência de 12 dias!</p>
-                        <p className="text-[11px] text-[#666] line-clamp-2">Parabéns! Você mantém sua sequência de cuidado emocional.</p>
-                        <span className="text-[9px] font-bold text-[#999] uppercase tracking-tighter mt-1 block">Agora</span>
-                      </div>
-                    </button>
-                    <button className="w-full text-left p-3 rounded-xl hover:bg-[#F9F8F6] transition-all flex gap-3 group">
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                        <Layout size={18} className="text-[#9B8AC9]" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#111] leading-tight mb-1">Resumo semanal disponível</p>
-                        <p className="text-[11px] text-[#666] line-clamp-2">Veja o seu progresso da semana e continue evoluindo.</p>
-                        <span className="text-[9px] font-bold text-[#999] uppercase tracking-tighter mt-1 block">2h atrás</span>
-                      </div>
-                    </button>
+                <div className="p-8 flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 rounded-2xl bg-[#F9F8F6] flex items-center justify-center text-[#C9C2BB]">
+                    <Bell size={18} />
                   </div>
+                  <p className="text-sm font-semibold text-[#111]">Sem notificações</p>
+                  <p className="text-[11px] text-[#666]">Você está em dia por aqui.</p>
                 </div>
                 <div className="p-2 bg-[#F9F8F6] border-t border-black/5">
                   <button 
