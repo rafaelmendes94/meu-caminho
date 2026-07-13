@@ -109,7 +109,7 @@ function mapCmsToPost(it: CmsItem): Post {
 // Sem posts hardcoded: quando o CMS não retorna itens, o feed exibe estado vazio.
 const postsFallback: Post[] = [];
 
-const filters = ["Tudo","Cortes","Reflexão","Áudio","Insight","Exercício","Meditação","Cury IA"] as const;
+const filters = ["Tudo","Cortes","Reflexão","Áudio","Insight","Exercício","Meditação","IA"] as const;
 const filterMap: Record<typeof filters[number], PostType[] | null> = {
 "Tudo": null,
 "Cortes": ["corte"],
@@ -118,7 +118,7 @@ const filterMap: Record<typeof filters[number], PostType[] | null> = {
 "Insight": ["video"],
 "Exercício": ["exercicio"],
 "Meditação": ["meditacao"],
-"Cury IA": ["ia"],
+"IA": ["ia"],
 };
 
 const typeMeta = (t: PostType) => {
@@ -129,7 +129,7 @@ const typeMeta = (t: PostType) => {
  podcast: { Icon: Mic, c:"#5E8F76", bg:"#E4EFE6", label:"Áudio" },
  video: { Icon: Play, c:"#C25E5E", bg:"#F6DFDF", label:"Insight" },
  livro: { Icon: BookOpen, c:"#956A3F", bg:"#EFE3D2", label:"Livro" },
- ia: { Icon: Sparkles, c:"#7A6CA8", bg:"#ECE6F4", label:"Cury IA" },
+ ia: { Icon: Sparkles, c:"#7A6CA8", bg:"#ECE6F4", label:"IA" },
  exercicio: { Icon: Wind, c:"#5E8F76", bg:"#E4EFE6", label:"Exercício" },
  meditacao: { Icon: Sun, c:"#D08A3F", bg:"#F8E8D2", label:"Meditação" },
  corte: { Icon: Play, c:"#A14B6E", bg:"#F4DDE6", label:"Corte" },
