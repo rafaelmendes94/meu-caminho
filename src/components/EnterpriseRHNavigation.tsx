@@ -49,7 +49,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import {
   Sheet,

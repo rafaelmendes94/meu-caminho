@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import { EnterpriseCheckoutLayout } from "@/components/layouts/EnterpriseCheckoutLayout";
 
 const EnterpriseCheckoutPlanScreen = () => {

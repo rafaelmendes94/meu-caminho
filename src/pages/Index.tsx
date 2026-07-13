@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import abstractArt from "@/assets/login-abstract.png";
+import abstractArt from "@/assets/login-abstract.webp";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";

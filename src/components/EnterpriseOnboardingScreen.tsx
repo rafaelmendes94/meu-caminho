@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 
 const EnterpriseOnboardingScreen = () => {
   const navigate = useNavigate();
