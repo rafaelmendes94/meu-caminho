@@ -96,9 +96,9 @@ export default function SavedContentScreen() {
  <div className="relative z-20 px-5 pb-3 fade-up">
  <div className="rounded-2xl bg-white/70 backdrop-blur border border-white/80 px-4 py-3 flex items-center justify-between shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
  {[
- { n:"42", l:"salvos" },
- { n:"8", l:"playlists" },
- { n:"12", l:"reflexões" },
+ { n: String(ITEMS.filter(i => i.type !== "quote").length), l:"salvos" },
+ { n: String(PLAYLISTS.length), l:"playlists" },
+ { n: String(ITEMS.filter(i => i.type === "quote").length), l:"reflexões" },
  ].map((s, i) => (
  <div key={s.l} className={`flex-1 text-center ${i < 2 ?"border-r border-[#EADFD2]" :""}`}>
  <div style={serif} className="text-[20px] text-[#1F1A16]">{s.n}</div>
