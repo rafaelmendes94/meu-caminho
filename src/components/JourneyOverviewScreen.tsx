@@ -264,17 +264,11 @@ const JourneyOverviewScreen = () => {
  </div>
  </section>
 
- {/* Indicadores */}
+ {/* Indicadores — em breve (aguarda tabela de check-ins/agregações) */}
  <section className="mt-10 lg:mt-14">
- <div className="flex items-center justify-between px-1 mb-6">
- <h3 className="text-[12px] font-bold uppercase tracking-[0.24em] text-[#111]">Sua evolução emocional</h3>
- <div className="flex items-center gap-2.5 text-[9.5px]" style={{ color: ink500 }}>
- <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background:"#E8E2DA" }} />Antes</span>
- <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: brand }} />Agora</span>
- </div>
- </div>
- <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
- {indicators.map((i) => <IndicatorCard key={i.name} i={i} />)}
+ <div className="rounded-[22px] bg-white px-5 py-6 text-center" style={{ boxShadow:"0 4px 14px rgba(17,17,17,0.04), inset 0 0 0 1px rgba(17,17,17,0.04)" }}>
+ <p className="text-[11px] font-bold uppercase tracking-[0.24em]" style={{ color: brand }}>Evolução emocional</p>
+ <p className="mt-2 text-[13px]" style={{ color: ink500 }}>Seus indicadores aparecem aqui após algumas semanas de check-ins.</p>
  </div>
  </section>
 
