@@ -42,7 +42,7 @@ export default function PlatformContentCategoriesScreen() {
     if (!confirm("Excluir categoria?")) return;
     const { error } = await supabase.from("content_categories").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Excluída."); void load();
+    toast.success("Categoria excluída."); void load();
   };
 
   const filtered = rows.filter((r) => !q || r.name.toLowerCase().includes(q.toLowerCase()) || r.slug.includes(q.toLowerCase()));
