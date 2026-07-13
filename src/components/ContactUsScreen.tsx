@@ -139,22 +139,9 @@ const ContactUsScreen = () => {
       </section>
 
       {/* Direct Channels */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { label: "WhatsApp Corporate", desc: "+55 11 99999-9999", Icon: Phone, color: "text-green-600", bg: "bg-green-50" },
-          { label: "E-mail de Suporte", desc: "suporte@cury.com.br", Icon: Mail, color: "text-purple-600", bg: "bg-purple-50" },
-          { label: "Sede Global", desc: "São Paulo, SP - Brasil", Icon: MapPin, color: "text-orange-500", bg: "bg-orange-50" }
-        ].map((item, i) => (
-          <div key={i} className="bg-white rounded-3xl p-8 border border-black/5 shadow-sm flex items-center gap-5 group cursor-pointer hover:border-black/10 transition-all">
-            <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center ${item.color} shrink-0`}>
-              <item.Icon size={24} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">{item.label}</p>
-              <p className="text-base font-bold text-[#111]">{item.desc}</p>
-            </div>
-          </div>
-        ))}
+      <div className="bg-white rounded-3xl p-8 border border-black/5 shadow-sm text-center">
+        <p className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Canais diretos</p>
+        <p className="text-sm text-[#8A8A8A] mt-2">Canais adicionais (WhatsApp, e-mail e endereço) serão exibidos quando configurados pela organização.</p>
       </div>
     </div>
   );
@@ -213,16 +200,10 @@ const ContactUsScreen = () => {
         )}
 
         <div className="space-y-3">
-           <button className="w-full p-4 bg-white rounded-2xl border border-black/5 flex items-center gap-4 text-left">
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600"><Phone size={18} /></div>
-              <div className="flex-1"><p className="text-xs font-bold text-[#111]">WhatsApp</p><p className="text-[10px] text-[#8A8A8A]">Atendimento Instantâneo</p></div>
-              <ChevronRight size={16} className="text-black/10" />
-           </button>
-           <button className="w-full p-4 bg-white rounded-2xl border border-black/5 flex items-center gap-4 text-left">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600"><Mail size={18} /></div>
-              <div className="flex-1"><p className="text-xs font-bold text-[#111]">E-mail</p><p className="text-[10px] text-[#8A8A8A]">suporte@cury.com.br</p></div>
-              <ChevronRight size={16} className="text-black/10" />
-           </button>
+           <div className="w-full p-4 bg-white rounded-2xl border border-black/5 text-center">
+             <p className="text-xs font-bold text-[#111]">Canais diretos</p>
+             <p className="text-[10px] text-[#8A8A8A] mt-1">Serão exibidos aqui quando configurados pela organização.</p>
+           </div>
         </div>
       </div>
     </main>
