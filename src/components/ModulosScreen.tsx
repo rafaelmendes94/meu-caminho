@@ -38,12 +38,13 @@ const Sprig = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 type Status ="done" |"current" |"locked";
 type Mod = { n: number; title: string; desc: string; min: string; status: Status; img: string; progress: number };
 
+// Módulos reais serão carregados via CMS (course_modules) — sem mocks.
 const modulos: Mod[] = [
- { n: 1, title:"Entendendo sua mente", desc:"Como os pensamentos moldam emoções e comportamentos.", min:"—", status:"locked", img: mod1, progress: 0 },
- { n: 2, title:"Pensamentos acelerados", desc:"Aprenda a desacelerar sua mente e recuperar clareza.", min:"—", status:"locked", img: mod2, progress: 0 },
- { n: 3, title:"Gestão da emoção", desc:"Ferramentas práticas para lidar com ansiedade emocional.", min:"—", status:"locked", img: mod3, progress: 0 },
- { n: 4, title:"Autoconhecimento profundo", desc:"Descubra seus padrões emocionais e crenças limitantes.", min:"—", status:"locked", img: mod4, progress: 0 },
- { n: 5, title:"Inteligência nas relações", desc:"Como se relacionar melhor e construir conexões saudáveis.", min:"—", status:"locked", img: mod5, progress: 0 },
+ { n: 1, title:"Módulo 1", desc:"—", min:"—", status:"locked", img: mod1, progress: 0 },
+ { n: 2, title:"Módulo 2", desc:"—", min:"—", status:"locked", img: mod2, progress: 0 },
+ { n: 3, title:"Módulo 3", desc:"—", min:"—", status:"locked", img: mod3, progress: 0 },
+ { n: 4, title:"Módulo 4", desc:"—", min:"—", status:"locked", img: mod4, progress: 0 },
+ { n: 5, title:"Módulo 5", desc:"—", min:"—", status:"locked", img: mod5, progress: 0 },
 ];
 
 const ProgressRing = ({ pct = 35 }: { pct?: number }) => {
