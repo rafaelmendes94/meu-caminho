@@ -28,11 +28,11 @@ const EnterpriseCheckoutPlanScreen = () => {
       id: "essential",
       name: "Essential",
       subtitle: "Para empresas começando a jornada emocional.",
-      price: "a partir de R$ 19 / colaborador",
+      price: "Sob consulta",
       features: [
         "Check-ins emocionais",
         "Trilhas personalizadas",
-        "Cury Digital",
+        "IA de apoio emocional",
         "Dashboard RH agregado",
         "Privacidade individual",
         "Até 100 colaboradores"
@@ -45,7 +45,7 @@ const EnterpriseCheckoutPlanScreen = () => {
       name: "Growth",
       badge: "Mais escolhido",
       subtitle: "Para empresas que querem inteligência emocional organizacional.",
-      price: "a partir de R$ 29 / colaborador",
+      price: "Sob consulta",
       features: [
         "Tudo do Essential",
         "Insights de IA",
@@ -177,7 +177,7 @@ const EnterpriseCheckoutPlanScreen = () => {
               <div className="min-w-[600px]">
                 {[
                   { label: "Check-ins Emocionais", essential: true, growth: true, enterprise: true },
-                  { label: "Cury Digital (IA)", essential: true, growth: true, enterprise: true },
+                  { label: "IA de apoio emocional", essential: true, growth: true, enterprise: true },
                   { label: "Dashboard RH", essential: "Agregado", growth: "Completo", enterprise: "Múltiplas Unidades" },
                   { label: "Insights de IA", essential: false, growth: true, enterprise: true },
                   { label: "Relatórios Executivos", essential: false, growth: true, enterprise: true },
