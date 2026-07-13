@@ -39,11 +39,11 @@ type Status ="done" |"current" |"locked";
 type Mod = { n: number; title: string; desc: string; min: string; status: Status; img: string; progress: number };
 
 const modulos: Mod[] = [
- { n: 1, title:"Entendendo sua mente", desc:"Como os pensamentos moldam emoções e comportamentos.", min:"18 min", status:"done", img: mod1, progress: 100 },
- { n: 2, title:"Pensamentos acelerados", desc:"Aprenda a desacelerar sua mente e recuperar clareza.", min:"22 min", status:"current", img: mod2, progress: 45 },
- { n: 3, title:"Gestão da emoção", desc:"Ferramentas práticas para lidar com ansiedade emocional.", min:"20 min", status:"locked", img: mod3, progress: 0 },
- { n: 4, title:"Autoconhecimento profundo", desc:"Descubra seus padrões emocionais e crenças limitantes.", min:"24 min", status:"locked", img: mod4, progress: 0 },
- { n: 5, title:"Inteligência nas relações", desc:"Como se relacionar melhor e construir conexões saudáveis.", min:"18 min", status:"locked", img: mod5, progress: 0 },
+ { n: 1, title:"Entendendo sua mente", desc:"Como os pensamentos moldam emoções e comportamentos.", min:"—", status:"locked", img: mod1, progress: 0 },
+ { n: 2, title:"Pensamentos acelerados", desc:"Aprenda a desacelerar sua mente e recuperar clareza.", min:"—", status:"locked", img: mod2, progress: 0 },
+ { n: 3, title:"Gestão da emoção", desc:"Ferramentas práticas para lidar com ansiedade emocional.", min:"—", status:"locked", img: mod3, progress: 0 },
+ { n: 4, title:"Autoconhecimento profundo", desc:"Descubra seus padrões emocionais e crenças limitantes.", min:"—", status:"locked", img: mod4, progress: 0 },
+ { n: 5, title:"Inteligência nas relações", desc:"Como se relacionar melhor e construir conexões saudáveis.", min:"—", status:"locked", img: mod5, progress: 0 },
 ];
 
 const ProgressRing = ({ pct = 35 }: { pct?: number }) => {
@@ -204,32 +204,9 @@ const ModulosScreen = () => {
  boxShadow:"0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 24px -16px rgba(17,17,17,0.10), 0 0 0 1px rgba(17,17,17,0.05)",
  }}
  >
- <div className="grid grid-cols-4 gap-1">
- <div className="flex flex-col items-center text-center">
- <ProgressRing pct={35} />
- <p className="mt-2 text-[9.5px]" style={{ color: ink500 }}>progresso geral</p>
- </div>
- <div className="flex flex-col items-center text-center">
- <span className="w-[42px] h-[42px] rounded-full flex items-center justify-center" style={{ background:"#E8EFE2" }}>
- <Check c={sage} />
- </span>
- <p className="mt-2 text-[12px] font-bold text-[#111]">2 / 8</p>
- <p className="text-[9.5px] -mt-0.5" style={{ color: ink500 }}>módulos concluídos</p>
- </div>
- <div className="flex flex-col items-center text-center">
- <span className="w-[42px] h-[42px] rounded-full flex items-center justify-center" style={{ background:"#ECE6F4" }}>
- <ClockBig c={lilac}/>
- </span>
- <p className="mt-2 text-[12px] font-bold text-[#111]">1h 05m</p>
- <p className="text-[9.5px] -mt-0.5" style={{ color: ink500 }}>tempo dedicado</p>
- </div>
- <div className="flex flex-col items-center text-center">
- <span className="w-[42px] h-[42px] rounded-full flex items-center justify-center" style={{ background:"#FFEFD9" }}>
- <Trend/>
- </span>
- <p className="mt-2 text-[12px] font-bold text-[#111]">Nível 3</p>
- <p className="text-[9.5px] -mt-0.5" style={{ color: ink500 }}>evolução emocional</p>
- </div>
+ <div className="text-center py-2">
+ <p className="text-[11px] font-bold uppercase tracking-[0.24em]" style={{ color: brand }}>Seu progresso</p>
+ <p className="mt-1.5 text-[12px]" style={{ color: ink500 }}>As estatísticas aparecem aqui conforme você concluir os módulos.</p>
  </div>
  </div>
  </section>
