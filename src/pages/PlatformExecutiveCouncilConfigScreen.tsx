@@ -265,10 +265,12 @@ export default function PlatformExecutiveCouncilConfigScreen() {
       change_note: changeNote || "Publicação de nova versão.",
     });
     try {
+      const { data: userRes } = await supabase.auth.getUser();
       await supabase.from("platform_audit_logs").insert({
+        actor_user_id: userRes.user?.id ?? null,
         action: "ai_prompt_published",
-        resource_type: "ai_prompt_configs",
-        resource_id: config.id,
+        entity_type: "ai_prompt_configs",
+        entity_id: config.id,
         metadata: { key: config.key, version: nextVersion, note: changeNote || null } as any,
       });
     } catch { /* auditoria não é bloqueadora */ }
