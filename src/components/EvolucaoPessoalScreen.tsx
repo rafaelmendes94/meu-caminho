@@ -1,6 +1,5 @@
 import { Link } from"react-router-dom";
 import heroImg from"@/assets/trilha/evolucao-hero.jpg";
-import curyImg from"@/assets/trilha/cury.jpg";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const ink900 ="#111111";
@@ -214,21 +213,7 @@ const EvolucaoPessoalScreen = () => {
  </div>
  </section>
 
- {/* CURY REFLECTION */}
- <section className="px-5 mt-3">
- <div className="relative overflow-hidden rounded-[24px] px-3 py-3 flex items-center gap-3"
- style={{ background:"linear-gradient(135deg, #FFF8F3, #F6EFE8)", border:"1px solid rgba(255,255,255,0.9)", boxShadow:"0 4px 22px -12px rgba(248,138,43,0.18)" }}>
- <div className="absolute -top-10 -right-10 w-[160px] h-[160px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.10), transparent 70%)" }}/>
- <img src={curyImg} alt="Augusto Cury" className="relative w-[78px] h-[78px] rounded-2xl object-cover ring-1 ring-white shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)] shrink-0"/>
- <div className="flex-1 min-w-0 relative">
- <Quote c={brand} s={18}/>
- <p style={serif} className="mt-1 text-[13px] leading-[1.4] text-[#111]">
- A maturidade emocional nasce quando aprendemos a cuidar da mente diariamente.
- </p>
- <p className="mt-1 text-[10px] tracking-[0.18em] uppercase" style={{ color: brand }}>— Augusto Cury</p>
- </div>
- </div>
- </section>
+  {/* Reflexão do mentor oculta até haver citação real do CMS. */}
  </div>
 
  {/* Sticky CTAs */}
