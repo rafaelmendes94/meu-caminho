@@ -4,28 +4,7 @@ import { AppUserLayout } from "./layouts/AppUserLayout";
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
 const sans = { fontFamily: "'Inter', system-ui, sans-serif" };
 
-const newBooks = [
-  {
-    t: "O Futuro da Humanidade",
-    a: "Augusto Cury",
-    sub: "Uma reflexão sobre os caminhos da mente moderna",
-    pages: 312,
-    minutes: "5h 40m",
-    c1: "#3A1F12",
-    c2: "#8B4A28",
-    accent: "#F8B05A",
-  },
-  {
-    t: "Pais Brilhantes, Professores Fascinantes",
-    a: "Augusto Cury",
-    sub: "A arte de educar com profundidade emocional",
-    pages: 256,
-    minutes: "4h 20m",
-    c1: "#1F2A3A",
-    c2: "#3D5A7B",
-    accent: "#A8C5F0",
-  },
-];
+const newBooks: { t: string; a: string; sub: string; pages: number; minutes: string; c1: string; c2: string; accent: string }[] = [];
 
 const Icon = {
   Back: () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>),
@@ -92,7 +71,7 @@ export default function MonthlyBooksScreen() {
         {/* hero copy */}
         <div className="fade-up text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 text-[10px] tracking-[0.32em] uppercase" style={{ background: "rgba(248,176,90,0.12)", border: "1px solid rgba(248,176,90,0.3)", color: "#F8B05A" }}>
-            <Icon.Gift /> Maio · Ciclo 02
+            <Icon.Gift /> Liberações do mês
           </div>
           <h1 className="text-[34px] leading-[1.05] mb-4" style={serif}>
             Novos conhecimentos<br/>
@@ -100,12 +79,12 @@ export default function MonthlyBooksScreen() {
             sua jornada.
           </h1>
           <p className="text-[13px] leading-relaxed opacity-65 max-w-[300px] mx-auto">
-            Dois novos livros foram cuidadosamente selecionados para o seu próximo passo de evolução.
+            {newBooks.length > 0 ? "Novos livros selecionados para o seu próximo passo de evolução." : "Aguardando novas liberações."}
           </p>
         </div>
 
         {/* the two books */}
-        <div className="space-y-8 mb-12">
+        {newBooks.length > 0 && (<div className="space-y-8 mb-12">
           {newBooks.map((b, i) => (
             <div key={i} className="fade-up relative" style={{ animationDelay: `${0.2 + i * 0.15}s` }}>
               {/* book card */}
@@ -174,7 +153,7 @@ export default function MonthlyBooksScreen() {
               </div>
             </div>
           ))}
-        </div>
+        </div>)}
 
         {/* emotional message */}
         <div className="fade-up text-center mb-10 px-4" style={{ animationDelay: "0.6s" }}>
@@ -190,7 +169,7 @@ export default function MonthlyBooksScreen() {
           border: "1px dashed rgba(244,231,206,0.12)",
         }}>
           <div className="text-[10px] tracking-[0.3em] uppercase opacity-55 mb-1">Próxima liberação</div>
-          <div className="text-[14px]" style={serif}>Junho · em 28 dias</div>
+          <div className="text-[14px]" style={serif}>Em breve</div>
         </div>
       </div>
 
