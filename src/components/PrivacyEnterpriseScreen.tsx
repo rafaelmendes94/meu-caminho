@@ -3,7 +3,7 @@ import {
   ArrowLeft, ShieldCheck, Check, Lock, Users, BarChart3, Fingerprint, EyeOff, 
   AlertCircle, MessageSquare, Building2, Info, FileText, ExternalLink, ChevronRight
 } from "lucide-react";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { motion } from "framer-motion";
 

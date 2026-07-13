@@ -1,7 +1,7 @@
 import React from "react";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { useAudience, type Audience } from "@/hooks/use-audience";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 
 interface AppMobileHeaderProps {
   /** Force a specific audience; otherwise inferred from the route. */

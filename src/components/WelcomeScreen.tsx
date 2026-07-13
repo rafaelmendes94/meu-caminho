@@ -1,5 +1,5 @@
 import { useNavigate } from"react-router-dom";
-import abstractArt from"@/assets/login-abstract.png";
+import abstractArt from"@/assets/login-abstract.webp";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 
 const SignalIcon = () => (

@@ -1,4 +1,4 @@
-import abstractArt from"@/assets/login-abstract.png";
+import abstractArt from"@/assets/login-abstract.webp";
 
 const PreloaderScreen = () => {
  return (
