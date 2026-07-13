@@ -34,10 +34,7 @@ const suggestions = [
  { label:"Preciso dormir melhor", icon:"🌙" },
 ];
 
-const recents = [
- { title:"Ansiedade e pensamentos acelerados", time:"Hoje · 10:32" },
- { title:"Como desacelerar minha mente", time:"Ontem · 22:15" },
-];
+const recents: { title: string; time: string }[] = [];
 
 const CuryDigitalHomeScreen = () => {
   const al = useAudienceLink();
@@ -143,30 +140,26 @@ const CuryDigitalHomeScreen = () => {
  <section className="px-5 mt-5 grid grid-cols-2 gap-3">
  <div className="bg-white rounded-2xl p-3.5 border border-black/5 shadow-[0_8px_22px_-14px_rgba(0,0,0,0.10)]">
  <p className="text-[10.5px] uppercase tracking-[0.12em]" style={{ color: ink500 }}>Seu estado atual</p>
- <div className="flex items-center gap-1.5 mt-2">
- <Brain s={16}/>
- <p className="text-[12px]" style={{ color: ink900 }}>Mente acelerada</p>
- </div>
- <div className="mt-2 h-1.5 rounded-full bg-[#F1ECE6] overflow-hidden">
- <div className="h-full rounded-full" style={{ width:"62%", background: `linear-gradient(90deg, ${brand}, ${lilac})` }}/>
- </div>
- <p className="mt-2 text-[10.5px] leading-[1.4]" style={{ color: ink600 }}>Clareza emocional em evolução</p>
+  <div className="flex items-center gap-1.5 mt-2">
+  <Brain s={16}/>
+  <p className="text-[12px]" style={{ color: ink900 }}>—</p>
+  </div>
+  <div className="mt-2 h-1.5 rounded-full bg-[#F1ECE6] overflow-hidden">
+  <div className="h-full rounded-full" style={{ width:"0%", background: `linear-gradient(90deg, ${brand}, ${lilac})` }}/>
+  </div>
+  <p className="mt-2 text-[10.5px] leading-[1.4]" style={{ color: ink600 }}>—</p>
  </div>
 
  <div className="rounded-2xl p-3.5 border border-black/5 shadow-[0_8px_22px_-14px_rgba(0,0,0,0.10)] relative overflow-hidden" style={{ background:"linear-gradient(160deg, #FFFFFF 0%, #F6EFE8 100%)" }}>
- <div className="absolute -right-6 -bottom-6 w-[78px] h-[78px] rounded-full overflow-hidden border-2 border-white shadow-[0_4px_10px_-2px_rgba(0,0,0,0.12)]">
- <img src={curyImg} alt="Augusto Cury" className="w-full h-full object-cover"/>
- </div>
  <Quote s={14}/>
- <p className="mt-1.5 text-[11.5px] leading-[1.4] pr-10" style={{ color: ink900, fontStyle:"italic" }}>
-"Pensamentos acelerados silenciam emoções importantes."
+ <p className="mt-1.5 text-[11.5px] leading-[1.4]" style={{ color: ink600 }}>
+ Reflexão do dia disponível em breve.
  </p>
- <p className="mt-1.5 text-[10px]" style={{ color: brand }}>— Augusto Cury</p>
  </div>
  </section>
 
  {/* Histórico recente */}
- <section className="px-5 mt-5">
+ {recents.length > 0 && <section className="px-5 mt-5">
  <div className="flex items-center justify-between mb-2.5">
  <p className="text-[12px]" style={{ color: ink600 }}>Conversas recentes</p>
  <Link to={al("/cury-digital/historico")} className="text-[11px] flex items-center gap-1" style={{ color: brand }}>
@@ -187,7 +180,7 @@ const CuryDigitalHomeScreen = () => {
  </Link>
  ))}
  </div>
- </section>
+ </section>}
 
  <div className="h-6"/>
  </div>
