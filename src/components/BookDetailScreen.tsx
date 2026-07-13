@@ -174,6 +174,9 @@ export default function BookDetailScreen() {
 
           {tab === "capitulos" && (
             <ol className="fade-up space-y-2">
+              {chapters.length === 0 && (
+                <li className="rounded-xl p-6 text-center text-[12px] opacity-60" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>Capítulos ainda não disponíveis.</li>
+              )}
               {chapters.map((c) => (
                 <Link key={c.n} to={c.status === "todo" ? "/biblioteca/bloqueado" : "/biblioteca/leitor"}
                   className="flex items-center gap-4 rounded-xl p-3 transition-all hover:translate-x-1"
@@ -200,6 +203,9 @@ export default function BookDetailScreen() {
 
           {tab === "frases" && (
             <div className="fade-up space-y-3">
+              {quotes.length === 0 && (
+                <div className="rounded-2xl p-6 text-center text-[12px] opacity-60" style={{ background: "rgba(255,253,248,0.7)", border: "1px solid rgba(34,25,18,0.06)" }}>Nenhuma frase destacada ainda.</div>
+              )}
               {quotes.map((q, i) => (
                 <div key={i} className="rounded-2xl p-5" style={{ background: "linear-gradient(160deg, #FFFDF8, #F4ECDF)", border: "1px solid rgba(194,138,62,0.18)" }}>
                   <Quote size={14} style={{ color: "#9A6B2C" }} className="opacity-60 mb-3" />
