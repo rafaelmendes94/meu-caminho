@@ -99,7 +99,7 @@ const VideoCard = ({ v, isActive }: { v: Vid; isActive: boolean }) => {
           </div>
           <div className="leading-tight">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-white">Augusto Cury</span>
+              <span className="text-sm font-bold text-white">{v.creatorRole || "Criador"}</span>
               <Verified />
             </div>
             <span className="text-[10px] text-white/70 font-medium tracking-wider uppercase">{v.source} · {v.duration}</span>
