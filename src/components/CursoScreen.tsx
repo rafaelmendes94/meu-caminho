@@ -44,10 +44,11 @@ const ClockBig = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="non
 const Lotus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={sage} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c0-3 1.5-5 3-6 .5 2 0 5-3 6z"/><path d="M12 12c0-3-1.5-5-3-6-.5 2 0 5 3 6z"/><path d="M12 12c-2 0-4 1-5 3 2 .5 4 0 5-3z"/><path d="M12 12c2 0 4 1 5 3-2 .5-4 0-5-3z"/><path d="M12 12c0 2-1 4-3 5-.5-2 0-4 3-5z"/><path d="M12 12c0 2 1 4 3 5 .5-2 0-4-3-5z"/></svg>;
 
 type Mod = { n: number; title: string; desc: string; min: string; status:"done" |"current" |"locked"; img: string };
+// Módulos reais serão carregados via CMS (course_modules) — sem mocks.
 const modulos: Mod[] = [
- { n: 1, title:"Entendendo sua mente", desc:"Como os pensamentos moldam emoções e comportamentos.", min:"18 min", status:"done", img: mod1 },
- { n: 2, title:"Pensamentos acelerados", desc:"Aprenda a desacelerar sua mente e recuperar clareza.", min:"22 min", status:"current", img: mod2 },
- { n: 3, title:"Gestão da emoção", desc:"Ferramentas práticas para lidar com ansiedade emocional.", min:"20 min", status:"locked", img: mod3 },
+ { n: 1, title:"Módulo 1", desc:"—", min:"—", status:"locked", img: mod1 },
+ { n: 2, title:"Módulo 2", desc:"—", min:"—", status:"locked", img: mod2 },
+ { n: 3, title:"Módulo 3", desc:"—", min:"—", status:"locked", img: mod3 },
 ];
 
 const ProgressRing = ({ pct = 35 }: { pct?: number }) => {
