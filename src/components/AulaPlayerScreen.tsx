@@ -85,9 +85,10 @@ const sheetData: Record<Exclude<SheetKind, null>, { title: string; options: stri
 const AulaPlayerScreen = () => {
   const al = useAudienceLink();
  const navigate = useNavigate();
- const current = 272; // 04:32
- const total = 1320; // 22:00
- const pct = (current / total) * 100;
+  // No lesson player wired yet — do not fake progress.
+  const current = 0;
+  const total = 0;
+  const pct = 0;
 
  const [favorited, setFavorited] = useState(false);
  const [sheet, setSheet] = useState<SheetKind>(null);
@@ -133,34 +134,21 @@ const AulaPlayerScreen = () => {
 
   {/* Play */}
   <button
-    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 lg:w-24 lg:h-24 rounded-full flex items-center justify-center bg-white/95 backdrop-blur-md transition-all duration-300 group-hover:scale-110 active:scale-95 group-hover:shadow-[0_0_50px_rgba(255,255,255,0.4)]"
+    disabled
+    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 lg:w-24 lg:h-24 rounded-full flex items-center justify-center bg-white/90 backdrop-blur-md opacity-70 cursor-not-allowed"
     style={{
       boxShadow: "0 12px 32px rgba(0,0,0,0.25), 0 0 0 6px rgba(255,255,255,0.2)",
     }}
-    aria-label="Play"
+    aria-label="Player em produção"
+    title="Player em produção — vídeo será liberado em breve"
   >
     <PlayFill s={isEnterprise ? 40 : 28} />
   </button>
-
-  {/* timeline */}
-  <div className="absolute left-0 right-0 bottom-0 px-4 pb-4 pt-10 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-    <div className="flex items-center gap-4 text-white text-[12px] font-bold">
-      <span className="tabular-nums" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>04:32</span>
-      <div className="flex-1 relative h-1.5 lg:h-2 rounded-full cursor-pointer group/progress" style={{ background: "rgba(255,255,255,0.2)" }}>
-        <div className="absolute left-0 top-0 h-full rounded-full transition-all" style={{ width: `${pct}%`, background: brand, boxShadow: "0 0 12px rgba(248,138,43,0.6)" }} />
-        <div className="absolute -top-1 w-3.5 h-3.5 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-lg" style={{ left: `calc(${pct}% - 7px)` }} />
-      </div>
-      <span className="tabular-nums" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>22:00</span>
-      <div className="flex items-center gap-2">
-        <button aria-label="Configurações" className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2 2 2 0 0 1-2 2 2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2 2 2 0 0 1 2 2 2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 0 2-2V7.78a2 2 0 0 0-2-2 2 2 0 0 1-2-2 2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-        <button aria-label="Tela cheia" className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors">
-          <FullIcon />
-        </button>
-      </div>
-    </div>
+  <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-black/60 backdrop-blur text-white">
+    Prévia
   </div>
+
+  {/* timeline oculta enquanto não há vídeo real conectado */}
  </div>
  </section>
 
@@ -177,10 +165,8 @@ const AulaPlayerScreen = () => {
         <div className="flex items-center gap-3 text-[13px] font-medium">
           <div className="flex items-center gap-1.5 text-[#666]">
             <Clock c={ink500} />
-            <span>22 min</span>
+            <span>Duração a definir</span>
           </div>
-          <span className="h-1 w-1 rounded-full bg-[#D8CFC4]" />
-          <span className="font-bold text-[#F88A2B]">Aula em progresso</span>
         </div>
       </div>
       
@@ -322,63 +308,7 @@ const AulaPlayerScreen = () => {
  </div>
  </section>
 
-  {/* PROGRESS CARD */}
-  <section className={`px-5 mt-4 ${isEnterprise ? 'lg:max-w-4xl lg:mx-auto' : ''}`}>
- <div
- className="rounded-[20px] bg-white p-4"
- style={{ boxShadow:"0 4px 16px rgba(17,17,17,0.04), inset 0 0 0 1px rgba(17,17,17,0.05)" }}
- >
- <div className="flex items-center justify-between">
- <h4 className="text-[14px] text-[#111]" style={{ ...serif, fontWeight: 600 }}>Seu progresso nesta aula</h4>
- <span className="text-[11px] font-bold" style={{ color: brand }}>20% concluído</span>
- </div>
- <div className="mt-3 relative h-[5px] rounded-full" style={{ background:"#F0EAE3" }}>
- <div className="absolute left-0 top-0 h-full rounded-full" style={{ width:"20%", background:"linear-gradient(90deg, #FFB778 0%, #F88A2B 100%)", boxShadow:"0 0 10px rgba(248,138,43,0.4)" }} />
- <div className="absolute -top-[3px] w-[11px] h-[11px] rounded-full bg-white" style={{ left:"calc(20% - 5.5px)", boxShadow:"0 1px 4px rgba(248,138,43,0.5), 0 0 0 1.5px #F88A2B" }} />
- </div>
- <div className="mt-2 flex items-center justify-between text-[10.5px] tabular-nums" style={{ color: ink500 }}>
- <span>04:32</span>
- <span>22:00</span>
- </div>
- </div>
- </section>
-
-  {/* A SEGUIR */}
-  <section className={`px-5 mt-8 ${isEnterprise ? 'lg:max-w-4xl lg:mx-auto' : ''}`}>
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-[20px] lg:text-[24px] text-[#111]" style={{ ...serif, fontWeight: 600 }}>Próxima aula</h3>
-      <Link to={al("/jornada")} className="text-[12px] font-bold text-[#F88A2B] uppercase tracking-wider hover:underline">Ver todas</Link>
-    </div>
-    
-    <button
-      type="button"
-      onClick={() => navigate(al("/aula?next=respiracao"))}
-      className="w-full flex items-stretch text-left bg-white rounded-[24px] overflow-hidden hover:shadow-xl hover:shadow-black/5 transition-all group/next border border-black/5"
-    >
-      <div className="relative w-[140px] lg:w-[220px] shrink-0 overflow-hidden">
-        <img src={nextImg} alt="" loading="lazy" width={512} height={512} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/next:scale-110" />
-        <div className="absolute inset-0 bg-black/20 group-hover/next:bg-black/10 transition-colors" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center bg-white/90 backdrop-blur-sm shadow-lg transition-transform group-hover/next:scale-110">
-            <PlayFill s={16} c="#111" />
-          </span>
-        </div>
-        <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-white text-[10px] font-bold">
-          18:00
-        </div>
-      </div>
-      <div className="flex-1 min-w-0 p-4 lg:p-6 flex flex-col justify-center">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: "#9B8AC9" }}>Módulo 2</p>
-        <h4 className="text-[16px] lg:text-[20px] text-[#111] leading-tight mb-2" style={{ ...serif, fontWeight: 600 }}>Respiração e clareza mental</h4>
-        <p className="text-[13px] lg:text-[14px] leading-relaxed text-[#666] line-clamp-2">Técnicas práticas para acalmar a mente e recuperar o foco de forma simples e eficiente.</p>
-      </div>
-      <div className="hidden sm:flex self-center pr-6 items-center">
-        <div className="w-10 h-10 rounded-full border border-black/5 flex items-center justify-center text-[#999] group-hover/next:border-[#F88A2B] group-hover/next:text-[#F88A2B] transition-colors">
-          <ChevR s={18} />
-        </div>
-      </div>
-    </button>
-  </section>
+   {/* Progresso e "Próxima aula" ocultos até haver player real conectado (evita métricas fake). */}
  </div>
 
   {/* Quick action sheet - MOBILE ONLY */}
