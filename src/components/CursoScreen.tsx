@@ -160,8 +160,9 @@ const CursoScreen = () => {
   const courseDesc = course?.short_description || "Aprenda a governar pensamentos, emoções e reações de forma consciente.";
   const courseLongDesc = course?.long_description || course?.short_description || "Uma jornada desenvolvida para fortalecer sua mente, desacelerar pensamentos acelerados e construir inteligência emocional no dia a dia.";
 
+  const hasCms = dbModules.length > 0;
   const displayModules: Mod[] = useMemo(() => {
-    if (!dbModules.length) return modulos;
+    if (!hasCms) return [];
     return dbModules.map((m, i) => {
       const totalMin = m.lessons.reduce((a, l) => a + (l.duration_minutes || 0), 0);
       return {
@@ -169,11 +170,32 @@ const CursoScreen = () => {
         title: m.title,
         desc: m.description || "",
         min: totalMin ? `${totalMin} min` : `${m.lessons.length} aulas`,
+        // No progress tracking yet — first module is the entry point.
         status: (i === 0 ? "current" : "locked") as Mod["status"],
         img: modImgs[i % modImgs.length],
       };
     });
-  }, [dbModules]);
+  }, [dbModules, hasCms]);
+
+  const totalLessons = useMemo(
+    () => dbModules.reduce((a, m) => a + m.lessons.length, 0),
+    [dbModules]
+  );
+  const totalMinutes = useMemo(
+    () => dbModules.reduce(
+      (a, m) => a + m.lessons.reduce((s, l) => s + (l.duration_minutes || 0), 0),
+      0
+    ),
+    [dbModules]
+  );
+  const formatDuration = (min: number) => {
+    if (!min) return "";
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return h ? `${h}h${m ? ` ${m}min` : ""}` : `${m}min`;
+  };
+  // Progress tracking not implemented yet — always 0%.
+  const progressPct = 0;
 
   const Layout = isEnterprise ? EnterpriseUserLayout : (({ children }: { children: React.ReactNode }) => <AppUserLayout>{children}</AppUserLayout>);
 
@@ -241,7 +263,7 @@ const CursoScreen = () => {
  </section>
 
  {/* Stats card — Apple wellness */}
- <section className="px-5 mt-5 relative">
+ {hasCms && <section className="px-5 mt-5 relative">
  <div
  className="rounded-[22px] p-3.5"
  style={{
@@ -251,35 +273,28 @@ const CursoScreen = () => {
  boxShadow:"0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 24px -16px rgba(17,17,17,0.10), 0 0 0 1px rgba(17,17,17,0.05)",
  }}
  >
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+ <div className="grid grid-cols-3 gap-4">
  <div className="flex flex-col items-center text-center">
- <ProgressRing pct={35} />
+ <ProgressRing pct={progressPct} />
  <p className="mt-2 text-[10px]" style={{ color: ink500 }}>concluído</p>
  </div>
  <div className="flex flex-col items-center text-center">
  <span className="w-[42px] h-[42px] rounded-full flex items-center justify-center" style={{ background:"#FFEFD9" }}>
  <PlayIco/>
  </span>
- <p className="mt-2 text-[12px] font-bold text-[#111]">8 aulas</p>
+ <p className="mt-2 text-[12px] font-bold text-[#111]">{totalLessons} {totalLessons === 1 ? "aula" : "aulas"}</p>
  <p className="text-[9.5px] -mt-0.5" style={{ color: ink500 }}>no total</p>
  </div>
  <div className="flex flex-col items-center text-center">
  <span className="w-[42px] h-[42px] rounded-full flex items-center justify-center" style={{ background:"#ECE6F4" }}>
  <ClockBig/>
  </span>
- <p className="mt-2 text-[12px] font-bold text-[#111]">~2h30m</p>
+ <p className="mt-2 text-[12px] font-bold text-[#111]">{totalMinutes ? formatDuration(totalMinutes) : "—"}</p>
  <p className="text-[9.5px] -mt-0.5" style={{ color: ink500 }}>de conteúdo</p>
  </div>
- <div className="flex flex-col items-center text-center">
- <span className="w-[42px] h-[42px] rounded-full flex items-center justify-center" style={{ background:"#E8EFE2" }}>
- <Lotus/>
- </span>
- <p className="mt-2 text-[12px] font-bold text-[#111]">Nível 3</p>
- <p className="text-[9.5px] -mt-0.5" style={{ color: ink500 }}>emocional</p>
  </div>
  </div>
- </div>
- </section>
+ </section>}
 
  {/* Description + sprig */}
  <section className="px-6 mt-5 relative">
@@ -297,7 +312,7 @@ const CursoScreen = () => {
  </section>
 
  {/* CTA */}
- <section className="px-5 mt-5">
+ {hasCms && <section className="px-5 mt-5">
  <Link
  to={al("/aula")}
  className="w-full lg:w-fit lg:px-12 h-14 rounded-full flex items-center justify-center gap-2.5 text-white text-[15px] font-bold active:scale-[0.98] transition shadow-lg shadow-[#F88A2B]/20"
@@ -306,25 +321,34 @@ const CursoScreen = () => {
  }}
  >
  <PlayCircle size={20} />
- <span>Continuar curso</span>
+ <span>{progressPct > 0 ? "Continuar curso" : "Iniciar curso"}</span>
  </Link>
- </section>
+ </section>}
 
  {/* Modules */}
  <section className="px-5 mt-7">
  <div className="flex items-end justify-between mb-3">
  <h3 className="text-[18px] text-[#111]" style={{ ...serif, fontWeight: 600 }}>Módulos</h3>
+ {hasCms && (
  <Link to={al("/modulos")} className="flex items-center gap-1 text-[11.5px] font-semibold active:scale-95 transition" style={{ color: brand }}>
  Ver todos <ChevR s={11}/>
  </Link>
+ )}
  </div>
+ {hasCms ? (
   <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 gap-2.5">
   {displayModules.map((m) => <ModCard key={m.n} m={m} />)}
   </div>
+ ) : (
+  <div className="rounded-[20px] bg-white/70 border border-black/5 p-6 text-center">
+   <p className="text-[13px] text-[#666]">Este curso ainda não possui módulos publicados.</p>
+   <p className="text-[11px] text-[#999] mt-1">Assim que a organização publicar o conteúdo, ele aparecerá aqui.</p>
+  </div>
+ )}
  </section>
 
  {/* Prova Final — clickable but visually pending */}
- <section className="px-5 mt-5">
+ {hasCms && <section className="px-5 mt-5">
  <Link
  to={al("/prova-final")}
  className="block w-full rounded-[22px] p-4 relative overflow-hidden active:scale-[0.99] transition"
@@ -355,12 +379,12 @@ const CursoScreen = () => {
  </div>
  <div className="mt-3 flex items-center gap-2">
  <div className="flex-1 h-1.5 rounded-full bg-[#F1ECE6] overflow-hidden">
- <div className="h-full rounded-full" style={{ width:"35%", background:"linear-gradient(90deg, #F88A2B 0%, #FFB778 100%)" }}/>
+ <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background:"linear-gradient(90deg, #F88A2B 0%, #FFB778 100%)" }}/>
  </div>
- <span className="text-[10px] font-semibold" style={{ color: brand }}>3/8 aulas</span>
+ <span className="text-[10px] font-semibold" style={{ color: brand }}>0/{totalLessons} aulas</span>
  </div>
  </Link>
- </section>
+ </section>}
  <section className="mt-10 mb-2 max-w-4xl mx-auto">
  <div
  className="relative rounded-[32px] bg-white p-8 lg:p-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 overflow-hidden"
