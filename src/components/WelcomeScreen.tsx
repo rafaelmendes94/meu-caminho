@@ -150,7 +150,7 @@ const WelcomeScreen = () => {
  <div className="mt-1.5 flex items-center gap-2">
  <span className="h-px w-6 bg-[#F88A2B]/50" />
  <p className="text-[9.5px] tracking-[0.32em] uppercase text-[#F88A2B] font-semibold">
- Augusto Cury
+ Saúde emocional
  </p>
  <span className="h-px w-6 bg-[#F88A2B]/50" />
  </div>

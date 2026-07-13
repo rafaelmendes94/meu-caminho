@@ -50,7 +50,7 @@ const SubscriptionScreen = () => {
                 <span className="text-orange-500">Premium & Ilimitada.</span>
               </h1>
               <p className="text-base text-[#666] leading-relaxed max-w-xl">
-                Sua empresa disponibilizou o acesso completo ao ecossistema do Dr. Augusto Cury. Aproveite todos os recursos de saúde emocional sem custos adicionais.
+                Sua empresa disponibilizou o acesso completo ao ecossistema Meu Caminho. Aproveite todos os recursos de saúde emocional sem custos adicionais.
               </p>
               
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">

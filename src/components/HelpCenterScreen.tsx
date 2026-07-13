@@ -31,7 +31,7 @@ const faqs = [
   { 
     category: "Clube do Livro",
     q: "Quais os benefícios do Clube do Livro?", 
-    a: "Você tem acesso ilimitado à biblioteca digital do Dr. Augusto Cury, incluindo lançamentos exclusivos, leituras guiadas pela IA e ferramentas de marcação inteligente para estudos." 
+    a: "Você tem acesso ilimitado à biblioteca digital do clube, incluindo lançamentos exclusivos, leituras guiadas pela IA e ferramentas de marcação inteligente para estudos." 
   },
   { 
     category: "Conta",

@@ -100,7 +100,7 @@ const PreloaderScreen = () => {
  >
  <span className="h-px w-6 bg-[#F88A2B]/60" />
  <p className="text-[12px] tracking-[0.32em] uppercase text-[#444] font-medium">
- Augusto Cury
+ Saúde emocional
  </p>
  <span className="h-px w-6 bg-[#F88A2B]/60" />
  </div>

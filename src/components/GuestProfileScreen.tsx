@@ -15,21 +15,11 @@ const ArrowR = ({ s = 14 }: { s?: number }) => (<svg width={s} height={s} viewBo
 const Quote = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h4v4H8c0 2 1 3 3 3v3c-3 0-5-2-5-5V7zm9 0h4v4h-3c0 2 1 3 3 3v3c-3 0-5-2-5-5V7z"/></svg>);
 const Spark = ({ size = 12 }: { size?: number }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6L12 2z"/></svg>);
 
-const PODCASTS = [
- { id:"p1", title:"O que separa quem faz de quem só sonha", duration:"42 min", img:"https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600&q=70&auto=format&fit=crop", to:"/player/podcast" },
- { id:"p2", title:"Disciplina é a nova liberdade", duration:"38 min", img:"https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=70&auto=format&fit=crop", to:"/player/podcast" },
- { id:"p3", title:"Treinar a mente como atleta de elite", duration:"51 min", img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70&auto=format&fit=crop", to:"/player/podcast" },
-];
-
-const VIDEOS = [
- { id:"v1", title:"5h da manhã: o ritual que mudou tudo", duration:"6 min", img:"https://images.unsplash.com/photo-1499346030926-9a72daac6c63?w=600&q=70&auto=format&fit=crop", to:"/conteudo/video" },
- { id:"v2", title:"A coragem de quem começa de novo", duration:"4 min", img:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=70&auto=format&fit=crop", to:"/conteudo/video" },
-];
-
-const REFLECTIONS = [
- { id:"r1", text:"Não existe motivação sem direção. Encontre seu porquê antes de buscar como.", t:"linear-gradient(135deg,#FFE3C7,#F8C892)" },
- { id:"r2", text:"Você não precisa ser o mais talentoso. Precisa ser o mais consistente.", t:"linear-gradient(135deg,#F4E3D7,#E9C9B0)" },
-];
+// Conteúdos reais de convidados dependem de integração com content_items filtrados
+// por autor convidado (content_authors) — em construção.
+const PODCASTS: { id: string; title: string; duration: string; img: string; to: string }[] = [];
+const VIDEOS: { id: string; title: string; duration: string; img: string; to: string }[] = [];
+const REFLECTIONS: { id: string; text: string; t: string }[] = [];
 
 export default function GuestProfileScreen() {
   const al = useAudienceLink();
@@ -54,15 +44,9 @@ export default function GuestProfileScreen() {
  background:"radial-gradient(120% 70% at 0% 0%, #FFF8F3 0%, #F7F1EA 45%, #EFE6DC 100%)",
  }}
  >
- {/* HERO cinematográfico */}
- <div className="relative w-full h-[480px] overflow-hidden">
- <img
- src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&q=80&auto=format&fit=crop"
- alt=""
- className="absolute inset-0 w-full h-full object-cover ken"
- />
- {/* layered gradient */}
- <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(15,8,2,0.55) 0%, rgba(15,8,2,0.0) 30%, rgba(15,8,2,0.4) 60%, rgba(239,230,220,1) 100%)" }} />
+ {/* HERO editorial */}
+ <div className="relative w-full h-[300px] overflow-hidden" style={{ background:"linear-gradient(160deg,#2E2218 0%,#1A130C 100%)" }}>
+ <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(15,8,2,0.0) 0%, rgba(15,8,2,0.4) 60%, rgba(239,230,220,1) 100%)" }} />
  <div className="absolute inset-0" style={{ background:"radial-gradient(80% 60% at 80% 100%, rgba(248,138,43,0.30), transparent 60%)" }} />
  {/* glow */}
  <div className="absolute -bottom-16 -left-10 w-[280px] h-[280px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.45), transparent 70%)", filter:"blur(20px)", animation:"pulse-soft 8s ease-in-out infinite" }} />
@@ -78,82 +62,25 @@ export default function GuestProfileScreen() {
  {/* hero copy */}
  <div className="absolute bottom-0 left-0 right-0 px-6 pb-7 z-20 text-white">
  <p className="text-[10px] uppercase tracking-[0.28em] text-white/75">Convidado especial</p>
- <h1 style={serif} className="mt-2 text-[40px] leading-[0.95]">
- Joel <span className="italic" style={{ color:"#FFD7B0" }}>Jota</span>
+ <h1 className="mt-2 text-[32px] leading-[1] italic" style={{ ...serif, color:"#FFD7B0" }}>
+ Em breve
  </h1>
  <div className="mt-2 flex items-center gap-2 text-white/85 text-[12px]">
- <span>Mentor de alta performance</span>
- <Verified />
+ <span>Perfis de convidados em construção</span>
  </div>
  </div>
  </div>
 
- {/* Action bar */}
- <div className="relative z-20 -mt-6 mx-5 mb-4 fade-up">
- <div className="rounded-2xl bg-white/95 backdrop-blur border border-white/80 px-4 py-3 shadow-[0_14px_32px_rgba(0,0,0,0.10)] flex items-center gap-3">
- <div className="flex-1 grid grid-cols-3 gap-2 text-center">
- {[
- { n:"24", l:"conteúdos" },
- { n:"8", l:"podcasts" },
- { n:"412k", l:"ouvintes" },
- ].map((s, i) => (
- <div key={s.l} className={`${i < 2 ?"border-r border-[#EADFD2]" :""}`}>
- <div style={serif} className="text-[18px] text-[#1F1A16]">{s.n}</div>
- <div className="text-[9.5px] uppercase tracking-[0.18em] text-[#8A7868] mt-0.5">{s.l}</div>
- </div>
- ))}
- </div>
- </div>
- <div className="mt-3 flex gap-2">
- <button className="flex-1 h-12 rounded-full text-white text-[12.5px] font-semibold flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(248,138,43,0.38)]" style={{ background:"linear-gradient(135deg,#FFA158,#F88A2B)" }}>
- <Play s={13}/> Ouvir agora
- </button>
- <button className="h-12 px-5 rounded-full bg-white border border-[#EADFD2] text-[#1F1A16] text-[12.5px] font-semibold">Seguir</button>
- </div>
- </div>
-
- {/* Bio emocional */}
- <div className="relative z-20 px-6 pb-6 fade-up">
- <p className="text-[10px] uppercase tracking-[0.28em] text-[#F88A2B] font-semibold">Sobre</p>
- <p style={serif} className="mt-3 text-[22px] leading-[1.2] text-[#1F1A16] italic">
- “Foco, fé e fome de evolução. Acredito que a mente bem treinada é a maior vantagem que existe.”
+ {/* Bio */}
+ <div className="relative z-20 px-6 pb-6 pt-4 fade-up">
+ <p className="text-[13px] text-[#5C4E42] leading-[1.7]">
+ Perfis de convidados e curadoria de conteúdos externos serão exibidos aqui assim que a curadoria estiver disponível.
  </p>
- <p className="mt-4 text-[13px] text-[#5C4E42] leading-[1.7]">
- Joel Jota é mentor de alta performance e formou atletas olímpicos, executivos e empreendedores. Aqui no <em>Meu Caminho</em>, divide reflexões sobre disciplina, propósito e a coragem de viver com intensidade.
- </p>
- <button className="mt-3 text-[11.5px] text-[#F88A2B] font-semibold flex items-center gap-1">Ler biografia completa <ArrowR s={12}/></button>
- </div>
-
- {/* divider editorial */}
- <div className="relative z-20 px-6 pb-6">
- <div className="flex items-center gap-3">
- <div className="h-px flex-1 bg-[#E2D5C3]"/>
- <Spark size={12}/>
- <div className="h-px flex-1 bg-[#E2D5C3]"/>
- </div>
- </div>
-
- {/* Featured episode */}
- <div className="relative z-20 px-5 pb-5 fade-up">
- <p className="text-[10px] uppercase tracking-[0.28em] text-[#F88A2B] font-semibold mb-2.5">Em destaque</p>
- <Link to={al("/player/podcast")} className="block relative rounded-[24px] overflow-hidden shadow-[0_18px_40px_rgba(0,0,0,0.18)] group">
- <div className="relative h-[200px]">
- <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=900&q=75&auto=format&fit=crop" alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" />
- <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, transparent 30%, rgba(15,8,2,0.92))" }} />
- <div className="absolute -bottom-10 -left-10 w-[200px] h-[200px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.40), transparent 70%)", filter:"blur(18px)" }} />
- <span className="absolute top-4 left-4 text-[9.5px] uppercase tracking-[0.22em] px-2.5 py-1 rounded-full bg-white/15 backdrop-blur text-white border border-white/25">Podcast · 42 min</span>
- <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
- <h3 style={serif} className="text-[22px] leading-[1.1]">A conversa que todo jovem precisa ouvir</h3>
- <div className="mt-3 flex items-center gap-3">
- <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-[#1F1A16] shadow-[0_8px_20px_rgba(0,0,0,0.35)]"><Play s={16}/></div>
- <div className="text-[11px] text-white/80">Joel Jota & Augusto Cury</div>
- </div>
- </div>
- </div>
- </Link>
  </div>
 
  {/* Podcasts */}
+ {PODCASTS.length > 0 && (
+ <>
  <div className="relative z-20 px-5 pb-2 flex items-center justify-between">
  <h2 style={serif} className="text-[18px]">Podcasts</h2>
  <button className="text-[11px] uppercase tracking-[0.18em] text-[#F88A2B]">Ver todos</button>
@@ -175,8 +102,12 @@ export default function GuestProfileScreen() {
  ))}
  </div>
  </div>
+ </>
+ )}
 
  {/* Videos */}
+ {VIDEOS.length > 0 && (
+ <>
  <div className="relative z-20 px-5 pb-2 flex items-center justify-between">
  <h2 style={serif} className="text-[18px]">Vídeos</h2>
  <button className="text-[11px] uppercase tracking-[0.18em] text-[#F88A2B]">Ver todos</button>
@@ -198,8 +129,12 @@ export default function GuestProfileScreen() {
  </Link>
  ))}
  </div>
+ </>
+ )}
 
  {/* Reflexões */}
+ {REFLECTIONS.length > 0 && (
+ <>
  <div className="relative z-20 px-5 pb-2">
  <h2 style={serif} className="text-[18px]">Reflexões</h2>
  </div>
@@ -208,24 +143,18 @@ export default function GuestProfileScreen() {
  <div key={r.id} className="fade-up rounded-2xl p-5 border border-[#EFE3D5] shadow-[0_8px_22px_rgba(0,0,0,0.06)]" style={{ background: r.t, animationDelay: `${i * 60}ms` }}>
  <div className="w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-[#F88A2B] mb-2"><Quote/></div>
  <p style={serif} className="text-[18px] leading-[1.35] text-[#3A2E24] italic">“{r.text}”</p>
- <p className="mt-3 text-[11px] text-[#5C4E42]/80">— Joel Jota</p>
  </div>
  ))}
  </div>
-
- {/* Editorial closing */}
+ </>
+ )}
+ {(PODCASTS.length + VIDEOS.length + REFLECTIONS.length) === 0 && (
  <div className="relative z-20 px-5 pb-32 fade-up">
- <div className="rounded-[24px] p-6 text-white relative overflow-hidden" style={{ background:"linear-gradient(135deg,#2E2218,#1A130C)" }}>
- <div className="absolute -top-12 -right-10 w-[200px] h-[200px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.35), transparent 70%)", filter:"blur(20px)" }} />
- <p className="text-[10px] uppercase tracking-[0.28em] text-[#F8B07A]">Próximo encontro</p>
- <p style={serif} className="mt-3 text-[22px] leading-[1.2]">
- Joel Jota e Augusto Cury, em <span className="italic" style={{ color:"#FFD7B0" }}>conversa inédita</span>.
- </p>
- <button className="mt-5 h-11 px-6 rounded-full bg-white text-[#1F1A16] text-[12.5px] font-semibold inline-flex items-center gap-2">
- Ativar lembrete <ArrowR s={13}/>
- </button>
+ <div className="rounded-[24px] p-6 text-[#5C4E42] border border-[#EFE3D5] bg-white/70 text-center text-[13px]">
+ Nenhum conteúdo de convidado disponível no momento.
  </div>
  </div>
+ )}
 
  {/* Bottom nav */}
  <div className="absolute bottom-0 left-0 right-0 z-30">

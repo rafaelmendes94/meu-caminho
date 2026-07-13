@@ -172,7 +172,7 @@ const modules = [
  },
  {
  label:"Clube do Livro",
- desc:"A biblioteca dos livros do Dr. Augusto Cury, liberada mês a mês.",
+ desc:"A biblioteca do clube, liberada mês a mês.",
  Icon: BookIcon,
  to:"/biblioteca",
  iconBg:"#E3ECDD",
@@ -572,7 +572,7 @@ const HomeScreen = () => {
  <div className="relative mt-3 flex items-center gap-2">
  <span className="w-5 h-px bg-[#F88A2B]" />
  <span className="text-[11.5px] font-semibold" style={{ color: brand }}>
- Augusto Cury
+ Reflexão do dia
  </span>
  </div>
  </div>
