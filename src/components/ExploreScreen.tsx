@@ -22,15 +22,9 @@ const Close = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
 const FILTERS = ["Todos","Áudios","Vídeos","Leituras","Podcasts","Reflexões"] as const;
 type Filter = typeof FILTERS[number];
 
-const TRENDING = [
- { tag:"Ansiedade noturna", count:"+32%" },
- { tag:"Reconstruir confiança", count:"+18%" },
- { tag:"Sono profundo", count:"+12%" },
- { tag:"Filhos e diálogo", count:"+9%" },
- { tag:"Pressão no trabalho", count:"+24%" },
-];
-
-const RECENTS = ["paz interior","augusto cury sono","perdoar","ansiedade no peito"];
+// Tendências e buscas recentes reais dependem de agregação de eventos de busca — em breve.
+const TRENDING: { tag: string; count: string }[] = [];
+const RECENTS: string[] = [];
 
 const QUICK = [
  { label:"Calma", emoji:"🌿", g:"linear-gradient(135deg,#D9EAD9,#A8C8A4)" },
