@@ -62,6 +62,38 @@ async function loadPublishedConfig(admin: any): Promise<any | null> {
   }
 }
 
+// Sem cache — sempre lê a última versão (draft ou published) para o modo de teste.
+async function loadConfigForTest(admin: any, source: "draft" | "published"): Promise<any | null> {
+  try {
+    const { data } = await admin
+      .from("ai_prompt_configs")
+      .select("system_instructions, tone_config, output_structure, model_config, status, version")
+      .eq("key", "executive_council")
+      .maybeSingle();
+    if (!data) return null;
+    // 'draft' testa exatamente o que está salvo (independente do status atual).
+    // 'published' só retorna se realmente estiver publicada.
+    if (source === "published" && data.status !== "published") return null;
+    return data;
+  } catch (_e) {
+    return null;
+  }
+}
+
+// Custo estimado (USD por 1M tokens) — apenas indicativo para o painel de testes.
+const MODEL_PRICING: Record<string, { in: number; out: number }> = {
+  "google/gemini-2.5-pro": { in: 1.25, out: 10 },
+  "google/gemini-2.5-flash": { in: 0.3, out: 2.5 },
+  "google/gemini-2.5-flash-lite": { in: 0.1, out: 0.4 },
+  "openai/gpt-5.5": { in: 5, out: 15 },
+};
+
+function estimateCostUsd(model: string, tokensIn: number, tokensOut: number): number {
+  const p = MODEL_PRICING[model];
+  if (!p) return 0;
+  return (tokensIn * p.in + tokensOut * p.out) / 1_000_000;
+}
+
 function buildSystemPrompt(cfg: any | null): string {
   if (!cfg || !cfg.system_instructions) return FALLBACK_SYSTEM_PROMPT;
   const tone = cfg.tone_config ?? {};
