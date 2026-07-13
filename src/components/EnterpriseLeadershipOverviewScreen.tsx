@@ -16,55 +16,16 @@ export default function EnterpriseLeadershipOverviewScreen() {
   const navigate = useNavigate();
 
   const kpis = [
-    { label: "Maturidade emocional", value: "74", icon: Brain },
-    { label: "Adesão da empresa", value: "87%", icon: Users },
-    { label: "Redução de sobrecarga", value: "-18%", icon: Zap },
-    { label: "Clareza coletiva", value: "+12%", icon: Target },
+    { label: "Maturidade emocional", value: "—", icon: Brain },
+    { label: "Adesão da empresa", value: "—", icon: Users },
+    { label: "Redução de sobrecarga", value: "—", icon: Zap },
+    { label: "Clareza coletiva", value: "—", icon: Target },
   ];
 
-  const impacts = [
-    {
-      title: "Maior retenção emocional",
-      text: "Grupos com maior equilíbrio apresentam menor desgaste silencioso.",
-      icon: Heart
-    },
-    {
-      title: "Melhora de clareza",
-      text: "Times emocionalmente organizados tendem a tomar decisões com menos ruído.",
-      icon: Sparkles
-    },
-    {
-      title: "Redução de fadiga coletiva",
-      text: "A jornada emocional demonstra impacto gradual na recuperação mental.",
-      icon: Zap
-    },
-    {
-      title: "Fortalecimento cultural",
-      text: "O cuidado emocional começa a se tornar comportamento organizacional.",
-      icon: ShieldCheck
-    }
-  ];
-
-  const attentionAreas = [
-    { area: "Operações", label: "pressão contínua" },
-    { area: "Atendimento", label: "oscilação emocional" },
-    { area: "Tecnologia", label: "recuperação gradual" }
-  ];
-
-  const evolutionSteps = [
-    "Escuta coletiva",
-    "Compreensão emocional",
-    "Ação preventiva",
-    "Redução de desgaste",
-    "Cultura mais sustentável"
-  ];
-
-  const indicators = [
-    { label: "Equilíbrio coletivo", percentage: 78 },
-    { label: "Clareza emocional", percentage: 65 },
-    { label: "Energia sustentável", percentage: 82 },
-    { label: "Recuperação mental", percentage: 71 }
-  ];
+  const impacts: { title: string; text: string; icon: typeof Heart }[] = [];
+  const attentionAreas: { area: string; label: string }[] = [];
+  const evolutionSteps: string[] = [];
+  const indicators: { label: string; percentage: number }[] = [];
 
   return (
     <EnterpriseRHLayout title="Visão da liderança">
@@ -109,8 +70,8 @@ export default function EnterpriseLeadershipOverviewScreen() {
           <h3 className="text-xs font-bold uppercase tracking-widest text-black/40">Resumo estratégico</h3>
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-black/5 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-[#F88A2B]"></div>
-            <p className="text-[#0B0908] leading-relaxed text-lg font-medium italic">
-              “A empresa demonstra evolução consistente em clareza emocional e equilíbrio coletivo. Os principais pontos de atenção continuam relacionados à pressão operacional e aceleração mental em áreas específicas.”
+            <p className="text-[13px] text-[#999] italic">
+              Aguardando dados agregados suficientes para gerar o resumo estratégico da liderança.
             </p>
           </div>
         </section>
@@ -118,6 +79,9 @@ export default function EnterpriseLeadershipOverviewScreen() {
         {/* Impacto Organizacional */}
         <section className="space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-black/40">Impacto organizacional</h3>
+          {impacts.length === 0 ? (
+            <p className="text-[13px] text-[#999] italic">Nenhum impacto medido no período.</p>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {impacts.map((item, idx) => (
               <div key={idx} className="bg-white p-6 rounded-3xl shadow-sm border border-black/5 space-y-3">
@@ -131,13 +95,16 @@ export default function EnterpriseLeadershipOverviewScreen() {
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* Indicadores Estratégicos */}
         <section className="space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-black/40">Indicadores estratégicos</h3>
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-black/5 space-y-8">
-            {indicators.map((indicator, idx) => (
+            {indicators.length === 0 ? (
+              <p className="text-[13px] text-[#999] italic">Sem indicadores agregados no momento.</p>
+            ) : indicators.map((indicator, idx) => (
               <div key={idx} className="space-y-3">
                 <div className="flex justify-between items-end">
                   <span className="text-sm font-bold text-[#0B0908]">{indicator.label}</span>
@@ -158,7 +125,9 @@ export default function EnterpriseLeadershipOverviewScreen() {
         <section className="space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-black/40">Áreas que merecem atenção</h3>
           <div className="space-y-3">
-            {attentionAreas.map((item, idx) => (
+            {attentionAreas.length === 0 ? (
+              <p className="text-[13px] text-[#999] italic">Nenhuma área em alerta no momento.</p>
+            ) : attentionAreas.map((item, idx) => (
               <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-black/5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-amber-400"></div>
@@ -176,6 +145,9 @@ export default function EnterpriseLeadershipOverviewScreen() {
         {/* Visão de Evolução */}
         <section className="space-y-6">
           <h3 className="text-xs font-bold uppercase tracking-widest text-black/40">Visão de evolução</h3>
+          {evolutionSteps.length === 0 ? (
+            <p className="text-[13px] text-[#999] italic">A jornada de evolução da liderança será construída a partir dos dados coletados.</p>
+          ) : (
           <div className="relative pl-8 space-y-8">
             <div className="absolute left-3.5 top-2 bottom-2 w-[1px] bg-black/5"></div>
             {evolutionSteps.map((step, idx) => (
@@ -189,6 +161,7 @@ export default function EnterpriseLeadershipOverviewScreen() {
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* Leitura da liderança - Dark Footer Card */}
