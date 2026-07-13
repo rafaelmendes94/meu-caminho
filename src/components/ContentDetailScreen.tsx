@@ -28,7 +28,7 @@ const Wave = ({ progress }: { progress: number }) => {
 
 const TYPE_LABEL: Record<string, string> = { book: "Leitura", course: "Curso", track: "Trilha", podcast: "Podcast", video: "Vídeo", audio: "Áudio", material: "Material" };
 const TYPE_TONE: Record<string, string> = { podcast: "#9B8AC9", video: "#C25E5E", audio: "#7A6CA8", book: "#956A3F", track: "#F88A2B", course: "#5E8F76", material: "#7A9F6A" };
-const FALLBACK_IMG = "https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=1200&q=85";
+const FALLBACK_IMG = "";
 
 const ContentDetailScreen = () => {
   const [saved, setSaved] = useState(false);
@@ -41,14 +41,14 @@ const ContentDetailScreen = () => {
   const slug = params.get("slug");
   const { item, related, author } = useCmsItemBySlug(slug);
   const cover = item?.banner_url || item?.cover_url || FALLBACK_IMG;
-  const typeLabel = item ? (TYPE_LABEL[item.type] || item.type) : "Podcast";
-  const duration = item?.duration_minutes ? `${item.duration_minutes} min` : "18 Min";
-  const title = item?.title || "Como desacelerar pensamentos acelerados";
-  const subtitle = item?.subtitle || item?.short_description || "Aprenda técnicas práticas para reduzir a aceleração da mente e recuperar clareza emocional.";
-  const description = item?.long_description || item?.short_description || "Neste episódio, Augusto Cury revela por que a mente moderna acelera sem permissão e como recuperar o controle através de pequenas pausas conscientes.";
-  const authorName = author?.name || "Augusto Cury";
-  const authorRole = author?.role || "Mentor Emocional";
-  const authorAvatar = author?.avatar_url || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80";
+  const typeLabel = item ? (TYPE_LABEL[item.type] || item.type) : "—";
+  const duration = item?.duration_minutes ? `${item.duration_minutes} min` : "—";
+  const title = item?.title || "Conteúdo indisponível";
+  const subtitle = item?.subtitle || item?.short_description || "";
+  const description = item?.long_description || item?.short_description || "";
+  const authorName = author?.name || "—";
+  const authorRole = author?.role || "";
+  const authorAvatar = author?.avatar_url || "";
 
   const content = (
     <main className={`${isEnterprise ? '' : 'h-screen min-h-[100dvh] w-full flex items-center justify-center overflow-hidden'} bg-[#F7F4F2] font-display`}>
@@ -93,7 +93,7 @@ const ContentDetailScreen = () => {
 
               <div className="flex items-center gap-3 mb-8 pb-8 border-b border-black/5">
                 <div className="w-12 h-12 rounded-full border-2 border-[#F88A2B] p-0.5">
-                  <div className="w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${authorAvatar})` }} />
+                  <div className="w-full h-full rounded-full bg-cover bg-center bg-[#EEE]" style={authorAvatar ? { backgroundImage: `url(${authorAvatar})` } : undefined} />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-[#111]">{authorName}</p>
@@ -113,9 +113,9 @@ const ContentDetailScreen = () => {
                     {playing ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <Wave progress={0.32} />
+                    <Wave progress={0} />
                     <div className="mt-2 flex justify-between text-[10px] font-bold text-[#999] tabular-nums">
-                      <span>05:48</span><span>18:36</span>
+                      <span>00:00</span><span>{duration}</span>
                     </div>
                   </div>
                 </div>
@@ -148,11 +148,11 @@ const ContentDetailScreen = () => {
               {/* Action Buttons Enterprise Desktop */}
               <div className="flex flex-wrap items-center justify-between gap-4 pt-8 border-t border-black/5">
                 <div className="flex items-center gap-6">
-                  <button className="flex items-center gap-2 text-[#F88A2B] font-bold text-sm">
-                    <Heart size={18} fill="currentColor" /> 1.2k
+                  <button className="flex items-center gap-2 text-[#666] font-bold text-sm opacity-60" disabled>
+                    <Heart size={18} /> —
                   </button>
-                  <button className="flex items-center gap-2 text-[#666] font-bold text-sm">
-                    <MessageCircle size={18} /> 128
+                  <button className="flex items-center gap-2 text-[#666] font-bold text-sm opacity-60" disabled>
+                    <MessageCircle size={18} /> —
                   </button>
                 </div>
                 <div className="flex items-center gap-3">
