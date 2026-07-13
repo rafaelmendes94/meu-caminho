@@ -72,63 +72,12 @@ const Checkpoint = ({ c }: { c: Cp }) => (
  </div>
 );
 
-/* ── Indicator card ─────────────────────────────── */
-type Ind = { name: string; Icon: () => JSX.Element; iconBg: string; before: number; after: number; comment: string; positive: boolean };
-const indicators: Ind[] = [
- { name:"Ansiedade", Icon: BrainSm, iconBg:"#FFE3CC", before: 72, after: 38, comment:"Redução significativa", positive: false },
- { name:"Autocontrole", Icon: LotusSm, iconBg: sage, before: 45, after: 72, comment:"Evolução positiva", positive: true },
- { name:"Clareza Mental", Icon: SunSm, iconBg:"#FFF1E2", before: 40, after: 68, comment:"Mais clareza", positive: true },
- { name:"Relações", Icon: HeartSm, iconBg:"#EFE9F8", before: 50, after: 75, comment:"Conexões melhores", positive: true },
-];
-
-const IndicatorCard = ({ i }: { i: Ind }) => {
- const maxH = 78;
- const beforeH = (i.before / 100) * maxH;
- const afterH = (i.after / 100) * maxH;
- return (
- <div
- className="relative bg-white rounded-[18px] px-3.5 pt-3.5 pb-3 flex flex-col"
- style={{ boxShadow:"0 4px 14px rgba(17,17,17,0.04), inset 0 0 0 1px rgba(17,17,17,0.04)" }}
- >
- <p className="text-center text-[13px] text-[#111] leading-tight" style={{ ...serif, fontWeight: 600 }}>{i.name}</p>
- <div className="mt-2 flex justify-center">
- <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: i.iconBg }}>
- <i.Icon />
- </span>
- </div>
-
- <div className="mt-3 relative h-[108px] flex items-end justify-center gap-5">
- <div className="flex flex-col items-center justify-end" style={{ height: maxH + 22 }}>
- <span className="text-[10.5px] font-semibold mb-1.5" style={{ color:"#9c948c" }}>{i.before}%</span>
- <div className="w-[22px] rounded-t-[5px]" style={{ height: `${beforeH}px`, background:"#E5DED5" }} />
- </div>
- <div className="flex flex-col items-center justify-end" style={{ height: maxH + 22 }}>
- <div className="flex items-center gap-1 mb-1.5">
- <span style={{ color: brand }}>{i.positive ? <ArrowUp /> : <ArrowDown />}</span>
- <span className="text-[11px] font-bold" style={{ color: brand }}>{i.after}%</span>
- </div>
- <div
- className="w-[22px] rounded-t-[5px]"
- style={{
- height: `${afterH}px`,
- background:"linear-gradient(180deg, #FFB778 0%, #F88A2B 100%)",
- boxShadow:"0 -2px 8px rgba(248,138,43,0.3)",
- }}
- />
- </div>
- </div>
-
- <p className="mt-2.5 text-center text-[11px] leading-tight" style={{ color: brand, fontWeight: 600 }}>{i.comment}</p>
- </div>
- );
-};
-
 /* ── Etapa row ─────────────────────────────── */
 type EStatus ="concluido" |"atual" |"bloqueado";
 type EItem = { n: string; Icon: React.ComponentType<any>; iconBg: string; title: string; desc: string; status: EStatus; meta?: string; progress?: number };
 const etapas: EItem[] = [
- { n:"✓", Icon: ClipboardIcon, iconBg: sage, title:"Diagnóstico Inicial", desc:"Conheça seu ponto de partida e seus padrões emocionais.", status:"concluido", meta:"08/04/2025" },
- { n:"2", Icon: () => <BrainIcon color={brand} />, iconBg:"#FFE3CC", title:"Curso 1 · Inteligência Emocional", desc:"Entenda suas emoções e aprenda a transformá-las em seu favor.", status:"atual", progress: 35 },
+ { n:"1", Icon: ClipboardIcon, iconBg: sage, title:"Diagnóstico Inicial", desc:"Conheça seu ponto de partida e seus padrões emocionais.", status:"bloqueado" },
+ { n:"2", Icon: () => <BrainIcon color={purple} />, iconBg:"#EFE9F8", title:"Curso 1 · Inteligência Emocional", desc:"Entenda suas emoções e aprenda a transformá-las em seu favor.", status:"bloqueado" },
  { n:"3", Icon: () => <ShieldIcon color={purple} />, iconBg:"#EFE9F8", title:"Curso 2 · Gestão da Emoção", desc:"Aprenda a lidar com desafios e fortalecer sua mente.", status:"bloqueado" },
  { n:"4", Icon: () => <UsersIcon color={purple} />, iconBg:"#EFE9F8", title:"Curso 3 · Relações Saudáveis", desc:"Desenvolva vínculos mais saudáveis e comunique-se melhor.", status:"bloqueado" },
  { n:"5", Icon: () => <TrophyIcon color={purple} />, iconBg:"#EFE9F8", title:"Diagnóstico Final", desc:"Veja sua evolução completa e receba seu relatório final.", status:"bloqueado" },
@@ -296,36 +245,29 @@ const JourneyOverviewScreen = () => {
  style={{ boxShadow:"0 6px 22px rgba(17,17,17,0.05), inset 0 0 0 1px rgba(17,17,17,0.04)" }}
  >
  <div className="flex justify-between gap-1">
- <Checkpoint c={{ Icon: () => <MountainIcon color={green} />, bg: sage, label:"MARCO ZERO", sub:"Ponto de partida", date:"08/04/2025" }} />
- <Checkpoint c={{ Icon: SunMtnIcon, bg:"#FFE3CC", label:"VOCÊ AGORA", sub:"Em evolução", date:"35% da jornada", active: true }} />
- <Checkpoint c={{ Icon: () => <FlagIcon color={purple} />, bg:"#EFE9F8", label:"PRÓXIMA EVOLUÇÃO", sub:"Seu melhor futuro", date:"100% da jornada" }} />
+ <Checkpoint c={{ Icon: () => <MountainIcon color={green} />, bg: sage, label:"MARCO ZERO", sub:"Ponto de partida", date:"—" }} />
+ <Checkpoint c={{ Icon: SunMtnIcon, bg:"#FFE3CC", label:"VOCÊ AGORA", sub:"Iniciando", date:"—", active: true }} />
+ <Checkpoint c={{ Icon: () => <FlagIcon color={purple} />, bg:"#EFE9F8", label:"PRÓXIMA EVOLUÇÃO", sub:"Seu melhor futuro", date:"—" }} />
  </div>
  {/* progress line */}
  <div className="relative mt-5 lg:mt-8 mx-4 h-2 rounded-full" style={{ background:"#F1ECE6" }}>
  <div
  className="absolute left-0 top-0 h-full rounded-full"
- style={{ width:"35%", background:"linear-gradient(90deg, #8FB17D 0%, #F88A2B 100%)", boxShadow:"0 0 16px rgba(248,138,43,0.5)" }}
+ style={{ width:"0%", background:"linear-gradient(90deg, #8FB17D 0%, #F88A2B 100%)" }}
  />
- {/* current dot */}
  <span
- className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 w-4 h-4 rounded-full bg-white transition-all duration-1000"
- style={{ left:"35%", boxShadow:"0 0 0 4px #F88A2B, 0 0 0 8px rgba(248,138,43,0.2), 0 6px 16px rgba(248,138,43,0.4)" }}
+ className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 w-4 h-4 rounded-full bg-white"
+ style={{ left:"0%", boxShadow:"0 0 0 4px #F88A2B, 0 0 0 8px rgba(248,138,43,0.2), 0 6px 16px rgba(248,138,43,0.4)" }}
  />
  </div>
  </div>
  </section>
 
- {/* Indicadores */}
+ {/* Indicadores — em breve (aguarda tabela de check-ins/agregações) */}
  <section className="mt-10 lg:mt-14">
- <div className="flex items-center justify-between px-1 mb-6">
- <h3 className="text-[12px] font-bold uppercase tracking-[0.24em] text-[#111]">Sua evolução emocional</h3>
- <div className="flex items-center gap-2.5 text-[9.5px]" style={{ color: ink500 }}>
- <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background:"#E8E2DA" }} />Antes</span>
- <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: brand }} />Agora</span>
- </div>
- </div>
- <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
- {indicators.map((i) => <IndicatorCard key={i.name} i={i} />)}
+ <div className="rounded-[22px] bg-white px-5 py-6 text-center" style={{ boxShadow:"0 4px 14px rgba(17,17,17,0.04), inset 0 0 0 1px rgba(17,17,17,0.04)" }}>
+ <p className="text-[11px] font-bold uppercase tracking-[0.24em]" style={{ color: brand }}>Evolução emocional</p>
+ <p className="mt-2 text-[13px]" style={{ color: ink500 }}>Seus indicadores aparecem aqui após algumas semanas de check-ins.</p>
  </div>
  </section>
 
