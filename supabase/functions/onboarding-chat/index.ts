@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { enforceRateLimit } from "../_shared/rate_limit.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -28,6 +29,13 @@ Deno.serve(async (req) => {
     const { data: userRes, error: userErr } = await admin.auth.getUser(token);
     if (userErr || !userRes?.user) return json({ error: "unauthorized" }, 401);
     const user = userRes.user;
+
+    const rl = await enforceRateLimit(
+      admin,
+      { userId: user.id, functionName: "onboarding-chat", kind: "chat" },
+      corsHeaders,
+    );
+    if (!rl.allowed) return rl.response!;
 
     const body = await req.json().catch(() => ({}));
     const { interview_id, message, finish } = body ?? {};

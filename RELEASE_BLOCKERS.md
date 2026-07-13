@@ -22,9 +22,8 @@
 
 ## 🟠 Altos
 
-### BLK-06 — Rate limit AI ad-hoc não implementado
-`platform_settings` vazio; `executive-ai`/`onboarding-chat`/`cms-recommend` só passam upstream 429. Item #2 aprovado mas não codado. **Est.:** 3h.
-> Nota: `platform_settings` agora tem `ai_chat_per_day=100` semeado. Falta apenas o middleware nas 3 edge functions.
+### BLK-06 — Rate limit AI ad-hoc ✅ RESOLVIDO
+Tabela `ai_usage_daily` (PK user+data+função, RLS service_role, leitura admin) + helper `_shared/rate_limit.ts` com cache de 60s, upsert incremental e 429 c/ `Retry-After`. Aplicado em `executive-ai`, `onboarding-chat`, `cms-recommend`. Defaults: chat=100/dia, generation=20/dia.
 
 ### BLK-07 — Onboarding wizard sem persistência
 `organizations.onboarding_step` nunca é escrito → refresh no meio do wizard perde progresso. **Est.:** 1h.
