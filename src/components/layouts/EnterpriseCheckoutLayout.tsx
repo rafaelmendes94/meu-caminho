@@ -1,5 +1,5 @@
 import React from "react";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import RevealFooter from "../RevealFooter";
 
 interface BaseLayoutProps {

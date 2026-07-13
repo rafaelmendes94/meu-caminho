@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Building2, Users, Lock, ShieldCheck, Check } from "lucide-react";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 
 const BG = "#F7F4F2";

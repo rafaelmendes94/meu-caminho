@@ -15,7 +15,7 @@ import {
   Compass,
   Lock
 } from "lucide-react";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 
 const BG = "#F8F9FA";

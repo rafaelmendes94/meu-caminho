@@ -1,6 +1,6 @@
 import React from "react";
 import BottomNav from "../BottomNav";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 import { AppMobileHeader } from "./AppMobileHeader";
 import { NavLink, useNavigate } from "react-router-dom";
 import { 

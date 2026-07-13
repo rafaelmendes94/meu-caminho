@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import logoMark from "@/assets/login-abstract.png";
+import logoMark from "@/assets/login-abstract.webp";
 
 type NavItem = { to: string; label: string; icon: any };
 type NavGroup = { key: string; label: string; icon?: any; collapsible?: boolean; items: NavItem[] };

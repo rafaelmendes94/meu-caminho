@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { StorageUpload } from "./StorageUpload";
 
 export type ContentType = "book" | "course" | "track" | "podcast" | "video" | "audio" | "material";
 
@@ -139,10 +140,10 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
           <label className="block"><span className="text-xs text-white/50">Idioma</span><input value={form.language ?? ""} onChange={(e) => set("language", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
           <label className="block"><span className="text-xs text-white/50">Nível</span><input value={form.level ?? ""} onChange={(e) => set("level", e.target.value)} placeholder="iniciante / intermediário / avançado" className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
           <label className="block"><span className="text-xs text-white/50">Duração (min)</span><input type="number" value={form.duration_minutes ?? ""} onChange={(e) => set("duration_minutes", e.target.value ? Number(e.target.value) : null)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Capa (URL)</span><input value={form.cover_url ?? ""} onChange={(e) => set("cover_url", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Banner (URL)</span><input value={form.banner_url ?? ""} onChange={(e) => set("banner_url", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Arquivo (URL PDF/ePub)</span><input value={form.file_url ?? ""} onChange={(e) => set("file_url", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Mídia (URL YouTube/Vimeo/áudio)</span><input value={form.media_url ?? ""} onChange={(e) => set("media_url", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
+          <StorageUpload bucket="content-images" value={form.cover_url ?? null} onChange={(v) => set("cover_url", v)} label="Capa" />
+          <StorageUpload bucket="content-images" value={form.banner_url ?? null} onChange={(v) => set("banner_url", v)} label="Banner" />
+          <StorageUpload bucket="content-pdf" value={form.file_url ?? null} onChange={(v) => set("file_url", v)} label="Arquivo (PDF/ePub)" />
+          <StorageUpload bucket={form.type === "video" ? "content-video" : "content-audio"} value={form.media_url ?? null} onChange={(v) => set("media_url", v)} label="Mídia (áudio/vídeo) — ou cole URL YouTube/Vimeo" />
           <label className="col-span-2 block"><span className="text-xs text-white/50">Descrição curta</span><textarea value={form.short_description ?? ""} onChange={(e) => set("short_description", e.target.value)} rows={2} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
           <label className="col-span-2 block"><span className="text-xs text-white/50">Descrição completa</span><textarea value={form.long_description ?? ""} onChange={(e) => set("long_description", e.target.value)} rows={5} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
           <div className="col-span-2">
