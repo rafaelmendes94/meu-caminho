@@ -207,8 +207,9 @@ const JourneyOverviewScreen = () => {
                   if (typeof navigator !=="undefined" && (navigator as any).share) {
                     await (navigator as any).share(shareData);
                   } else if (typeof navigator !=="undefined" && navigator.clipboard) {
-                    await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-                    alert("Link copiado para a área de transferência.");
+                     await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                     const { toast } = await import("sonner");
+                     toast.success("Link copiado para a área de transferência.");
                   }
                 } catch {}
               }}
