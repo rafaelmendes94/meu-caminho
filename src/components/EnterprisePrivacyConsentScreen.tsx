@@ -140,7 +140,7 @@ const EnterprisePrivacyConsentScreen = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { icon: Users, title: "Respostas individuais", desc: "Seu check-in emocional não aparece para o RH." },
-              { icon: MessageSquareOff, title: "Conversas com IA", desc: "O Cury Digital é privado e confidencial." },
+              { icon: MessageSquareOff, title: "Conversas com IA", desc: "As conversas com a IA são privadas e confidenciais." },
               { icon: History, title: "Histórico emocional", desc: "A empresa não acompanha sua jornada individual." },
               { icon: BarChart4, title: "Relatórios pessoais", desc: "Nenhum gestor recebe análises individuais." }
             ].map((item, idx) => (

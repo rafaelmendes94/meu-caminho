@@ -37,7 +37,7 @@ const EnterpriseBillingScreen = () => {
   };
 
   const planFeatures = [
-    "Cury Digital Enterprise",
+    "IA de apoio emocional",
     "Insights de IA",
     "Relatórios executivos",
     "Benchmark organizacional",
@@ -61,7 +61,7 @@ const EnterpriseBillingScreen = () => {
   ];
 
   const activeResources = [
-    { title: "Cury Digital Enterprise", desc: "IA treinada em gestão emocional", icon: Sparkles },
+    { title: "IA de apoio emocional", desc: "Assistente conversacional para acolhimento emocional", icon: Sparkles },
     { title: "Check-ins emocionais", desc: "Mapeamento anônimo de clima", icon: Heart },
     { title: "Insights IA", desc: "Análise preditiva de tendências", icon: TrendingUp },
     { title: "Benchmark organizacional", desc: "Comparativo de mercado", icon: FileText },
