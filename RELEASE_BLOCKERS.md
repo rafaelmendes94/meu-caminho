@@ -25,8 +25,8 @@
 ### BLK-06 — Rate limit AI ad-hoc ✅ RESOLVIDO
 Tabela `ai_usage_daily` (PK user+data+função, RLS service_role, leitura admin) + helper `_shared/rate_limit.ts` com cache de 60s, upsert incremental e 429 c/ `Retry-After`. Aplicado em `executive-ai`, `onboarding-chat`, `cms-recommend`. Defaults: chat=100/dia, generation=20/dia.
 
-### BLK-07 — Onboarding wizard sem persistência
-`organizations.onboarding_step` nunca é escrito → refresh no meio do wizard perde progresso. **Est.:** 1h.
+### BLK-07 — Onboarding wizard sem persistência ✅ RESOLVIDO
+Adicionadas colunas `organizations.onboarding_step` e `organizations.onboarding_data` (jsonb). Wizard carrega progresso ao montar e faz autosave debounced (400ms) de step + formData + checklist. Ao finalizar marca `onboarding_status='completed'`.
 
 ### BLK-08 — Convites: email transacional não verificado
 `send-enterprise-invite` chama enqueue mas domínio `notify.*` não checado neste ciclo. **Ação:** rodar `email_domain--check_email_domain_status` e enviar 1 teste. **Est.:** 15min + propagação DNS.
