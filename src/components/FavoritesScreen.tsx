@@ -22,15 +22,9 @@ type Fav = {
   date?: string;
 };
 
-const initial: Fav[] = [
-  { id: "1", type: "livro", title: "Ansiedade — como enfrentar o mal do século", meta: "Augusto Cury", to: "/biblioteca/detalhe", date: "2 dias atrás" },
-  { id: "2", type: "frase", title: "", meta: "— Augusto Cury", quote: "A maior revolução acontece silenciosamente dentro da mente.", date: "Ontem" },
-  { id: "3", type: "aula", title: "Respiração consciente", meta: "Curso · Aula 3", to: "/aula", date: "3 dias atrás" },
-  { id: "4", type: "audio", title: "Meditação — mente serena", meta: "Áudio · 12 min", to: "/player/audio", date: "1 semana atrás" },
-  { id: "5", type: "livro", title: "Inteligência emocional na prática", meta: "Augusto Cury", to: "/biblioteca/detalhe", date: "2 semanas atrás" },
-  { id: "6", type: "frase", title: "", meta: "— Augusto Cury", quote: "A mente registra aquilo que repetimos emocionalmente.", date: "1 mês atrás" },
-  { id: "7", type: "aula", title: "Limites saudáveis", meta: "Curso · Aula 2", to: "/aula", date: "Ontem" },
-];
+// No favorites table exists yet — start empty and rely on empty state.
+// Future: fetch from a `user_favorites` table once persistence is designed.
+const initial: Fav[] = [];
 
 const tabs = ["Tudo", "Livros", "Aulas", "Áudios", "Frases"] as const;
 const filterMap: Record<typeof tabs[number], Fav["type"][] | null> = {
