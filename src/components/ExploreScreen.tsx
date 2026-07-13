@@ -243,7 +243,8 @@ export default function ExploreScreen() {
  </div>
  </div>
 
- {/* Trending */}
+ {/* Trending — oculto até haver agregação real de buscas */}
+ {TRENDING.length > 0 && (
  <div className="relative z-20 px-5 pb-5 fade-up">
  <div className="flex items-center justify-between mb-2.5">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#F88A2B] font-semibold flex items-center gap-1.5"><Spark size={11}/> Tendências emocionais</p>
@@ -260,8 +261,10 @@ export default function ExploreScreen() {
  ))}
  </div>
  </div>
+ )}
 
- {/* Recent searches */}
+ {/* Recent searches — oculto até persistirmos histórico real de buscas */}
+ {RECENTS.length > 0 && (
  <div className="relative z-20 px-5 pb-5 fade-up">
  <div className="flex items-center justify-between mb-2.5">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-[#8A7868]">Buscas recentes</p>
@@ -275,6 +278,7 @@ export default function ExploreScreen() {
  ))}
  </div>
  </div>
+ )}
  </>
  )}
 
