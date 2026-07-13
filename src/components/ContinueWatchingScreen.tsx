@@ -25,32 +25,10 @@ type Item = {
  lastSeen: string;
 };
 
-const HERO: Item = {
- id:"h",
- type:"Curso",
- title:"Inteligência emocional na prática",
- meta:"Módulo 3 · Aula 2 · Augusto Cury",
- img:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=900&q=75&auto=format&fit=crop",
- progress: 64,
- remaining:"12 min restantes",
- to:"/aula",
- lastSeen:"agora",
-};
-
-const ITEMS: Item[] = [
- { id:"1", type:"Áudio", title:"A coragem de recomeçar", meta:"Augusto Cury · 12 min", img:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=70&auto=format&fit=crop", progress: 38, remaining:"7 min restantes", to:"/player/audio", lastSeen:"há 2h" },
- { id:"2", type:"Audiolivro", title:"Você é Insubstituível", meta:"Cap. 3 · A mente que não para", img:"https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=70&auto=format&fit=crop", progress: 22, remaining:"4h 51min restantes", to:"/player/audiolivro", lastSeen:"ontem" },
- { id:"3", type:"Vídeo", title:"O território das emoções", meta:"Reflexão · 4 min", img:"https://images.unsplash.com/photo-1499346030926-9a72daac6c63?w=600&q=70&auto=format&fit=crop", progress: 78, remaining:"55s restantes", to:"/conteudo/video", lastSeen:"ontem" },
- { id:"4", type:"Podcast", title:"Reconstruir a paz interior", meta:"Episódio 12 · 32 min", img:"https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600&q=70&auto=format&fit=crop", progress: 51, remaining:"16 min restantes", to:"/player/podcast", lastSeen:"3 dias" },
- { id:"5", type:"Leitura", title:"Quando o silêncio fala mais alto", meta:"Leitura · 6 min", img:"https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=70&auto=format&fit=crop", progress: 12, remaining:"5 min restantes", to:"/conteudo/leitura", lastSeen:"5 dias" },
-];
-
-const QUICK: Item[] = [
- { id:"q1", type:"Áudio", title:"Treine sua mente", meta:"18 min", img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=400&q=70&auto=format&fit=crop", progress: 14, remaining:"15 min", to:"/player/audio", lastSeen:"" },
- { id:"q2", type:"Vídeo", title:"Pensar antes de sentir", meta:"7 min", img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70&auto=format&fit=crop", progress: 60, remaining:"3 min", to:"/conteudo/video", lastSeen:"" },
- { id:"q3", type:"Áudio", title:"O preço da pressa", meta:"9 min", img:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop", progress: 33, remaining:"6 min", to:"/player/audio", lastSeen:"" },
- { id:"q4", type:"Vídeo", title:"Domínio sem violência", meta:"5 min", img:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&q=70&auto=format&fit=crop", progress: 80, remaining:"1 min", to:"/conteudo/video", lastSeen:"" },
-];
+// Sem histórico real conectado: listas iniciam vazias.
+const HERO: Item | null = null;
+const ITEMS: Item[] = [];
+const QUICK: Item[] = [];
 
 export default function ContinueWatchingScreen() {
  return (
@@ -96,132 +74,26 @@ export default function ContinueWatchingScreen() {
  </p>
  </div>
 
- {/* HERO continue card */}
+ {/* HERO continue card / listas — só aparecem quando houver histórico real */}
+ {HERO ? (
  <div className="relative z-20 px-5 pb-5 fade-up">
- <Link to={HERO.to} className="block relative rounded-[28px] overflow-hidden shadow-[0_18px_40px_rgba(0,0,0,0.18)] group">
+ <Link to={(HERO as Item).to} className="block relative rounded-[28px] overflow-hidden shadow-[0_18px_40px_rgba(0,0,0,0.18)] group">
  <div className="relative h-[230px]">
- <img src={HERO.img} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
- <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(20,12,4,0.85) 100%)" }} />
- {/* glow */}
- <div className="absolute -bottom-10 -left-10 w-[200px] h-[200px] rounded-full" style={{ background:"radial-gradient(closest-side, rgba(248,138,43,0.45), transparent 70%)", filter:"blur(18px)" }} />
-
- <div className="absolute top-4 left-4 flex items-center gap-2">
- <span className="text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-white border border-white/30">{HERO.type}</span>
- <span className="text-[10px] text-white/80 flex items-center gap-1"><Spark size={10}/> retomar</span>
- </div>
-
+ <img src={(HERO as Item).img} alt="" className="w-full h-full object-cover" />
  <div className="absolute bottom-0 left-0 right-0 p-5">
- <p className="text-[11px] uppercase tracking-[0.2em] text-white/70">{HERO.meta}</p>
- <h2 style={serif} className="text-white text-[24px] leading-[1.1] mt-1.5 max-w-[260px]">{HERO.title}</h2>
-
- <div className="mt-4 flex items-center gap-3">
- <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#1F1A16] shadow-[0_8px_22px_rgba(0,0,0,0.35)]">
- <Play s={18}/>
- </div>
- <div className="flex-1">
- <div className="flex items-center justify-between text-white text-[10.5px] mb-1.5">
- <span className="flex items-center gap-1"><Clock/> {HERO.remaining}</span>
- <span className="tabular-nums">{HERO.progress}%</span>
- </div>
- <div className="h-[3px] rounded-full bg-white/20 overflow-hidden">
- <div className="h-full progress-shimmer rounded-full" style={{ width: `${HERO.progress}%` }}/>
- </div>
- </div>
- </div>
+ <h2 style={serif} className="text-white text-[24px] leading-[1.1] mt-1.5 max-w-[260px]">{(HERO as Item).title}</h2>
  </div>
  </div>
  </Link>
  </div>
-
- {/* CTA */}
+ ) : (
  <div className="relative z-20 px-5 pb-6 fade-up">
- <Link
- to={HERO.to}
- className="flex items-center justify-center gap-2 h-12 rounded-full text-white text-[13px] font-semibold shadow-[0_14px_28px_rgba(248,138,43,0.38)]"
- style={{ background:"linear-gradient(135deg,#FFA158,#F88A2B)" }}
- >
- <Play s={13}/> Retomar jornada
- </Link>
+ <div className="rounded-[24px] bg-white/70 border border-[#EFE3D5] p-6 text-center">
+ <p className="text-[13px] text-[#7A6A5C]">Nada em andamento ainda. Comece uma trilha para ver aqui seu progresso.</p>
  </div>
+ </div>
+ )}
 
- {/* Recents — horizontal cards */}
- <div className="relative z-20 px-5 pb-2 flex items-center justify-between">
- <h2 style={serif} className="text-[18px]">Recentes</h2>
- <button className="text-[11px] uppercase tracking-[0.18em] text-[#F88A2B]">Ver tudo</button>
- </div>
- <div className="relative z-20 pl-5 pb-6">
- <div className="flex gap-3 overflow-x-auto no-scrollbar pr-5">
- {ITEMS.map((it, i) => (
- <Link
- key={it.id}
- to={it.to}
- className="shrink-0 w-[220px] rounded-2xl overflow-hidden bg-white border border-[#EFE3D5] shadow-[0_10px_24px_rgba(0,0,0,0.08)] fade-up"
- style={{ animationDelay: `${i * 50}ms` }}
- >
- <div className="relative h-[130px]">
- <img src={it.img} alt="" className="w-full h-full object-cover" />
- <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.55))" }} />
- <span className="absolute top-2 left-2 text-[9.5px] uppercase tracking-[0.18em] text-white/95 bg-black/35 backdrop-blur px-2 py-0.5 rounded-full">{it.type}</span>
- <div className="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center text-[#1F1A16] shadow-md">
- <Play s={13}/>
- </div>
- <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/15">
- <div className="h-full" style={{ width: `${it.progress}%`, background:"linear-gradient(90deg,#FFB36B,#F88A2B)" }}/>
- </div>
- </div>
- <div className="px-3 py-3">
- <h3 style={serif} className="text-[14.5px] leading-[1.2] text-[#1F1A16] line-clamp-2 min-h-[34px]">{it.title}</h3>
- <p className="text-[10.5px] text-[#8A7868] mt-1 truncate">{it.meta}</p>
- <div className="mt-2.5 flex items-center justify-between text-[10.5px]">
- <span className="text-[#F88A2B] flex items-center gap-1 font-medium"><Clock/> {it.remaining}</span>
- <span className="text-[#A89684]">{it.lastSeen}</span>
- </div>
- </div>
- </Link>
- ))}
- </div>
- </div>
-
- {/* Quick resume — list */}
- <div className="relative z-20 px-5 pb-2 flex items-center justify-between">
- <h2 style={serif} className="text-[18px]">Retomada rápida</h2>
- <span className="text-[11px] text-[#8A7868] flex items-center gap-1"><Spark size={11}/> próximos 5 min</span>
- </div>
- <div className="relative z-20 px-5 pb-32 space-y-2.5">
- {QUICK.map((it, i) => (
- <Link
- key={it.id}
- to={it.to}
- className="fade-up flex items-center gap-3 rounded-2xl bg-white/85 backdrop-blur border border-[#EFE3D5] p-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.05)] active:scale-[0.99] transition-transform"
- style={{ animationDelay: `${i * 40}ms` }}
- >
- <div className="relative w-[64px] h-[64px] rounded-xl overflow-hidden shrink-0">
- <img src={it.img} alt="" className="w-full h-full object-cover" />
- <div className="absolute inset-0 flex items-center justify-center bg-black/25">
- <div className="w-7 h-7 rounded-full bg-white/95 flex items-center justify-center text-[#1F1A16]"><Play s={11}/></div>
- </div>
- <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-white/15">
- <div className="h-full" style={{ width: `${it.progress}%`, background:"#F88A2B" }}/>
- </div>
- </div>
- <div className="flex-1 min-w-0">
- <div className="flex items-center gap-1.5">
- <span className="text-[9.5px] uppercase tracking-[0.16em] text-[#F88A2B] font-semibold">{it.type}</span>
- <span className="w-1 h-1 rounded-full bg-[#D9C8B5]"/>
- <span className="text-[10px] text-[#8A7868]">{it.meta}</span>
- </div>
- <h3 style={serif} className="text-[14.5px] leading-tight text-[#1F1A16] truncate mt-0.5">{it.title}</h3>
- <div className="mt-1 flex items-center gap-2">
- <div className="flex-1 h-[3px] rounded-full bg-[#F2E7DA] overflow-hidden">
- <div className="h-full rounded-full" style={{ width: `${it.progress}%`, background:"linear-gradient(90deg,#FFB36B,#F88A2B)" }}/>
- </div>
- <span className="text-[10px] text-[#7A6A5C] tabular-nums shrink-0">{it.remaining}</span>
- </div>
- </div>
- <button className="text-[#A89684] -mr-1"><More/></button>
- </Link>
- ))}
- </div>
 
  {/* Bottom nav */}
  <div className="absolute bottom-0 left-0 right-0 z-30">

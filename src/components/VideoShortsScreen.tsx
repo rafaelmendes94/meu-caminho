@@ -27,31 +27,8 @@ type Vid = {
   creatorRole: string;
 };
 
-const SAMPLE_VIDEOS = [
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-];
-
-const POSTERS = [
-  "https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=900&q=85",
-];
-
-const REELS: Omit<Vid, "id" | "poster" | "video" | "creatorRole">[] = [
-  { title: "Respire. A pressa não é caminho.", caption: "Quando o pensamento corre, é a alma que pede pausa.", source: "REFLEXÃO", episode: "Ep. 42", duration: "0:48", inspired: "12 mil", reflections: "284", tint: "#F88A2B" },
-  { title: "O silêncio também ensina.", caption: "Antes de responder ao mundo, escute a si mesmo.", source: "PODCAST", episode: "Ep. 18", duration: "1:02", inspired: "9.1 mil", reflections: "152", tint: "#9FB893" },
-  { title: "Você é maior que sua ansiedade.", caption: "Pequenos minutos de pausa reescrevem dias inteiros.", source: "MASTERCLASS", episode: "Aula 07", duration: "0:36", inspired: "18 mil", reflections: "503", tint: "#D9876A" },
-];
-
-const videos: Vid[] = REELS.map((r, i) => ({
-  ...r,
-  id: `v${i + 1}`,
-  poster: POSTERS[i % POSTERS.length],
-  video: SAMPLE_VIDEOS[i % SAMPLE_VIDEOS.length],
-  creatorRole: "Psiquiatra · Escritor",
-}));
+// Cortes reais serão carregados via CMS. Sem mocks.
+const videos: Vid[] = [];
 
 const VideoCard = ({ v, isActive }: { v: Vid; isActive: boolean }) => {
   const [inspired, setInspired] = useState(false);
@@ -215,28 +192,34 @@ const VideoShortsScreen = () => {
       )}
 
       <div className="relative h-[80vh] lg:h-[750px] flex flex-col">
-        <div 
-          ref={scrollerRef}
-          className="flex-1 overflow-y-auto snap-y snap-mandatory no-scrollbar"
-        >
-          {videos.map((v, i) => (
-            <div key={v.id} className="w-full h-full snap-start flex items-center justify-center p-4 lg:p-8">
-              <div className="w-full max-w-[420px] h-full">
-                <VideoCard v={v} isActive={i === activeIndex} />
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Navigation Dots Overlay */}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
-          {videos.map((_, i) => (
+        {videos.length > 0 ? (
+          <>
             <div 
-              key={i} 
-              className={`w-1.5 transition-all duration-300 rounded-full ${i === activeIndex ? 'h-8 bg-[#F88A2B]' : 'h-1.5 bg-white/30'}`}
-            />
-          ))}
-        </div>
+              ref={scrollerRef}
+              className="flex-1 overflow-y-auto snap-y snap-mandatory no-scrollbar"
+            >
+              {videos.map((v, i) => (
+                <div key={v.id} className="w-full h-full snap-start flex items-center justify-center p-4 lg:p-8">
+                  <div className="w-full max-w-[420px] h-full">
+                    <VideoCard v={v} isActive={i === activeIndex} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
+              {videos.map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`w-1.5 transition-all duration-300 rounded-full ${i === activeIndex ? 'h-8 bg-[#F88A2B]' : 'h-1.5 bg-white/30'}`}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-white/70 text-sm">
+            Nenhum corte disponível no momento.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -117,7 +117,7 @@ const AulaPlayerScreen = () => {
   <ChevL/>
   </button>
   <h1 className="text-[14px] text-[#111] truncate px-2" style={{ ...serif, fontWeight: 600 }}>
-  Curso 1 — Inteligência Emocional
+  Aula
   </h1>
   <button aria-label="Mais opções" className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#111] ring-1 ring-black/5 active:scale-95 transition" style={{ boxShadow:"0 2px 8px rgba(17,17,17,0.04)" }}>
   <Dots/>
@@ -156,11 +156,8 @@ const AulaPlayerScreen = () => {
   <section className={`px-5 mt-8 ${isEnterprise ? 'lg:max-w-4xl lg:mx-auto' : ''}`}>
     <div className="flex items-start justify-between gap-6">
       <div className="min-w-0">
-        <span className="inline-flex items-center h-6 px-3 rounded-full text-[10px] font-bold tracking-widest uppercase mb-3" style={{ background: "rgba(248,138,43,0.1)", color: brand }}>
-          Módulo 2
-        </span>
         <h2 className="text-[28px] lg:text-[34px] leading-tight text-[#111] mb-3" style={{ ...serif, fontWeight: 600 }}>
-          Pensamentos acelerados
+          Aula em preparação
         </h2>
         <div className="flex items-center gap-3 text-[13px] font-medium">
           <div className="flex items-center gap-1.5 text-[#666]">
@@ -183,7 +180,7 @@ const AulaPlayerScreen = () => {
     </div>
     
     <p className="mt-6 text-[15px] lg:text-[16px] leading-relaxed text-[#555] max-w-2xl font-medium">
-      Aprenda a desacelerar sua mente, reduzir a ansiedade mental e recuperar clareza para tomar decisões melhores e mais conscientes no seu dia a dia.
+      Descrição da aula será exibida assim que o conteúdo for publicado.
     </p>
   </section>
 
@@ -283,30 +280,7 @@ const AulaPlayerScreen = () => {
     </div>
   </section>
 
-  {/* REFLEXÃO CURY */}
-  <section className={`px-5 mt-4 ${isEnterprise ? 'lg:max-w-4xl lg:mx-auto' : ''}`}>
- <div
- className="relative rounded-[22px] p-4 pr-[110px] overflow-hidden"
- style={{
- background:"linear-gradient(135deg, #FFF1E2 0%, #FBE5D0 100%)",
- boxShadow:"0 6px 22px -14px rgba(248,138,43,0.25), inset 0 0 0 1px rgba(248,138,43,0.12)",
- }}
- >
- <span className="text-[28px] leading-none" style={{ ...serif, color: brand, fontWeight: 700 }}>“</span>
- <p className="mt-1 text-[10.5px] font-bold uppercase tracking-[0.18em]" style={{ color: brand }}>Reflexão de Augusto Cury</p>
- <p className="mt-2 text-[14px] leading-[20px] text-[#111]" style={{ ...serif, fontWeight: 500 }}>
- Pensamentos acelerados roubam nossa capacidade de contemplar a vida.
- </p>
- <div className="absolute right-2 bottom-0 w-[100px] h-[120px] overflow-hidden">
- <img src={curyImg} alt="Augusto Cury" loading="lazy" width={512} height={512} className="absolute inset-0 w-full h-full object-cover object-top" style={{ maskImage:"radial-gradient(ellipse at 60% 40%, #000 55%, transparent 80%)", WebkitMaskImage:"radial-gradient(ellipse at 60% 40%, #000 55%, transparent 80%)" }} />
- </div>
- <svg className="absolute right-1 top-2 opacity-50" width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D8A878" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
- <path d="M50 50 Q30 30 10 14"/>
- <path d="M30 30 q3 -8 -5 -12"/>
- <path d="M40 38 q3 -8 -5 -12"/>
- </svg>
- </div>
- </section>
+  {/* Reflexão do mentor oculta até o CMS fornecer citação real da aula. */}
 
    {/* Progresso e "Próxima aula" ocultos até haver player real conectado (evita métricas fake). */}
  </div>
