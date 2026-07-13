@@ -54,7 +54,7 @@ const Heart = ({ filled }: { filled?: boolean }) => (
  <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ?"#FF3B5C" :"none"} stroke={filled ?"#FF3B5C" :"#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 6.6a5.5 5.5 0 0 0-9.3-2.4l-.5.5-.5-.5A5.5 5.5 0 1 0 2.7 12l8.3 8.3 8.3-8.3a5.5 5.5 0 0 0 1.5-5.4z" /></svg>
 );
 
-const COVER ="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80";
+const COVER = "";
 
 const Waveform = ({ progress }: { progress: number }) => {
  const bars = 56;
@@ -92,20 +92,21 @@ const fmt = (s: number) => {
 };
 
 const AudioPlayerScreen = () => {
- const total = 8 * 60 + 24;
- const [t, setT] = useState(2 * 60 + 14);
- const [playing, setPlaying] = useState(true);
+  // Sem trilha real conectada — não simular tempo/reprodução.
+  const total = 0;
+  const [t, setT] = useState(0);
+  const [playing, setPlaying] = useState(false);
  const [saved, setSaved] = useState(false);
  const [liked, setLiked] = useState(false);
  const [speed, setSpeed] = useState(1);
 
- useEffect(() => {
- if (!playing) return;
- const id = setInterval(() => setT((v) => (v + speed >= total ? 0 : v + speed)), 1000);
- return () => clearInterval(id);
- }, [playing, speed, total]);
+  useEffect(() => {
+  if (!playing || total <= 0) return;
+  const id = setInterval(() => setT((v) => (v + speed >= total ? 0 : v + speed)), 1000);
+  return () => clearInterval(id);
+  }, [playing, speed, total]);
 
- const progress = t / total;
+  const progress = total > 0 ? t / total : 0;
 
   return (
   <MediaDesktopLayout title="Player de áudio" backTo="/biblioteca">
@@ -126,7 +127,7 @@ const AudioPlayerScreen = () => {
  <div className="relative w-full h-[100dvh] overflow-hidden bg-[#0E0B14] flex flex-col">
  {/* Atmospheric blurred cover background */}
  <div className="absolute inset-0">
- <img src={COVER} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(36px) saturate(1.1)" }} />
+ {COVER && <img src={COVER} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(36px) saturate(1.1)" }} />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(14,11,20,0.55) 0%, rgba(14,11,20,0.75) 45%, rgba(14,11,20,0.95) 100%)" }} />
  {/* Glow */}
  <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.35) 0%, rgba(248,138,43,0) 65%)" }} />
@@ -148,7 +149,7 @@ const AudioPlayerScreen = () => {
  </Link>
  <div className="text-center leading-tight">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-white/60 font-semibold">Tocando agora</p>
- <p className="text-[12.5px] font-semibold tracking-tight" style={{ ...serif }}>Mente em paz</p>
+ <p className="text-[12.5px] font-semibold tracking-tight" style={{ ...serif }}>—</p>
  </div>
  <button aria-label="Mais" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur ring-1 ring-white/15 flex items-center justify-center text-white active:scale-95 transition">
  <MoreIcon />
@@ -161,25 +162,21 @@ const AudioPlayerScreen = () => {
  <div className="relative mt-2 mx-auto w-[260px] h-[260px]">
  <div className="absolute inset-0 rounded-[36px]" style={{ background:"radial-gradient(circle at 50% 50%, rgba(248,138,43,0.45) 0%, rgba(248,138,43,0) 70%)", filter:"blur(20px)" }} />
  <div className="relative w-full h-full rounded-[32px] overflow-hidden ring-1 ring-white/10" style={{ boxShadow:"0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.06)" }}>
- <img src={COVER} alt="Capa do áudio" className={`w-full h-full object-cover ${playing ?"" :""}`} />
+ {COVER ? (
+   <img src={COVER} alt="Capa do áudio" className={`w-full h-full object-cover ${playing ?"" :""}`} />
+ ) : (
+   <div className="w-full h-full bg-white/5" />
+ )}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.45) 100%)" }} />
- <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
- <span className="px-2 py-1 rounded-full text-[10px] font-bold tracking-wide text-white" style={{ background:"rgba(248,138,43,0.85)", backdropFilter:"blur(8px)" }}>ÁUDIO GUIADO</span>
- </div>
  </div>
  </div>
 
  {/* Title */}
  <div className="mt-7 text-center text-white">
  <h1 className="text-[26px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>
- Aquiete a mente, ouça o silêncio
+  Áudio indisponível
  </h1>
- <div className="mt-2 flex items-center justify-center gap-2 text-white/75">
- <span className="w-5 h-5 rounded-full bg-cover bg-center ring-1 ring-white/30" style={{ backgroundImage:"url(https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80)" }} />
- <p className="text-[12.5px] font-semibold tracking-tight">Augusto Cury</p>
- <span className="w-1 h-1 rounded-full bg-white/40" />
- <p className="text-[12px] text-white/60">Série · Domínio Emocional</p>
- </div>
+ <p className="mt-2 text-[12.5px] text-white/60">Conteúdo será liberado em breve.</p>
  </div>
 
  {/* Waveform */}
@@ -227,20 +224,7 @@ const AudioPlayerScreen = () => {
  </div>
 
  {/* Quote */}
- <div className="mt-6 mb-4 rounded-[22px] p-4 ring-1 ring-white/10" style={{ background:"rgba(255,255,255,0.06)", backdropFilter:"blur(14px)" }}>
- <p className="text-white text-[14px] leading-snug" style={{ ...serif, fontWeight: 500 }}>
-"Ouça o silêncio dentro de você. É lá que mora sua melhor versão."
- </p>
- <div className="mt-2 flex items-center justify-between">
- <div className="flex items-center gap-2 text-[11px] text-white/60">
- <span className="w-4 h-px bg-[#F88A2B]" />
- Augusto Cury
- </div>
- <button onClick={() => setLiked((v) => !v)} aria-label="Curtir" className="active:scale-90 transition">
- <Heart filled={liked} />
- </button>
- </div>
- </div>
+ {/* Frase inspiracional oculta até o CMS fornecer citações reais. */}
 
  {/* CTA */}
  <Link

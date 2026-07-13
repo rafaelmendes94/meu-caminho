@@ -17,7 +17,7 @@ const Fwd30 = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"
 const Heart = ({ filled }: { filled?: boolean }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill={filled ?"#FF3B5C" :"none"} stroke={filled ?"#FF3B5C" :"currentColor"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 6.6a5.5 5.5 0 0 0-9.3-2.4l-.5.5-.5-.5A5.5 5.5 0 1 0 2.7 12l8.3 8.3 8.3-8.3a5.5 5.5 0 0 0 1.5-5.4z" /></svg>);
 const Verified = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="#F88A2B"><path d="M12 1l2.4 2.1 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 20l-2.4-2.1-3.2.4-.9-3.1L2.6 13.7l1-3.1-1-3.1L5.5 6l.9-3.1 3.2.4L12 1z" /><path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 
-const COVER ="https://images.unsplash.com/photo-1500964757637-c85e8a162699?auto=format&fit=crop&w=1200&q=85";
+const COVER = "";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2,"0")}`;
 
@@ -42,38 +42,25 @@ const Wave = ({ progress }: { progress: number }) => {
  );
 };
 
-const chapters = [
- { t:"00:00", title:"Abertura — A mente que não para", dur:"2:14" },
- { t:"02:14", title:"Por que pensamos sem permissão", dur:"4:38" },
- { t:"06:52", title:"Técnica do silêncio interior", dur:"5:22" },
- { t:"12:14", title:"Reflexão final · Augusto Cury", dur:"3:46" },
-];
-
-const comments = [
- { name:"Marina S.", time:"há 2 h", text:"Ouvi três vezes. Minhas noites mudaram.", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" },
- { name:"Rafael M.", time:"há 5 h", text:"A pausa do minuto 7 valeu o episódio inteiro.", avatar:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=80&q=80" },
-];
-
-const related = [
- { title:"Ansiedade silenciosa", meta:"16 min", img:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=600&q=80" },
- { title:"O peso do excesso", meta:"21 min", img:"https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80" },
- { title:"Mentes cansadas", meta:"12 min", img:"https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=600&q=80" },
-];
+const chapters: { t: string; title: string; dur: string }[] = [];
+const comments: { name: string; time: string; text: string; avatar: string }[] = [];
+const related: { title: string; meta: string; img: string }[] = [];
 
 const PodcastPlayerScreen = () => {
- const total = 18 * 60;
- const [t, setT] = useState(6 * 60 + 52);
- const [playing, setPlaying] = useState(true);
+  // Sem episódio real conectado — não simular reprodução.
+  const total = 0;
+  const [t, setT] = useState(0);
+  const [playing, setPlaying] = useState(false);
  const [liked, setLiked] = useState(false);
- const [activeChapter, setActiveChapter] = useState(2);
+  const [activeChapter, setActiveChapter] = useState(0);
 
  useEffect(() => {
- if (!playing) return;
+  if (!playing || total <= 0) return;
  const id = setInterval(() => setT((v) => (v + 1 >= total ? 0 : v + 1)), 1000);
  return () => clearInterval(id);
  }, [playing, total]);
 
- const progress = t / total;
+  const progress = total > 0 ? t / total : 0;
 
   return (
   <MediaDesktopLayout title="Podcast" backTo="/explorar">
@@ -95,7 +82,7 @@ const PodcastPlayerScreen = () => {
 
  {/* Atmospheric blurred bg */}
  <div className="absolute inset-0">
- <img src={COVER} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(40px) saturate(1.15)" }} />
+ {COVER && <img src={COVER} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(40px) saturate(1.15)" }} />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(14,11,20,0.45) 0%, rgba(14,11,20,0.7) 40%, rgba(14,11,20,0.96) 100%)" }} />
  <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[440px] h-[440px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.32) 0%, rgba(248,138,43,0) 65%)" }} />
  <div className="absolute bottom-[-80px] right-[-60px] w-[320px] h-[320px] rounded-full" style={{ background:"radial-gradient(circle, rgba(155,138,201,0.28) 0%, rgba(155,138,201,0) 65%)" }} />
@@ -112,8 +99,8 @@ const PodcastPlayerScreen = () => {
  <Chevron />
  </Link>
  <div className="text-center leading-tight">
- <p className="text-[10px] uppercase tracking-[0.24em] text-white/60 font-semibold">Podcast · Episódio 12</p>
- <p className="text-[12px] font-semibold tracking-tight" style={{ ...serif }}>Mente em paz</p>
+ <p className="text-[10px] uppercase tracking-[0.24em] text-white/60 font-semibold">Podcast</p>
+ <p className="text-[12px] font-semibold tracking-tight" style={{ ...serif }}>—</p>
  </div>
  <button aria-label="Compartilhar" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur ring-1 ring-white/15 flex items-center justify-center text-white active:scale-95 transition">
  <Share />
@@ -126,7 +113,7 @@ const PodcastPlayerScreen = () => {
  <div className="relative mt-3 mx-auto w-[230px] h-[230px] fade-up">
  <div className="absolute inset-0 rounded-[34px]" style={{ background:"radial-gradient(circle at 50% 50%, rgba(248,138,43,0.45) 0%, rgba(248,138,43,0) 70%)", filter:"blur(22px)" }} />
  <div className="relative w-full h-full rounded-[28px] overflow-hidden ring-1 ring-white/10" style={{ boxShadow:"0 32px 60px -22px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.06)" }}>
- <img src={COVER} alt="Capa do podcast" className="w-full h-full object-cover" />
+ {COVER ? <img src={COVER} alt="Capa do podcast" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5" />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)" }} />
  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide text-white" style={{ background:"rgba(248,138,43,0.92)", backdropFilter:"blur(8px)" }}>PODCAST</span>
  </div>
@@ -135,17 +122,9 @@ const PodcastPlayerScreen = () => {
  {/* Title + author */}
  <div className="mt-6 text-center text-white fade-up">
  <h1 className="text-[24px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>
- Como desacelerar pensamentos acelerados
+  Episódio indisponível
  </h1>
- <p className="mt-2 text-[12.5px] text-white/70 px-2">
- Técnicas práticas para reduzir o ruído mental e recuperar a clareza emocional.
- </p>
- <div className="mt-3 flex items-center justify-center gap-2 text-white/85">
- <span className="w-5 h-5 rounded-full bg-cover bg-center ring-1 ring-white/30" style={{ backgroundImage:"url(https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80)" }} />
- <p className="text-[12px] font-semibold tracking-tight flex items-center gap-1">@augustocury <Verified /></p>
- <span className="w-1 h-1 rounded-full bg-white/40" />
- <p className="text-[11.5px] text-white/60">Ep. 12 · 18 min</p>
- </div>
+ <p className="mt-2 text-[12.5px] text-white/60 px-2">Conteúdo será publicado em breve.</p>
  </div>
 
  {/* Waveform */}
@@ -172,7 +151,7 @@ const PodcastPlayerScreen = () => {
  </div>
 
  {/* Chapters */}
- <section className="mt-7 fade-up">
+ {chapters.length > 0 && <section className="mt-7 fade-up">
  <div className="flex items-center justify-between mb-3">
  <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Capítulos</h2>
  <span className="text-[11px] text-white/50">{chapters.length} momentos</span>
@@ -203,28 +182,13 @@ const PodcastPlayerScreen = () => {
  );
  })}
  </div>
- </section>
+ </section>}
 
  {/* Insight */}
- <section className="mt-6 fade-up">
- <div className="rounded-[22px] p-4 ring-1 ring-white/10" style={{ background:"rgba(255,255,255,0.06)", backdropFilter:"blur(14px)" }}>
- <p className="text-white text-[14.5px] leading-snug" style={{ ...serif, fontWeight: 500 }}>
-"A pausa que você não dá hoje, sua mente cobrará amanhã."
- </p>
- <div className="mt-2 flex items-center justify-between">
- <div className="flex items-center gap-2 text-[11px] text-white/65">
- <span className="w-4 h-px bg-[#F88A2B]" />
- Augusto Cury
- </div>
- <button onClick={() => setLiked((v) => !v)} aria-label="Curtir" className="active:scale-90 transition text-white/85">
- <Heart filled={liked} />
- </button>
- </div>
- </div>
- </section>
+ {/* Insight/quote oculto até o CMS fornecer citação real do episódio. */}
 
  {/* Reflexões da comunidade */}
- <section className="mt-7 fade-up">
+ {comments.length > 0 && <section className="mt-7 fade-up">
  <div className="flex items-center justify-between mb-3">
  <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Reflexões da comunidade</h2>
  <button className="text-[11px] font-semibold text-white/70">Ver todas</button>
@@ -243,10 +207,10 @@ const PodcastPlayerScreen = () => {
  </div>
  ))}
  </div>
- </section>
+ </section>}
 
  {/* Episódios relacionados */}
- <section className="mt-7 fade-up">
+ {related.length > 0 && <section className="mt-7 fade-up">
  <div className="flex items-center justify-between mb-3">
  <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Episódios relacionados</h2>
  <Link to="/feed" className="text-[11px] font-semibold text-white/70">Ver mais</Link>
@@ -270,7 +234,7 @@ const PodcastPlayerScreen = () => {
  ))}
  </div>
  </div>
- </section>
+ </section>}
  </div>
 
  {/* Sticky CTA */}
