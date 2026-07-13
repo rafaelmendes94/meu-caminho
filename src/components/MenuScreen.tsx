@@ -178,7 +178,7 @@ export default function MenuScreen() {
         </div>
 
         <div className="text-center pt-10">
-          <p className="text-[11px] font-bold text-[#B8B0A8] uppercase tracking-widest">Meu Caminho · Augusto Cury · v1.2.0</p>
+          <p className="text-[11px] font-bold text-[#B8B0A8] uppercase tracking-widest">Meu Caminho · v1.2.0</p>
         </div>
       </div>
     </EnterpriseUserLayout>
@@ -213,7 +213,7 @@ function LegacyMobileMenu() {
         { label:"Trilha Personalizada", desc:"Sua jornada de evolução", Icon: Flag, iconColor:"#F88A2B", bg:"#FDECDA", to:"/trilha" },
         { label:"Cury Digital", desc:"Converse com a IA do Cury", Icon: MessageCircle, iconColor:"#7FBF9F", bg:"#EAF3EC", to:"/cury-digital" },
         { label:"Feed de Conteúdo", desc:"Áudios, vídeos e reflexões", Icon: Play, iconColor:"#9B8AC9", bg:"#EFEAF7", to:"/feed" },
-        { label:"Clube do Livro", desc:"Biblioteca dos livros do Dr. Augusto Cury", Icon: BookOpen, iconColor:"#7FBF9F", bg:"#EAF3EC", to:"/biblioteca" },
+        { label:"Clube do Livro", desc:"Biblioteca de livros do clube", Icon: BookOpen, iconColor:"#7FBF9F", bg:"#EAF3EC", to:"/biblioteca" },
       ]
     }
   ];

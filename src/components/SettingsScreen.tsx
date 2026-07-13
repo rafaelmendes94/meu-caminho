@@ -220,7 +220,7 @@ const SettingsScreen = () => {
           </div>
 
           <div className="text-center pt-10">
-            <p className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Meu Caminho · Augusto Cury · Todos os direitos reservados</p>
+            <p className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Meu Caminho · Todos os direitos reservados</p>
           </div>
         </div>
       </EnterpriseUserLayout>
