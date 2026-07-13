@@ -10,21 +10,8 @@ import {
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
 const sans = { fontFamily: "'Inter', system-ui, sans-serif" };
 
-const chapters = [
-  { n: 1, t: "O despertar interior", min: 12, status: "done" as const },
-  { n: 2, t: "Reescrevendo a história", min: 18, status: "done" as const },
-  { n: 3, t: "A coragem da entrega", min: 22, status: "done" as const },
-  { n: 4, t: "O território dos sonhos", min: 16, status: "current" as const, pct: 0.62 },
-  { n: 5, t: "A sabedoria do tempo", min: 20, status: "todo" as const },
-  { n: 6, t: "O poder do silêncio", min: 14, status: "todo" as const },
-  { n: 7, t: "Recomeços possíveis", min: 24, status: "todo" as const },
-];
-
-const quotes = [
-  "A coragem não é a ausência do medo, mas a decisão de seguir apesar dele.",
-  "Sonhar é a primeira forma de transformar a realidade.",
-  "Os grandes começos começam em silêncio.",
-];
+const chapters: { n: number; t: string; min: number; status: "done" | "current" | "todo"; pct?: number }[] = [];
+const quotes: string[] = [];
 
 // Reviews are now defined inside the component to handle context
 
@@ -34,16 +21,12 @@ export default function BookDetailScreen() {
   const [params] = useSearchParams();
   const slug = params.get("slug");
   const { item: cmsBook, author: cmsAuthor } = useCmsItemBySlug(slug);
-  const bookTitle = cmsBook?.title || "O vendedor de sonhos";
-  const bookAuthor = cmsAuthor?.name || "Augusto Cury";
-  const bookSubtitle = cmsBook?.subtitle || "Romance contemplativo · Edição premium";
-  const bookDescription = cmsBook?.long_description || cmsBook?.short_description || "Em uma narrativa que beira a poesia, Augusto Cury apresenta um homem que, ao perder tudo, decide vender o bem mais raro do mundo: sonhos. Uma jornada sobre o valor da vida, da coragem e da reconstrução interior.";
+  const bookTitle = cmsBook?.title || "Livro indisponível";
+  const bookAuthor = cmsAuthor?.name || "—";
+  const bookSubtitle = cmsBook?.subtitle || "";
+  const bookDescription = cmsBook?.long_description || cmsBook?.short_description || "";
   const bookCover = cmsBook?.cover_url || null;
-  const reviews = [
-    { name: "Marina S.", emotion: "Transformador", color: "#F8B05A", text: "Mudou a forma como eu enxergo meus próprios limites." },
-    { name: "Rafael T.", emotion: "Profundo", color: "#A8C5F0", text: "Cada capítulo é uma conversa franca com a alma." },
-    { name: isEnterprise ? "Juliana M." : "Rafael T.", emotion: "Emocionante", color: "#E89A9A", text: "Chorei. Ri. E principalmente: refleti." },
-  ];
+  const reviews: { name: string; emotion: string; color: string; text: string }[] = [];
 
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<"sobre" | "capitulos" | "frases" | "avaliacoes">("sobre");
