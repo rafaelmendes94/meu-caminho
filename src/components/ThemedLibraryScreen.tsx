@@ -295,7 +295,6 @@ export default function ThemedLibraryScreen() {
               <Quote size={18} />
             </div>
             <p className="text-[18px] leading-relaxed" style={{ ...serif, fontStyle: "italic", color: active.hue.accent }}>"{active.quote}"</p>
-            <div className="text-[10px] tracking-[0.3em] uppercase opacity-50 mt-4">Augusto Cury</div>
           </div>
 
           {/* Related themes */}
