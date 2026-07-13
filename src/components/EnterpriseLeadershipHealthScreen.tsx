@@ -29,10 +29,10 @@ const EnterpriseLeadershipHealthScreen = () => {
         {/* KPIs */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-1">
           {[
-            { label: "Energia sustentável", value: "68%" },
-            { label: "Sinais de sobrecarga", value: "41%" },
-            { label: "Clareza emocional", value: "74%" },
-            { label: "Recuperação coletiva", value: "+9%" },
+            { label: "Energia sustentável", value: "—" },
+            { label: "Sinais de sobrecarga", value: "—" },
+            { label: "Clareza emocional", value: "—" },
+            { label: "Recuperação coletiva", value: "—" },
           ].map((kpi, i) => (
             <div key={i} className="bg-white p-6 rounded-[24px] border border-black/5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all group flex flex-col justify-between">
               <div className="text-[32px] font-extrabold tracking-tighter text-[#111]" style={{ fontFamily: "'Montserrat', sans-serif" }}>{kpi.value}</div>
@@ -44,76 +44,38 @@ const EnterpriseLeadershipHealthScreen = () => {
         {/* Leitura Coletiva */}
         <section className="bg-white p-8 rounded-[32px] border border-black/5 shadow-sm px-1 mx-1">
           <h3 className="font-extrabold text-xl mb-4 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>Leitura coletiva das lideranças</h3>
-          <p className="text-[#666] leading-relaxed font-medium">As lideranças demonstram boa percepção de clareza emocional, porém existe aumento gradual de aceleração mental em áreas sob maior pressão operacional.</p>
+          <p className="text-[#666] leading-relaxed font-medium italic">Aguardando amostra mínima de lideranças para gerar a leitura coletiva.</p>
         </section>
 
         {/* Sinais Observados */}
         <section>
           <h3 className="font-extrabold text-xl mb-6 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>Principais sinais observados</h3>
-          <div className="space-y-4">
-            {[
-              "Dificuldade de desacelerar após ciclos intensos.",
-              "Aumento de fadiga cognitiva em liderança operacional.",
-              "Boa percepção de responsabilidade emocional.",
-              "Necessidade maior de recuperação mental.",
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-black/5 shadow-sm">
-                <div className="w-8 h-8 rounded-full bg-[#F88A2B]/10 flex items-center justify-center text-[#F88A2B]">
-                  <Zap className="w-4 h-4" />
-                </div>
-                <p className="text-[#111] font-bold uppercase tracking-widest text-[11px]">{item}</p>
-              </div>
-            ))}
-          </div>
+          <p className="text-[13px] text-[#999] italic">
+            Sinais aparecem quando houver dados agregados suficientes das lideranças.
+          </p>
         </section>
 
         {/* Indicadores */}
         <section className="bg-white p-8 rounded-3xl border border-black/5 shadow-sm">
           <h3 className="font-extrabold text-xl mb-8 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>Indicadores emocionais</h3>
-          <div className="space-y-6">
-            {[
-              "Clareza para decisão", "Energia emocional", "Equilíbrio mental", 
-              "Recuperação cognitiva", "Percepção de apoio"
-            ].map((label, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-[11px]">
-                  <span className="text-[#666]">{label}</span>
-                  <span className="text-[#F88A2B]">{(60 + i * 5)}%</span>
-                </div>
-                <div className="h-2 bg-[#F7F4F2] rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${60 + i * 5}%` }}
-                    className="h-full bg-[#F88A2B]" 
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-[13px] text-[#999] italic">
+            Aguardando dados agregados para exibir os indicadores emocionais das lideranças.
+          </p>
         </section>
 
         {/* Fatores e Movimentos */}
         <div className="grid md:grid-cols-2 gap-8">
           <section>
             <h3 className="font-extrabold text-xl mb-6 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>Fatores associados</h3>
-            <ul className="space-y-3">
-              {["Pressão contínua", "Excesso de ruído operacional", "Decisões em alta velocidade", "Baixa recuperação emocional", "Carga cognitiva elevada"].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-[#666] font-medium">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F88A2B]" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <p className="text-[13px] text-[#999] italic">
+              Fatores associados serão listados a partir dos dados coletados.
+            </p>
           </section>
           <section>
             <h3 className="font-extrabold text-xl mb-6 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>Movimentos sugeridos</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {["Criar pausas executivas estruturadas.", "Estimular recuperação cognitiva.", "Fortalecer espaços de escuta.", "Reduzir aceleração contínua."].map((item, i) => (
-                <div key={i} className="p-4 bg-white border border-black/5 text-[#111] rounded-2xl text-sm font-bold shadow-sm uppercase tracking-wider text-[11px]">
-                  {item}
-                </div>
-              ))}
-            </div>
+            <p className="text-[13px] text-[#999] italic">
+              Movimentos sugeridos serão gerados pela IA a partir dos sinais das lideranças.
+            </p>
           </section>
         </div>
 
