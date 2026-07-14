@@ -78,7 +78,22 @@ Conselho pelo RH; colaboradores não têm acesso.
   `config_status`.
 - O rate limit compartilhado da função continua sendo aplicado.
 
-## Próxima sub-fase
+## Sub-fase C — Edição por linguagem natural + histórico
 
-- **C** — Edição do prompt por linguagem natural com diff antes/depois +
-  aplicação apenas no draft + comparação/restauração de versões no histórico.
+- Nova aba **Editar por IA** invoca a Edge Function `ai-prompt-suggest`
+  (`platform_admin` + rate-limit `generation`), que envia a config atual e uma
+  instrução em pt-BR ao Gemini 2.5 Pro e recebe um JSON com `summary`,
+  `warnings` e `changes` parciais.
+- Guardrails obrigatórios são **reforçados no backend**: `include_evidence`,
+  `include_confidence` e `include_limitations` sempre `true`; blocos
+  `evidence`, `confidence` e `limitations` são reinjetados ativos se a IA
+  tentar removê-los.
+- A UI mostra um **diff antes/depois por campo** (instruções, tom, estrutura,
+  perguntas, exemplos, modelo). Nada é gravado até o Super Admin clicar em
+  **Aplicar ao rascunho** — a aplicação ocorre apenas no estado local; publicar
+  continua exigindo o botão **Publicar versão**.
+- Aba **Histórico de Versões** ganhou:
+  - **Comparar versões** (A × B) com diff campo a campo dos snapshots.
+  - **Restaurar no rascunho** por versão — carrega o snapshot no estado local
+    do editor sem publicar nada; guardrails obrigatórios são reforçados na
+    restauração.
