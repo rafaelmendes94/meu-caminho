@@ -39,3 +39,5 @@ npm run dev
 Painel completo em `/enterprise/rh/configuracoes` (Owner/RH Admin). Ver `ENTERPRISE_SETTINGS.md`.
 
 - **Backup & Recovery**: `/admin/system/backup` — dashboard, jobs, restore com dry-run, agendamentos, health check, logs, políticas. Ver `BACKUP_RECOVERY.md`.
+
+- **QA Center**: `/admin/system/qa` — homologação manual (suites, casos, execuções, bugs, checklists, Go Live). Ver `QA_CENTER.md`.

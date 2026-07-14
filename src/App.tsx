@@ -177,6 +177,7 @@ const PlatformAnalyticsScreen = lazy(() => import("./pages/PlatformAnalyticsScre
 const PlatformSystemHealthScreen = lazy(() => import("./pages/PlatformSystemHealthScreen.tsx"));
 const PlatformBackupRecoveryScreen = lazy(() => import("./pages/PlatformBackupRecoveryScreen.tsx"));
 const PlatformPerformanceCenterScreen = lazy(() => import("./pages/PlatformPerformanceCenterScreen.tsx"));
+const PlatformQACenterScreen = lazy(() => import("./pages/PlatformQACenterScreen.tsx"));
 const PlatformBillingScreen = lazy(() => import("./pages/PlatformBillingScreen.tsx"));
 const PlatformSupportScreen = lazy(() => import("./pages/PlatformSupportScreen.tsx"));
 const PlatformAuditScreen = lazy(() => import("./pages/PlatformAuditScreen.tsx"));
@@ -469,6 +470,7 @@ const App = () => (
           <Route path="/admin/system" element={<PlatformAdmin><PlatformSystemHealthScreen /></PlatformAdmin>} />
           <Route path="/admin/system/backup" element={<PlatformAdmin><PlatformBackupRecoveryScreen /></PlatformAdmin>} />
           <Route path="/admin/system/performance" element={<PlatformAdmin><PlatformPerformanceCenterScreen /></PlatformAdmin>} />
+          <Route path="/admin/system/qa" element={<PlatformAdmin><PlatformQACenterScreen /></PlatformAdmin>} />
           <Route path="/admin/support" element={<PlatformAdmin><PlatformSupportScreen /></PlatformAdmin>} />
           <Route path="/admin/audit" element={<PlatformAdmin><PlatformAuditScreen /></PlatformAdmin>} />
           <Route path="/admin/settings" element={<PlatformAdmin><PlatformSettingsScreen /></PlatformAdmin>} />

@@ -4189,6 +4189,338 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_bugs: {
+        Row: {
+          area: string | null
+          assignee: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          fix_note: string | null
+          id: string
+          related_case_id: string | null
+          release: string | null
+          severity: Database["public"]["Enums"]["qa_severity"]
+          status: Database["public"]["Enums"]["qa_bug_status"]
+          title: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          area?: string | null
+          assignee?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fix_note?: string | null
+          id?: string
+          related_case_id?: string | null
+          release?: string | null
+          severity?: Database["public"]["Enums"]["qa_severity"]
+          status?: Database["public"]["Enums"]["qa_bug_status"]
+          title: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          area?: string | null
+          assignee?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fix_note?: string | null
+          id?: string
+          related_case_id?: string | null
+          release?: string | null
+          severity?: Database["public"]["Enums"]["qa_severity"]
+          status?: Database["public"]["Enums"]["qa_bug_status"]
+          title?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_bugs_related_case_id_fkey"
+            columns: ["related_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qa_checklist_runs: {
+        Row: {
+          checklist_id: string | null
+          created_at: string
+          executed_by: string | null
+          id: string
+          items: Json
+          notes: string | null
+          status: Database["public"]["Enums"]["qa_status"]
+          updated_at: string
+        }
+        Insert: {
+          checklist_id?: string | null
+          created_at?: string
+          executed_by?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: Database["public"]["Enums"]["qa_status"]
+          updated_at?: string
+        }
+        Update: {
+          checklist_id?: string | null
+          created_at?: string
+          executed_by?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: Database["public"]["Enums"]["qa_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_checklist_runs_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "qa_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qa_checklists: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          kind: Database["public"]["Enums"]["qa_checklist_kind"]
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          kind?: Database["public"]["Enums"]["qa_checklist_kind"]
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          kind?: Database["public"]["Enums"]["qa_checklist_kind"]
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      qa_evidence: {
+        Row: {
+          bug_id: string | null
+          created_at: string
+          execution_id: string | null
+          id: string
+          kind: string
+          notes: string | null
+          uploaded_by: string | null
+          url: string
+        }
+        Insert: {
+          bug_id?: string | null
+          created_at?: string
+          execution_id?: string | null
+          id?: string
+          kind: string
+          notes?: string | null
+          uploaded_by?: string | null
+          url: string
+        }
+        Update: {
+          bug_id?: string | null
+          created_at?: string
+          execution_id?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          uploaded_by?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_evidence_bug_id_fkey"
+            columns: ["bug_id"]
+            isOneToOne: false
+            referencedRelation: "qa_bugs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qa_evidence_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "qa_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qa_executions: {
+        Row: {
+          actual_result: string | null
+          created_at: string
+          duration_ms: number | null
+          evidence: Json
+          executed_at: string
+          executed_by: string | null
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["qa_status"]
+          test_case_id: string | null
+        }
+        Insert: {
+          actual_result?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          evidence?: Json
+          executed_at?: string
+          executed_by?: string | null
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["qa_status"]
+          test_case_id?: string | null
+        }
+        Update: {
+          actual_result?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          evidence?: Json
+          executed_at?: string
+          executed_by?: string | null
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["qa_status"]
+          test_case_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_executions_test_case_id_fkey"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qa_go_live_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          criteria: Json
+          id: string
+          score: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json
+          id?: string
+          score: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json
+          id?: string
+          score?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      qa_suites: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          module: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          module: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          module?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      qa_test_cases: {
+        Row: {
+          assignee: string | null
+          code: string | null
+          created_at: string
+          description: string | null
+          expected_result: string | null
+          id: string
+          preconditions: string | null
+          priority: Database["public"]["Enums"]["qa_priority"]
+          steps: Json
+          suite_id: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee?: string | null
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          expected_result?: string | null
+          id?: string
+          preconditions?: string | null
+          priority?: Database["public"]["Enums"]["qa_priority"]
+          steps?: Json
+          suite_id?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee?: string | null
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          expected_result?: string | null
+          id?: string
+          preconditions?: string | null
+          priority?: Database["public"]["Enums"]["qa_priority"]
+          steps?: Json
+          suite_id?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_test_cases_suite_id_fkey"
+            columns: ["suite_id"]
+            isOneToOne: false
+            referencedRelation: "qa_suites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recommendation_events: {
         Row: {
           config_version: number | null
@@ -5093,6 +5425,29 @@ export type Database = {
       lesson_type: "video" | "text" | "pdf" | "audio" | "exercise"
       perf_comparator: "gt" | "gte" | "lt" | "lte" | "eq"
       perf_severity: "info" | "warning" | "critical"
+      qa_bug_status:
+        | "open"
+        | "in_progress"
+        | "fixed"
+        | "wontfix"
+        | "duplicate"
+        | "closed"
+      qa_checklist_kind:
+        | "go_live"
+        | "new_company"
+        | "new_version"
+        | "release"
+        | "hotfix"
+        | "smoke"
+      qa_priority: "low" | "medium" | "high" | "critical"
+      qa_severity: "low" | "medium" | "high" | "critical"
+      qa_status:
+        | "not_started"
+        | "running"
+        | "passed"
+        | "failed"
+        | "blocked"
+        | "skipped"
       subscription_status:
         | "trialing"
         | "active"
@@ -5260,6 +5615,32 @@ export const Constants = {
       lesson_type: ["video", "text", "pdf", "audio", "exercise"],
       perf_comparator: ["gt", "gte", "lt", "lte", "eq"],
       perf_severity: ["info", "warning", "critical"],
+      qa_bug_status: [
+        "open",
+        "in_progress",
+        "fixed",
+        "wontfix",
+        "duplicate",
+        "closed",
+      ],
+      qa_checklist_kind: [
+        "go_live",
+        "new_company",
+        "new_version",
+        "release",
+        "hotfix",
+        "smoke",
+      ],
+      qa_priority: ["low", "medium", "high", "critical"],
+      qa_severity: ["low", "medium", "high", "critical"],
+      qa_status: [
+        "not_started",
+        "running",
+        "passed",
+        "failed",
+        "blocked",
+        "skipped",
+      ],
       subscription_status: [
         "trialing",
         "active",

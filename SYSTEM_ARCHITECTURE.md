@@ -90,3 +90,7 @@ Rota `/admin/system/backup` (platform_admin). Tabelas: `backup_jobs`, `backup_sc
 ## Performance Center
 
 Rota `/admin/system/performance` (platform_admin). Tabelas: `perf_snapshots`, `perf_alert_rules`, `perf_alerts`, `load_test_plans`, `load_test_runs`, `health_score_history`. Ver [PERFORMANCE_CENTER.md](./PERFORMANCE_CENTER.md). Load tests apenas em modo simulação matemática — nenhuma carga é gerada contra produção.
+
+## QA Center
+
+Rota `/admin/system/qa` (platform_admin). Tabelas: `qa_suites`, `qa_test_cases`, `qa_executions`, `qa_bugs`, `qa_checklists`, `qa_checklist_runs`, `qa_evidence`, `qa_go_live_snapshots`. Ver [QA_CENTER.md](./QA_CENTER.md). Preparado para integração futura com Playwright/Cypress/Vitest/Jest/GitHub Actions.
