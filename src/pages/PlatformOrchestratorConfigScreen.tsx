@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Brain, Save, Send, Lock, ShieldCheck, Sparkles, Route as RouteIcon,
   Cpu, Database, DollarSign, Layers, ScrollText, History, Plus, Trash2, Users,
+  MessageSquare, Wand2, Loader2,
 } from "lucide-react";
 
 type Specialist = { key: string; label: string; function: string; active: boolean };
@@ -56,6 +57,8 @@ const TABS = [
   { id: "costs", label: "Custos", icon: DollarSign },
   { id: "memory", label: "Memória", icon: Layers },
   { id: "logs", label: "Logs", icon: ScrollText },
+  { id: "test", label: "Testar", icon: MessageSquare },
+  { id: "editor", label: "Editar com IA", icon: Wand2 },
   { id: "versions", label: "Versões", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
@@ -236,9 +239,11 @@ export default function PlatformOrchestratorConfigScreen() {
         {tab === "costs" && <CostsTab config={config} setConfig={setConfig} />}
         {tab === "memory" && <MemoryTab config={config} setConfig={setConfig} />}
         {tab === "logs" && <LogsTab />}
+        {tab === "test" && <TestTab />}
+        {tab === "editor" && <EditorAITab config={config} setConfig={setConfig} />}
         {tab === "versions" && <VersionsTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
-        {tab !== "logs" && tab !== "versions" && (
+        {tab !== "logs" && tab !== "versions" && tab !== "test" && tab !== "editor" && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: nova regra de roteamento para risco." />
