@@ -7,31 +7,122 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `Você é um consultor executivo especializado em Inteligência Humana Corporativa.
+const FALLBACK_SYSTEM_PROMPT = `Você é um consultor executivo especializado em Inteligência Humana Corporativa.
 Analise exclusivamente os dados agregados enviados.
 Nunca identifique indivíduos.
 Nunca realize diagnóstico clínico.
 Nunca utilize linguagem médica.
-Seu objetivo é produzir um relatório executivo para RH e Diretoria em português do Brasil.
+Produza um diagnóstico executivo agregado em pt-BR, seguindo o schema JSON solicitado.
+Quando uma dimensão não tiver amostra suficiente, atribua score null e explique em limitations. Nunca invente números.`;
 
-Retorne EXCLUSIVAMENTE um JSON válido no seguinte formato (todos os campos obrigatórios):
-{
-  "overall_score": number (0-100),
-  "culture_score": number (0-100),
-  "leadership_score": number (0-100),
-  "communication_score": number (0-100),
-  "collaboration_score": number (0-100),
-  "engagement_score": number (0-100),
-  "energy_score": number (0-100),
-  "recovery_score": number (0-100),
-  "psychological_safety_score": number (0-100),
-  "summary": string (2-4 parágrafos executivos),
-  "strengths": string[] (3-6 itens),
-  "opportunities": string[] (3-6 itens),
-  "recommendations": string[] (3-6 itens acionáveis),
-  "evidence": object (referências agregadas usadas)
+const IMMUTABLE_GUARDRAILS = [
+  "Utilizar apenas dados agregados fornecidos pelo backend.",
+  "Respeitar k-anonimato (amostra mínima definida pela organização).",
+  "Nunca identificar indivíduos, times minoritários ou denunciantes.",
+  "Nunca acessar chats, mensagens, onboarding individual ou denúncias.",
+  "Nunca realizar diagnóstico clínico ou usar linguagem médica.",
+  "Nunca inventar números, participantes ou tendências.",
+  "Nunca inferir dimensão com amostra insuficiente — retornar null.",
+  "Nunca cruzar dados com outra organização.",
+];
+
+// Cache leve (60s) da configuração publicada
+let cachedCfg: { at: number; cfg: any } | null = null;
+async function loadPublishedConfig(admin: any) {
+  if (cachedCfg && Date.now() - cachedCfg.at < 60_000) return cachedCfg.cfg;
+  const { data } = await admin
+    .from("ai_prompt_configs")
+    .select("*")
+    .eq("key", "organizational_dna")
+    .maybeSingle();
+  cachedCfg = { at: Date.now(), cfg: data ?? null };
+  return data ?? null;
 }
-Quando um indicador não tiver amostra suficiente (participants < 5), atribua um score neutro (ex.: 50) e mencione a limitação no summary. Nunca invente dados individuais.`;
+async function loadConfigBySource(admin: any, source: "draft" | "published") {
+  if (source === "published") return await loadPublishedConfig(admin);
+  const { data } = await admin
+    .from("ai_prompt_configs")
+    .select("*")
+    .eq("key", "organizational_dna")
+    .maybeSingle();
+  return data ?? null;
+}
+
+function buildSystemPrompt(cfg: any): string {
+  const tone = cfg?.tone_config ?? {};
+  const dims = Array.isArray(cfg?.dimensions_config) ? cfg.dimensions_config.filter((d: any) => d?.active !== false) : [];
+  const cls = Array.isArray(cfg?.classifications_config) ? cfg.classifications_config : [];
+  const structure = Array.isArray(cfg?.output_structure) ? [...cfg.output_structure].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0)).filter((b: any) => b.active) : [];
+  const base = String(cfg?.system_instructions ?? FALLBACK_SYSTEM_PROMPT);
+
+  const guardrailsBlock = IMMUTABLE_GUARDRAILS.map((g) => `- ${g}`).join("\n");
+  const dimsBlock = dims.length
+    ? dims.map((d: any) => `- ${d.key} (${d.label}): ${d.description ?? ""}`).join("\n")
+    : "- (usar as dimensões padrão: cultura, liderança, comunicação, colaboração, engajamento, energia, recuperação, segurança psicológica)";
+  const clsBlock = cls.length
+    ? cls.map((c: any) => `- ${c.min}-${c.max}: ${c.label}`).join("\n")
+    : "- 85-100 Fortaleza; 70-84 Saudável; 55-69 Atenção; 40-54 Risco; 0-39 Risco elevado";
+  const structBlock = structure.map((b: any) => `- ${b.key}: ${b.title}`).join("\n");
+
+  return `${base}
+
+REGRAS IMUTÁVEIS DE SEGURANÇA (obrigatórias, aplicadas pelo backend):
+${guardrailsBlock}
+
+DIMENSÕES A AVALIAR:
+${dimsBlock}
+
+CLASSIFICAÇÕES:
+${clsBlock}
+
+SEÇÕES DO RELATÓRIO (na ordem):
+${structBlock}
+
+COMPORTAMENTO:
+- Tom: ${tone.tone ?? "executivo"} | Detalhe: ${tone.detail ?? "equilibrado"} | Formalidade: ${tone.formality ?? "alta"}
+- Máximo de forças: ${tone.max_strengths ?? 5}
+- Máximo de riscos: ${tone.max_risks ?? 5}
+- Máximo de recomendações: ${tone.max_recommendations ?? 6}
+- Incluir tensões: ${tone.include_tensions !== false}
+- Incluir oportunidades: ${tone.include_opportunities !== false}
+- Incluir plano inicial: ${tone.include_initial_plan !== false}
+- Sempre incluir evidências, nível de confiança e limitações.
+
+${tone.extra_instructions ? `INSTRUÇÕES ADICIONAIS:\n${tone.extra_instructions}\n` : ""}
+SAÍDA: retorne EXCLUSIVAMENTE um JSON válido no schema abaixo:
+{
+  "executive_summary": string,
+  "organizational_identity": string,
+  "overall_score": number|null,
+  "dimensions": [{ "key": string, "label": string, "score": number|null, "classification": string, "trend": string, "evidence": string[], "risks": string[], "opportunities": string[], "confidence": number }],
+  "strengths": [{ "dimension": string, "evidence": string, "impact": string, "expansion": string }],
+  "tensions": [{ "diverging": string, "explanation": string, "risk": string, "action": string }],
+  "risks": [{ "title": string, "level": "baixo"|"moderado"|"alto"|"critico", "evidence": string, "trend": string, "horizon": string, "impact": string, "confidence": number }],
+  "opportunities": [{ "title": string, "description": string }],
+  "priorities": [{ "code": "P1"|"P2"|"P3", "title": string, "reason": string }],
+  "recommendations": [{ "title": string, "description": string, "priority": "P1"|"P2"|"P3", "owner": string, "deadline": string, "effort": "baixo"|"medio"|"alto", "impact": "baixo"|"medio"|"alto", "metrics": string[], "dependencies": string[] }],
+  "initial_action_plan": [{ "step": string, "owner": string, "when": string }],
+  "confidence": number,
+  "confidence_reason": string,
+  "limitations": string[],
+  "used_sections": string[]
+}
+Regras de score:
+- Se amostra < mínimo permitido para uma dimensão, use score = null e cite em limitations.
+- Nunca preencha score com valor arbitrário.`;
+}
+
+// Custo estimado (USD) — aproximação para observabilidade
+function estimateCost(model: string, tokensIn: number, tokensOut: number): number {
+  const rates: Record<string, { in: number; out: number }> = {
+    "google/gemini-2.5-pro": { in: 1.25 / 1e6, out: 5 / 1e6 },
+    "google/gemini-2.5-flash": { in: 0.075 / 1e6, out: 0.3 / 1e6 },
+    "google/gemini-2.5-flash-lite": { in: 0.05 / 1e6, out: 0.2 / 1e6 },
+    "openai/gpt-5.5": { in: 3 / 1e6, out: 15 / 1e6 },
+  };
+  const r = rates[model] ?? { in: 1 / 1e6, out: 3 / 1e6 };
+  return Number((tokensIn * r.in + tokensOut * r.out).toFixed(6));
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -57,6 +148,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const days = Number(body?.days ?? 90);
+    const testMode = body?.test_mode === true;
+    const configSource: "draft" | "published" = body?.config_source === "draft" ? "draft" : "published";
 
     const { data: profile } = await admin
       .from("profiles")
@@ -72,14 +165,16 @@ Deno.serve(async (req) => {
       .eq("user_id", userId)
       .eq("organization_id", orgId);
     const roleSet = new Set((roles ?? []).map((r: { role: string }) => r.role));
-    // Also check global roles (organization_id null)
     const { data: globalRoles } = await admin
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
       .is("organization_id", null);
     (globalRoles ?? []).forEach((r: { role: string }) => roleSet.add(r.role));
-    if (!roleSet.has("owner") && !roleSet.has("rh_admin")) {
+
+    if (testMode) {
+      if (!roleSet.has("platform_admin")) return json({ error: "forbidden" }, 403);
+    } else if (!roleSet.has("owner") && !roleSet.has("rh_admin")) {
       return json({ error: "forbidden" }, 403);
     }
 
@@ -93,27 +188,47 @@ Deno.serve(async (req) => {
     const periodStart = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
     const periodEnd = new Date().toISOString().slice(0, 10);
 
+    // Carregar configuração publicada / rascunho + fallback
+    const cfg = await loadConfigBySource(admin, configSource);
+    const modelPrimary = cfg?.model_config?.primary_model ?? "google/gemini-2.5-pro";
+    const modelFallback = cfg?.model_config?.fallback_model ?? "google/gemini-2.5-flash";
+    const temperature = Number(cfg?.model_config?.temperature ?? 0.4);
+    const maxTokens = Number(cfg?.model_config?.max_tokens ?? 6000);
+    const systemPrompt = cfg ? buildSystemPrompt(cfg) : FALLBACK_SYSTEM_PROMPT;
+
+    const started = Date.now();
+    async function callModel(model: string) {
+      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${lovableKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          temperature,
+          max_tokens: maxTokens,
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content:
+                `Contexto agregado (últimos ${days} dias) da organização. Apenas dados com amostra >= mínimo são exibidos. Gere o DNA Organizacional em JSON válido conforme o schema.\n\n` +
+                JSON.stringify(ctx ?? {}, null, 2),
+            },
+          ],
+          response_format: { type: "json_object" },
+        }),
+      });
+    }
+
     // Call Lovable AI Gateway
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${lovableKey}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          {
-            role: "user",
-            content:
-              `Contexto agregado (últimos ${days} dias) da organização. Todos os dados são anônimos e apenas com amostra >= 5 são exibidos. Gere o DNA Organizacional em JSON.\n\n` +
-              JSON.stringify(ctx ?? {}, null, 2),
-          },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
+    let usedModel = modelPrimary;
+    let aiRes = await callModel(modelPrimary);
+    if (!aiRes.ok && modelFallback && modelFallback !== modelPrimary && aiRes.status >= 500) {
+      usedModel = modelFallback;
+      aiRes = await callModel(modelFallback);
+    }
 
     if (!aiRes.ok) {
       const errText = await aiRes.text();
@@ -125,6 +240,9 @@ Deno.serve(async (req) => {
 
     const aiJson = await aiRes.json();
     const raw = aiJson?.choices?.[0]?.message?.content ?? "";
+    const usage = aiJson?.usage ?? {};
+    const tokensIn = Number(usage?.prompt_tokens ?? 0);
+    const tokensOut = Number(usage?.completion_tokens ?? 0);
     let parsed: Record<string, unknown> | null = null;
     try {
       parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -143,27 +261,52 @@ Deno.serve(async (req) => {
     const obj = (v: unknown) =>
       v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 
+    // Mapear scores das dimensões novas para as colunas legadas (compatibilidade RH)
+    const dims = arr((parsed as any).dimensions) as any[];
+    const dimScore = (key: string): number | null => {
+      const d = dims.find((x) => x?.key === key);
+      return d ? num(d.score) : null;
+    };
+
+    const p: any = parsed;
+    const summaryText = String(p.executive_summary ?? p.summary ?? "").trim();
+    const metrics = {
+      model: usedModel,
+      elapsed_ms: Date.now() - started,
+      tokens_in: tokensIn,
+      tokens_out: tokensOut,
+      tokens_total: tokensIn + tokensOut,
+      estimated_cost_usd: estimateCost(usedModel, tokensIn, tokensOut),
+      config_source: configSource,
+      config_version: cfg?.version ?? null,
+      config_status: cfg?.status ?? "fallback",
+    };
+
+    if (testMode) {
+      return json({ ok: true, test: true, report: parsed, metrics });
+    }
+
     const record = {
       organization_id: orgId,
       period_start: periodStart,
       period_end: periodEnd,
       status: "completed",
-      overall_score: num((parsed as any).overall_score),
-      culture_score: num((parsed as any).culture_score),
-      leadership_score: num((parsed as any).leadership_score),
-      communication_score: num((parsed as any).communication_score),
-      collaboration_score: num((parsed as any).collaboration_score),
-      engagement_score: num((parsed as any).engagement_score),
-      energy_score: num((parsed as any).energy_score),
-      recovery_score: num((parsed as any).recovery_score),
-      psychological_safety_score: num((parsed as any).psychological_safety_score),
-      summary: String((parsed as any).summary ?? ""),
-      strengths: arr((parsed as any).strengths),
-      opportunities: arr((parsed as any).opportunities),
-      recommendations: arr((parsed as any).recommendations),
-      evidence: obj((parsed as any).evidence),
-      generated_by: "google/gemini-2.5-pro",
-      version: 1,
+      overall_score: num(p.overall_score),
+      culture_score: dimScore("culture"),
+      leadership_score: dimScore("leadership"),
+      communication_score: dimScore("communication"),
+      collaboration_score: dimScore("collaboration"),
+      engagement_score: dimScore("engagement"),
+      energy_score: dimScore("energy"),
+      recovery_score: dimScore("recovery"),
+      psychological_safety_score: dimScore("psychological_safety"),
+      summary: summaryText,
+      strengths: arr(p.strengths),
+      opportunities: arr(p.opportunities),
+      recommendations: arr(p.recommendations),
+      evidence: { ...obj(p.evidence_raw), rich: parsed, metrics },
+      generated_by: usedModel,
+      version: cfg?.version ?? 1,
     };
 
     const { data: inserted, error: insErr } = await admin
@@ -173,7 +316,7 @@ Deno.serve(async (req) => {
       .single();
     if (insErr) return json({ error: insErr.message }, 500);
 
-    return json({ ok: true, report: inserted });
+    return json({ ok: true, report: inserted, metrics });
   } catch (e) {
     console.error("generate-organizational-dna error", e);
     return json({ error: (e as Error).message }, 500);

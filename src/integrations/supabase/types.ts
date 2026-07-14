@@ -133,9 +133,11 @@ export type Database = {
       }
       ai_prompt_configs: {
         Row: {
+          classifications_config: Json
           created_at: string
           created_by: string | null
           description: string | null
+          dimensions_config: Json
           examples: Json
           guardrails: Json
           id: string
@@ -153,9 +155,11 @@ export type Database = {
           version: number
         }
         Insert: {
+          classifications_config?: Json
           created_at?: string
           created_by?: string | null
           description?: string | null
+          dimensions_config?: Json
           examples?: Json
           guardrails?: Json
           id?: string
@@ -173,9 +177,11 @@ export type Database = {
           version?: number
         }
         Update: {
+          classifications_config?: Json
           created_at?: string
           created_by?: string | null
           description?: string | null
+          dimensions_config?: Json
           examples?: Json
           guardrails?: Json
           id?: string
