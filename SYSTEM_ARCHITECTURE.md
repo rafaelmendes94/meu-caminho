@@ -78,3 +78,7 @@ RPC agregadora (k-anonimato ≥5, SECURITY DEFINER)
 
 ## Camada RAG (Knowledge Hub™)
 Todas as IAs generativas (`executive-ai`, `generate-organizational-dna`, `generate-weekly-insights`, `generate-action-plan`, `generate-intelligent-ritual`, `cms-recommend`) invocam `fetchKnowledgeContext()` antes de chamar o LLM. O helper embeda a query (`google/gemini-embedding-001`, 3072d), consulta `match_knowledge_chunks` filtrando por `organization_id` (global + org atual), respeita cache (TTL 1h, invalidação por trigger) e registra uso em `knowledge_usage`. O bloco de contexto é injetado como mensagem `user` adicional, preservando os prompts versionados. O `ai-orchestrator` não faz RAG próprio — herda o contexto via seus especialistas para evitar chamadas duplicadas. `recommend-content` é motor determinístico (sem LLM) e permanece fora do RAG.
+
+## Enterprise Settings
+
+Rota `/enterprise/rh/configuracoes` (Sub-fases A/B/C — Fase 18). 11 abas persistindo em `organizations`, `organization_settings` e bucket `org-branding`. Detalhes em `ENTERPRISE_SETTINGS.md`.

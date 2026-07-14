@@ -703,6 +703,225 @@ const FragmentRow = ({ label, children }: { label: string; children: React.React
 );
 
 // ---------- PAGE ----------
+// ---------- ABA IA ----------
+type AiCfg = {
+  participates: boolean;
+  allow_recommendations: boolean; allow_insights: boolean; allow_dna: boolean;
+  allow_council: boolean; allow_rituals: boolean; allow_plans: boolean; allow_score: boolean;
+  temperature: number; model: string; language: string; tone: string;
+};
+function IaTab() {
+  const { value, setValue, save, loading, saving } = useEnterpriseSettings<AiCfg>("ai_settings", {
+    participates: true, allow_recommendations: true, allow_insights: true, allow_dna: true,
+    allow_council: true, allow_rituals: true, allow_plans: true, allow_score: true,
+    temperature: 0.7, model: "google/gemini-3-flash-preview", language: "pt-BR", tone: "consultivo",
+  });
+  const toggles: [keyof AiCfg, string][] = [
+    ["participates","Empresa participa da IA"],
+    ["allow_recommendations","Permitir recomendações"],
+    ["allow_insights","Permitir Insights"],
+    ["allow_dna","Permitir DNA"],
+    ["allow_council","Permitir Conselho"],
+    ["allow_rituals","Permitir Rituais"],
+    ["allow_plans","Permitir Planos"],
+    ["allow_score","Permitir Score"],
+  ];
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+  return (
+    <Card>
+      <CardHeader><CardTitle>Configurações de IA</CardTitle><CardDescription>Participação da empresa na inteligência da plataforma.</CardDescription></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {toggles.map(([k, l]) => (
+            <div key={String(k)} className="flex items-center justify-between border rounded-md px-3 py-2">
+              <span className="text-sm">{l}</span>
+              <Switch checked={!!(value as any)[k]} onCheckedChange={(v) => setValue({ ...value, [k]: v } as AiCfg)} />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <Field label="Temperatura padrão">
+            <Input type="number" min={0} max={2} step="0.1" value={value.temperature}
+              onChange={(e) => setValue({ ...value, temperature: Number(e.target.value) || 0 })} />
+          </Field>
+          <Field label="Modelo padrão">
+            <SelectBox value={value.model} onChange={(v) => setValue({ ...value, model: v })}
+              options={["google/gemini-3-flash-preview","google/gemini-2.5-pro","openai/gpt-5","openai/gpt-5-mini"]} />
+          </Field>
+          <Field label="Idioma da IA">
+            <SelectBox value={value.language} onChange={(v) => setValue({ ...value, language: v })}
+              options={[["pt-BR","Português (Brasil)"],["en-US","English (US)"],["es-ES","Español"]]} />
+          </Field>
+          <Field label="Tom da IA">
+            <SelectBox value={value.tone} onChange={(v) => setValue({ ...value, tone: v })}
+              options={[["executivo","Executivo"],["inspirador","Inspirador"],["objetivo","Objetivo"],["consultivo","Consultivo"],["criativo","Criativo"]]} />
+          </Field>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={() => save(value)} disabled={saving}><Save className="h-4 w-4 mr-2" />{saving?"Salvando…":"Salvar"}</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------- ABA INTEGRAÇÕES ----------
+function IntegracoesTab() {
+  const providers = [
+    { key: "google_workspace", label: "Google Workspace" },
+    { key: "microsoft_365", label: "Microsoft 365" },
+    { key: "slack", label: "Slack" },
+    { key: "teams", label: "Microsoft Teams" },
+    { key: "zoom", label: "Zoom" },
+    { key: "meet", label: "Google Meet" },
+    { key: "webhook", label: "Webhook" },
+    { key: "api", label: "API" },
+  ];
+  return (
+    <Card>
+      <CardHeader><CardTitle>Integrações</CardTitle><CardDescription>Estrutura preparada. As conexões serão liberadas em breve.</CardDescription></CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {providers.map((p) => (
+          <div key={p.key} className="flex items-center justify-between border rounded-md px-3 py-3">
+            <div className="flex items-center gap-3"><Plug className="h-4 w-4 text-muted-foreground" /><span className="text-sm font-medium">{p.label}</span></div>
+            <div className="flex items-center gap-2"><Badge variant="outline">Não conectado</Badge><Button size="sm" variant="outline" disabled>Conectar</Button></div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------- ABA SEGURANÇA ----------
+type SecCfg = {
+  session_ttl_hours: number; min_password_length: number;
+  require_mfa: boolean; allow_google: boolean; allow_microsoft: boolean;
+};
+function SegurancaTab() {
+  const { value, setValue, save, loading, saving } = useEnterpriseSettings<SecCfg>("security", {
+    session_ttl_hours: 12, min_password_length: 10,
+    require_mfa: false, allow_google: true, allow_microsoft: false,
+  });
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+  return (
+    <Card>
+      <CardHeader><CardTitle>Segurança</CardTitle><CardDescription>Políticas aplicadas ao acesso da empresa.</CardDescription></CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field label="Sessão expira em (horas)">
+          <Input type="number" min={1} value={value.session_ttl_hours}
+            onChange={(e) => setValue({ ...value, session_ttl_hours: Number(e.target.value) || 1 })} />
+        </Field>
+        <Field label="Senha mínima (caracteres)">
+          <Input type="number" min={6} value={value.min_password_length}
+            onChange={(e) => setValue({ ...value, min_password_length: Number(e.target.value) || 6 })} />
+        </Field>
+        <ToggleRow label="Obrigar MFA" checked={value.require_mfa} onChange={(v) => setValue({ ...value, require_mfa: v })} />
+        <ToggleRow label="Permitir login Google" checked={value.allow_google} onChange={(v) => setValue({ ...value, allow_google: v })} />
+        <ToggleRow label="Permitir login Microsoft" checked={value.allow_microsoft} onChange={(v) => setValue({ ...value, allow_microsoft: v })} />
+        <div className="md:col-span-2 flex justify-end">
+          <Button onClick={() => save(value)} disabled={saving}><Save className="h-4 w-4 mr-2" />{saving?"Salvando…":"Salvar"}</Button>
+        </div>
+        <div className="md:col-span-2 text-xs text-muted-foreground border-t pt-3">
+          Sessões ativas e dispositivos: disponíveis via listagem em `auth.sessions` — visualização será liberada em próxima iteração.
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+const ToggleRow = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
+  <div className="flex items-center justify-between border rounded-md px-3 py-2">
+    <span className="text-sm">{label}</span>
+    <Switch checked={checked} onCheckedChange={onChange} />
+  </div>
+);
+
+// ---------- ABA AUDITORIA ----------
+function AuditoriaTab() {
+  const { organization } = useAuth();
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [entity, setEntity] = useState<string>("all");
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      setLoading(true);
+      const query = supabase.from("organization_audit_logs")
+        .select("id,created_at,actor_user_id,action,entity_type,metadata,before_data,after_data")
+        .eq("organization_id", organization.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      const { data } = await query;
+      setRows(data ?? []);
+      setLoading(false);
+    })();
+  }, [organization?.id]);
+
+  const filtered = rows.filter((r) => {
+    if (entity !== "all" && r.entity_type !== entity) return false;
+    if (q && !JSON.stringify(r).toLowerCase().includes(q.toLowerCase())) return false;
+    return true;
+  });
+
+  const exportCsv = () => {
+    const header = ["data","ator","acao","entidade","metadata"];
+    const lines = [header.join(",")].concat(filtered.map((r) => [
+      new Date(r.created_at).toISOString(),
+      r.actor_user_id ?? "",
+      r.action,
+      r.entity_type,
+      JSON.stringify(r.metadata ?? {}).replace(/,/g, ";"),
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")));
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `auditoria-${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const entities = Array.from(new Set(rows.map((r) => r.entity_type))).sort();
+
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between gap-2">
+        <div><CardTitle>Auditoria</CardTitle><CardDescription>{filtered.length} de {rows.length} registro(s)</CardDescription></div>
+        <Button size="sm" variant="outline" onClick={exportCsv}>Exportar CSV</Button>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex flex-col md:flex-row gap-2">
+          <Input placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} className="md:max-w-xs" />
+          <div className="md:w-56">
+            <SelectBox value={entity} onChange={setEntity}
+              options={[["all","Todas as entidades"], ...entities.map((e) => [e, e] as [string,string])]} />
+          </div>
+        </div>
+        {loading ? <div className="text-sm text-muted-foreground">Carregando…</div> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs uppercase text-muted-foreground text-left">
+                <tr><th className="py-2">Quando</th><th>Ator</th><th>Ação</th><th>Entidade</th><th>Metadata</th></tr>
+              </thead>
+              <tbody>
+                {filtered.map((r) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
+                    <td className="whitespace-nowrap text-xs text-muted-foreground">{(r.actor_user_id ?? "").slice(0,8) || "—"}</td>
+                    <td>{r.action}</td>
+                    <td>{r.entity_type}</td>
+                    <td className="text-xs text-muted-foreground max-w-md truncate">{JSON.stringify(r.metadata ?? {})}</td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-muted-foreground text-sm">Sem registros.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function EnterpriseSettingsScreen() {
   const { hasAnyRole, loading } = useAuth();
   const navigate = useNavigate();
@@ -750,10 +969,10 @@ export default function EnterpriseSettingsScreen() {
           {tab === "usuarios"       && <ComingSoon label="Usuários" />}
           {tab === "calendario"     && <CalendarioTab />}
           {tab === "notificacoes"   && <NotificacoesTab />}
-          {tab === "ia"             && <ComingSoon label="IA" />}
-          {tab === "integracoes"    && <ComingSoon label="Integrações" />}
-          {tab === "seguranca"      && <ComingSoon label="Segurança" />}
-          {tab === "auditoria"      && <ComingSoon label="Auditoria" />}
+          {tab === "ia"             && <IaTab />}
+          {tab === "integracoes"    && <IntegracoesTab />}
+          {tab === "seguranca"      && <SegurancaTab />}
+          {tab === "auditoria"      && <AuditoriaTab />}
         </section>
       </div>
     </EnterpriseRHLayout>
