@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutGrid, 
@@ -69,6 +69,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AppMobileHeader } from "./layouts/AppMobileHeader";
 import { useAuth } from "@/hooks/useAuth";
+import RHCommandPalette from "@/components/enterprise/RHCommandPalette";
+import { Command as CommandIcon } from "lucide-react";
 
 interface NavItemProps {
   to: string;
@@ -331,6 +333,18 @@ export const EnterpriseRHLayout = ({ children, title }: { children: ReactNode; t
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, []);
 
   const initiallyOpen = useMemo(() => {
     const set: Record<string, boolean> = {};
@@ -379,6 +393,16 @@ export const EnterpriseRHLayout = ({ children, title }: { children: ReactNode; t
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+          {!collapsed && (
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="mx-2 w-[calc(100%-1rem)] flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[12px] font-medium transition-colors"
+            >
+              <CommandIcon className="w-3.5 h-3.5" />
+              <span className="flex-1 text-left">Pesquisa rápida</span>
+              <span className="text-[10px] text-slate-500 font-mono">⌘K</span>
+            </button>
+          )}
           {rhGroups.map((g) => {
             const isOpen = g.collapsible ? openGroups[g.key] ?? false : true;
             return (
@@ -454,6 +478,7 @@ export const EnterpriseRHLayout = ({ children, title }: { children: ReactNode; t
           <EnterpriseRHBottomNav />
         </main>
       </div>
+      <RHCommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   );
 };
