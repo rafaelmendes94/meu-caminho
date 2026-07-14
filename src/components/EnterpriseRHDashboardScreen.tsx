@@ -1,24 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  RefreshCw,
-  Sparkles,
-  Dna,
-  Target,
-  Gauge,
-  Activity
+import {
+  TrendingUp, TrendingDown, Minus, ArrowRight, ShieldCheck, Zap, RefreshCw,
+  Sparkles, Dna, Target, Gauge, Activity, AlertTriangle, Users, UserPlus,
+  MessageSquare, Building2, Package as PackageIcon, BookOpen, Download,
+  Play, ChevronRight, ClipboardList, Calendar,
 } from "lucide-react";
-import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
+import { EnterpriseRHLayout } from "./EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRealtime } from "@/hooks/useRealtime";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Summary = {
   avg_mood_30d: number | null;
@@ -39,71 +32,68 @@ type Summary = {
 const fmt = (v: number | null | undefined, digits = 1) =>
   v === null || v === undefined ? "•••" : Number(v).toFixed(digits);
 
-const BG = "#F7F4F2";
-const ORANGE = "#F88A2B";
-const DARK_BG = "#0B0908";
+// Fase 23 — Executive Cockpit
+// Reorganiza o Dashboard em seções densas (Hero → Saúde → Alertas → IA → Operação → Equipe → Conteúdo → Próximas ações).
+// Todas as queries preexistentes foram mantidas; adicionamos apenas contagens leves e reagrupamos a apresentação.
 
-const KPICard = ({ value, label, trend }: { value: string; label: string; trend?: string }) => (
-  <div className="rounded-3xl p-5 bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-sm">
-    <div className="text-[28px] font-bold text-[#111] mb-1 leading-none">{value}</div>
-    <div className="text-[12px] font-medium text-[#666] uppercase tracking-wide">{label}</div>
-    {trend && (
-      <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#7FA06E]">
-        <TrendingUp className="h-3 w-3" />
-        {trend}
-      </div>
-    )}
+const Card = ({
+  children, className = "", onClick, as = "div",
+}: {
+  children: React.ReactNode; className?: string; onClick?: () => void; as?: "div" | "button";
+}) => {
+  const cls = `rounded-2xl bg-white border border-[#E9E4DF] shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all ${
+    onClick ? "text-left hover:border-[#F88A2B]/40 hover:shadow-[0_10px_30px_-10px_rgba(248,138,43,0.25)]" : ""
+  } ${className}`;
+  if (as === "button" || onClick) {
+    return <button onClick={onClick} className={`w-full ${cls}`}>{children}</button>;
+  }
+  return <div className={cls}>{children}</div>;
+};
+
+const SectionTitle = ({ label, action }: { label: string; action?: React.ReactNode }) => (
+  <div className="flex items-end justify-between px-1 mb-3">
+    <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0B0908]/50 font-montserrat">{label}</h3>
+    {action}
   </div>
 );
 
-const AreaCard = ({ 
-  name, 
-  balance, 
-  overload, 
-  trend, 
-  status = "normal" 
-}: { 
-  name: string; 
-  balance: number; 
-  overload: string; 
-  trend: string;
-  status?: "normal" | "warning";
+const MiniKPI = ({
+  icon: Icon, value, label, trend, onClick,
+}: {
+  icon: any; value: string; label: string; trend?: { dir: "up" | "down" | "flat"; text: string }; onClick?: () => void;
 }) => (
-  <div className={`rounded-3xl p-6 border transition-all duration-300 ${
-    status === "warning" 
-      ? "bg-amber-50/50 border-amber-200/50 shadow-[0_10px_40px_-15px_rgba(245,158,11,0.15)]" 
-      : "bg-white border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
-  }`}>
-    <div className="flex justify-between items-start mb-5">
-      <h4 className="text-[18px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>{name}</h4>
-      {status === "warning" && (
-        <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider">
-          Alerta
-        </span>
-      )}
-    </div>
-    
-    <div className="grid grid-cols-3 gap-4">
-      <div>
-        <div className="text-[10px] uppercase tracking-widest text-[#999] mb-1 font-bold">Equilíbrio</div>
-        <div className="text-[16px] font-bold text-[#111]">{balance}</div>
+  <Card onClick={onClick} className="p-4">
+    <div className="flex items-start gap-3">
+      <div className="h-8 w-8 rounded-lg bg-[#F88A2B]/10 grid place-items-center shrink-0">
+        <Icon className="h-4 w-4 text-[#F88A2B]" />
       </div>
-      <div>
-        <div className="text-[10px] uppercase tracking-widest text-[#999] mb-1 font-bold">Sobrecarga</div>
-        <div className="text-[16px] font-bold text-[#111]">{overload}</div>
-      </div>
-      <div>
-        <div className="text-[10px] uppercase tracking-widest text-[#999] mb-1 font-bold">Tendência</div>
-        <div className={`flex items-center gap-1 text-[13px] font-bold ${
-          trend.includes('queda') ? 'text-amber-600' : trend.includes('estável') ? 'text-gray-500' : 'text-[#7FA06E]'
-        }`}>
-          {trend.includes('queda') ? <TrendingDown className="h-3 w-3" /> : trend.includes('estável') ? <Minus className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
-          <span className="text-[11px] leading-tight">{trend}</span>
-        </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#666]">{label}</div>
+        <div className="text-[22px] font-bold text-[#111] leading-none mt-1">{value}</div>
+        {trend && (
+          <div className={`mt-1.5 flex items-center gap-1 text-[10px] font-bold ${
+            trend.dir === "up" ? "text-emerald-600" : trend.dir === "down" ? "text-amber-600" : "text-slate-500"
+          }`}>
+            {trend.dir === "up" ? <TrendingUp className="h-3 w-3" /> : trend.dir === "down" ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+            {trend.text}
+          </div>
+        )}
       </div>
     </div>
-  </div>
+  </Card>
 );
+
+const SeverityDot = ({ level }: { level: string }) => {
+  const color =
+    level === "critical" ? "bg-red-500" :
+    level === "high" ? "bg-orange-500" :
+    level === "medium" || level === "warning" ? "bg-amber-500" :
+    "bg-blue-500";
+  return <span className={`w-2 h-2 rounded-full ${color} shrink-0`} />;
+};
+
+type AlertRow = { id: string; title: string; severity: string; created_at: string };
+type NextAction = { id: string; label: string; hint: string; icon: any; to: string; when?: string };
 
 export default function EnterpriseRHDashboardScreen() {
   const navigate = useNavigate();
@@ -117,6 +107,10 @@ export default function EnterpriseRHDashboardScreen() {
   const [weeklyInsights, setWeeklyInsights] = useState<{ count: number; top: { title: string; severity: string | null } | null }>({ count: 0, top: null });
   const [orgScore, setOrgScore] = useState<{ overall: number | null; previous: number | null; confidence: number | null } | null>(null);
   const [impactSummary, setImpactSummary] = useState<{ count: number; avg: number | null; top: { source_type: string; impact: number } | null }>({ count: 0, avg: null, top: null });
+  const [alertsList, setAlertsList] = useState<AlertRow[]>([]);
+  const [team, setTeam] = useState<{ employees: number; invites: number; departments: number; units: number }>({ employees: 0, invites: 0, departments: 0, units: 0 });
+  const [contentStats, setContentStats] = useState<{ views7d: number; downloads7d: number; topTitle: string | null }>({ views7d: 0, downloads7d: 0, topTitle: null });
+  const [plansSoon, setPlansSoon] = useState<{ id: string; title: string; due_date: string | null }[]>([]);
 
   const load = async () => {
     if (!organization?.id) return;
@@ -194,6 +188,53 @@ export default function EnterpriseRHDashboardScreen() {
     } else {
       setImpactSummary({ count: 0, avg: null, top: null });
     }
+
+    // Fase 23 — dados leves adicionais (contagens; nada de novo backend).
+    const [alertsRes, empRes, invRes, deptRes, unitsRes, plansRes] = await Promise.all([
+      (supabase as any).from("alerts")
+        .select("id,title,severity,created_at,status")
+        .eq("organization_id", organization.id)
+        .neq("status", "resolved")
+        .order("created_at", { ascending: false }).limit(8),
+      (supabase as any).from("employee_profiles").select("id", { count: "exact", head: true })
+        .eq("organization_id", organization.id),
+      (supabase as any).from("enterprise_invites").select("id", { count: "exact", head: true })
+        .eq("organization_id", organization.id).eq("status", "pending"),
+      (supabase as any).from("departments").select("id", { count: "exact", head: true })
+        .eq("organization_id", organization.id),
+      (supabase as any).from("units").select("id", { count: "exact", head: true })
+        .eq("organization_id", organization.id),
+      (supabase as any).from("action_plans")
+        .select("id,title,due_date,status")
+        .eq("organization_id", organization.id)
+        .not("due_date", "is", null)
+        .order("due_date", { ascending: true }).limit(5),
+    ]);
+    setAlertsList(((alertsRes.data as any[]) || []).map((a) => ({
+      id: a.id, title: a.title || "Alerta", severity: a.severity || "info", created_at: a.created_at,
+    })));
+    setTeam({
+      employees: empRes.count || 0,
+      invites: invRes.count || 0,
+      departments: deptRes.count || 0,
+      units: unitsRes.count || 0,
+    });
+    setPlansSoon(((plansRes.data as any[]) || []).map((p) => ({ id: p.id, title: p.title, due_date: p.due_date })));
+
+    // Conteúdo consumido nos últimos 7 dias
+    const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const [viewsRes, dlRes] = await Promise.all([
+      (supabase as any).from("content_views").select("id", { count: "exact", head: true })
+        .eq("organization_id", organization.id).gte("created_at", since),
+      (supabase as any).from("content_downloads").select("id", { count: "exact", head: true })
+        .eq("organization_id", organization.id).gte("created_at", since),
+    ]);
+    setContentStats({
+      views7d: viewsRes.count || 0,
+      downloads7d: dlRes.count || 0,
+      topTitle: null,
+    });
+
     setLoading(false);
   };
 
@@ -221,384 +262,294 @@ export default function EnterpriseRHDashboardScreen() {
     setRecomputing(false);
   };
 
+  const scoreDelta = orgScore?.overall != null && orgScore?.previous != null
+    ? Math.round(Number(orgScore.overall) - Number(orgScore.previous)) : null;
+
+  const orgName = (organization as any)?.name || "Sua empresa";
+  const orgLogo = (organization as any)?.logo_url || null;
+  const plan = (organization as any)?.plan || (organization as any)?.subscription_status || "—";
+  const seats = (organization as any)?.seats || (organization as any)?.max_users || null;
+
+  const nextActions: NextAction[] = [
+    ...plansSoon.slice(0, 3).map((p) => ({
+      id: `plan-${p.id}`, label: p.title, hint: p.due_date ? `Plano vence em ${new Date(p.due_date).toLocaleDateString("pt-BR")}` : "Plano em andamento",
+      icon: Target, to: "/enterprise/rh/plano-acao", when: p.due_date || undefined,
+    })),
+    ...(weeklyInsights.top ? [{ id: "wi-top", label: weeklyInsights.top.title, hint: "Novo insight semanal", icon: Sparkles, to: "/enterprise/rh/insights-semanais" }] : []),
+    ...(predictive.top ? [{ id: "sig-top", label: predictive.top.title, hint: `Sinal preditivo • ${predictive.top.severity}`, icon: Activity, to: "/enterprise/rh/alertas" }] : []),
+    ...(team.invites > 0 ? [{ id: "inv", label: `${team.invites} convite(s) pendente(s)`, hint: "Reenvie ou acompanhe", icon: UserPlus, to: "/enterprise/rh/equipe/convidar" }] : []),
+  ].slice(0, 5);
+
+  const alertsByLevel = {
+    critical: alertsList.filter((a) => a.severity === "critical"),
+    high: alertsList.filter((a) => a.severity === "high"),
+    medium: alertsList.filter((a) => a.severity === "medium" || a.severity === "warning"),
+    info: alertsList.filter((a) => !["critical", "high", "medium", "warning"].includes(a.severity)),
+  };
+
   return (
-    <EnterpriseRHLayout title="Dashboard">
-      <div className="space-y-8 animate-fade-in">
-        
-        {/* Hero Card */}
+    <EnterpriseRHLayout title="Cockpit">
+      <div className="space-y-6 animate-fade-in">
+
+        {/* 1. HERO EXECUTIVO */}
         <section>
-          <div className="rounded-[2.5rem] bg-white border border-[#E5E0DA] text-[#111] p-10 md:p-14 relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-6">
-                <span className="px-3 py-1.5 rounded-full bg-[#F88A2B]/10 text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] border border-[#F88A2B]/20">Agregado e anônimo</span>
+          <div className="rounded-2xl bg-gradient-to-br from-[#0B0908] via-[#141010] to-[#1F1712] text-white p-6 md:p-8 relative overflow-hidden border border-[#F88A2B]/20 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="h-14 w-14 rounded-xl bg-white/95 grid place-items-center shrink-0 ring-1 ring-white/10 overflow-hidden">
+                  {orgLogo
+                    ? <img src={orgLogo} alt={orgName} className="h-full w-full object-cover" />
+                    : <Building2 className="h-6 w-6 text-[#F88A2B]" />}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded-full bg-[#F88A2B]/15 text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] border border-[#F88A2B]/25">Executive Cockpit</span>
+                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/70">{plan}</span>
+                    {seats && <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/70">{team.employees}/{seats} licenças</span>}
+                  </div>
+                  <h1 className="text-[26px] md:text-[32px] font-bold leading-tight truncate" style={{ fontFamily: "'Playfair Display', serif" }}>{orgName}</h1>
+                  <p className="text-[12px] text-white/60 mt-1">
+                    {dna?.generated_at && <>DNA: {new Date(dna.generated_at).toLocaleDateString("pt-BR")} · </>}
+                    {weeklyInsights.top && <>Insight: {weeklyInsights.top.title.slice(0, 40)}{weeklyInsights.top.title.length > 40 ? "…" : ""} · </>}
+                    Atualizado agora
+                  </p>
+                </div>
               </div>
-              
-              <h2 className="text-[32px] md:text-[42px] leading-tight font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                O temperamento do time,<br />semana a semana.
-              </h2>
-              
-              <p className="text-[15px] md:text-[18px] leading-relaxed text-[#666] mb-10 max-w-xl">
-                Leia sinais coletivos de equilíbrio, sobrecarga, clareza e adesão — sem expor respostas individuais.
-              </p>
 
-              {/* Abstract mini timeline */}
-              <div className="flex items-end gap-2 h-16 mb-2 opacity-50 max-w-md">
-                {[40, 60, 45, 70, 55, 85, 65, 90, 75, 95, 80, 100].map((h, i) => (
-                  <div 
-                    key={i} 
-                    className="flex-1 rounded-full bg-[#F88A2B]" 
-                    style={{ height: `${h}%`, opacity: 0.1 + (i * 0.05) }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* KPIs Grid */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          <button
-            onClick={() => navigate('/enterprise/rh/score-organizacional')}
-            className="col-span-2 lg:col-span-4 text-left rounded-3xl p-6 bg-gradient-to-br from-[#0B0908] to-[#1a1614] text-white border border-[#F88A2B]/30 shadow-[0_8px_30px_rgb(0,0,0,0.15)] flex items-center justify-between gap-4 hover:border-[#F88A2B]/60 transition"
-          >
-            <div className="flex items-center gap-5">
-              <div className="h-14 w-14 rounded-full bg-[#F88A2B]/20 flex items-center justify-center">
-                <Gauge className="h-7 w-7 text-[#F88A2B]" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Score Organizacional™</div>
-                <div className="flex items-end gap-2 mt-1">
-                  <div className="text-[42px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+              {/* Score inline */}
+              <button
+                onClick={() => navigate('/enterprise/rh/score-organizacional')}
+                className="flex items-center gap-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-4 transition-colors"
+                aria-label="Abrir Score Organizacional"
+              >
+                <div className="text-right">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-[#F88A2B]">Score</div>
+                  <div className="text-[36px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {orgScore?.overall != null ? Math.round(Number(orgScore.overall)) : "•••"}
+                    <span className="text-[12px] text-white/50 font-bold">/100</span>
                   </div>
-                  <div className="text-[12px] text-white/60 pb-1 font-bold">/100</div>
-                  {orgScore?.overall != null && orgScore?.previous != null && (
-                    <div className={`ml-3 pb-1 text-[11px] font-bold ${Number(orgScore.overall) - Number(orgScore.previous) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {Number(orgScore.overall) - Number(orgScore.previous) >= 0 ? '+' : ''}
-                      {Math.round(Number(orgScore.overall) - Number(orgScore.previous))} vs anterior
-                    </div>
-                  )}
+                  <div className="text-[10px] text-white/60 mt-1">
+                    {scoreDelta != null && (
+                      <span className={scoreDelta >= 0 ? "text-emerald-400" : "text-red-400"}>
+                        {scoreDelta >= 0 ? "+" : ""}{scoreDelta}
+                      </span>
+                    )}
+                    {" "}· Confiança {orgScore?.confidence != null ? `${Math.round(Number(orgScore.confidence) * 100)}%` : "•••"}
+                  </div>
                 </div>
-                <div className="text-[11px] text-white/60 mt-1">
-                  Confiança: {orgScore?.confidence != null ? `${Math.round(Number(orgScore.confidence) * 100)}%` : '•••'}
-                </div>
-              </div>
+                <Gauge className="h-8 w-8 text-[#F88A2B]" />
+              </button>
             </div>
-            <ArrowRight className="h-5 w-5 text-white/60" />
-          </button>
-          <KPICard
-            value={summary?.checkin_participants_30d != null ? String(summary.checkin_participants_30d) : "•••"}
-            label="Participantes 30d"
-          />
-          <KPICard
-            value={fmt(summary?.pulse_engagement_30d, 2)}
-            label="Engajamento (pulse)"
-          />
-          <KPICard
-            value={fmt(summary?.equilibrium_index_30d, 2)}
-            label="Índice de equilíbrio"
-          />
-          <KPICard
-            value={summary ? String(summary.open_alerts_count) : "•••"}
-            label="Alertas abertos"
-          />
+
+            {/* Quick actions */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              {[
+                { label: "Adicionar colaborador", icon: UserPlus, to: "/enterprise/rh/equipe/convidar" },
+                { label: "Executar IA", icon: Sparkles, to: "/enterprise/rh/conselho-executivo" },
+                { label: "Criar plano", icon: Target, to: "/enterprise/rh/plano-acao" },
+                { label: "Gerar DNA", icon: Dna, to: "/enterprise/rh/dna-organizacional" },
+                { label: "Executar insight", icon: Zap, to: "/enterprise/rh/insights-semanais" },
+              ].map((a) => (
+                <button
+                  key={a.to}
+                  onClick={() => navigate(a.to)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-[#0B0908] text-[12px] font-semibold hover:bg-[#F88A2B] hover:text-white transition-colors"
+                >
+                  <a.icon className="h-3.5 w-3.5" /> {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="text-[10px] text-[#999] italic mt-2 px-1">
+            Todos os indicadores são agregados e anonimizados (mín. 5 participantes por recorte).
+          </p>
         </section>
 
-        <div className="flex items-center justify-between px-1">
-          <p className="text-[11px] text-[#999] italic">
-            Indicadores exibidos apenas quando há amostra mínima de 5 participantes. Dados individuais nunca são exibidos.
-          </p>
-          <button
-            onClick={refreshAlerts}
-            disabled={recomputing || loading}
-            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111] disabled:opacity-40"
-          >
-            <RefreshCw className={`h-3 w-3 ${recomputing ? "animate-spin" : ""}`} />
-            Atualizar alertas
-          </button>
-        </div>
-
-        {/* Inteligência Preditiva — card discreto */}
+        {/* 2. SAÚDE ORGANIZACIONAL — KPIs */}
         <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/alertas')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
-              </div>
+          <SectionTitle
+            label="Saúde organizacional"
+            action={
+              <button
+                onClick={refreshAlerts}
+                disabled={recomputing || loading}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#666] hover:text-[#111] disabled:opacity-40"
+              >
+                <RefreshCw className={`h-3 w-3 ${recomputing ? "animate-spin" : ""}`} />
+                Atualizar
+              </button>
+            }
+          />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <MiniKPI icon={Users} label="Participantes 30d" value={summary?.checkin_participants_30d != null ? String(summary.checkin_participants_30d) : "•••"} />
+            <MiniKPI icon={Zap} label="Engajamento" value={fmt(summary?.pulse_engagement_30d, 2)} />
+            <MiniKPI icon={Activity} label="Equilíbrio" value={fmt(summary?.equilibrium_index_30d, 2)} />
+            <MiniKPI icon={AlertTriangle} label="Alertas abertos" value={summary ? String(summary.open_alerts_count) : "•••"} onClick={() => navigate('/enterprise/rh/alertas')} />
+          </div>
+        </section>
+
+        {/* 3. ALERTAS painel + IA consolidada */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Painel de alertas */}
+          <Card className="p-5 lg:col-span-1">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Inteligência Preditiva</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1">
-                  {predictive.open === 0
-                    ? "Nenhum sinal preditivo ativo no momento."
-                    : predictive.top?.title ?? "Sinais preditivos ativos"}
-                </div>
-                <div className="text-[11px] text-[#666] mt-1">
-                  {predictive.open} aberto(s) · {predictive.critical} crítico(s)
-                </div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Alertas</div>
+                <div className="text-[16px] font-bold text-[#111]">{alertsList.length} ativos</div>
+              </div>
+              <button onClick={() => navigate('/enterprise/rh/alertas')} className="text-[11px] font-bold text-[#666] hover:text-[#F88A2B] inline-flex items-center gap-1">
+                Abrir <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
+            {loading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-9 rounded-lg" />)}
+              </div>
+            ) : alertsList.length === 0 ? (
+              <p className="text-[12px] text-[#999] italic py-4">Nenhum alerta ativo.</p>
+            ) : (
+              <div className="space-y-3">
+                {(["critical", "high", "medium", "info"] as const).map((lv) => {
+                  const items = alertsByLevel[lv];
+                  if (items.length === 0) return null;
+                  const labelMap: Record<string, string> = { critical: "Crítico", high: "Alto", medium: "Médio", info: "Informativo" };
+                  return (
+                    <div key={lv}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <SeverityDot level={lv} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#666]">{labelMap[lv]}</span>
+                        <span className="text-[10px] text-[#999]">· {items.length}</span>
+                      </div>
+                      <ul className="space-y-1">
+                        {items.slice(0, 2).map((a) => (
+                          <li key={a.id}>
+                            <button
+                              onClick={() => navigate('/enterprise/rh/alertas')}
+                              className="w-full text-left text-[12px] text-[#111] hover:text-[#F88A2B] truncate"
+                            >
+                              {a.title}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+
+          {/* IA consolidada */}
+          <Card className="p-5 lg:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Inteligência Artificial</div>
+                <div className="text-[16px] font-bold text-[#111]">Últimas execuções</div>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-[#666]" />
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            A Inteligência Preditiva utiliza apenas dados agregados e anonimizados. Nenhuma pessoa é identificada.
-          </p>
-        </section>
-
-        {/* DNA Organizacional — card discreto */}
-        <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/dna-organizacional')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
-                <Dna className="h-5 w-5 text-[#F88A2B]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">DNA Organizacional™</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1">
-                  {dna
-                    ? `Score geral ${dna.overall != null ? Math.round(dna.overall) : "•••"}/100`
-                    : "Ainda não gerado — visualize o comportamento coletivo agregado."}
-                </div>
-                {dna?.strengths?.length ? (
-                  <div className="text-[11px] text-[#666] mt-1 truncate">
-                    Forças: {dna.strengths.join(" · ")}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[
+                { icon: Dna, title: "DNA", value: dna?.overall != null ? `${Math.round(dna.overall)}/100` : "—", hint: dna?.generated_at ? new Date(dna.generated_at).toLocaleDateString("pt-BR") : "Ainda não gerado", to: "/enterprise/rh/dna-organizacional" },
+                { icon: MessageSquare, title: "Conselho", value: "Abrir", hint: "Chat executivo", to: "/enterprise/rh/conselho-executivo" },
+                { icon: Sparkles, title: "Insights", value: String(weeklyInsights.count), hint: weeklyInsights.top?.title?.slice(0, 32) || "Esta semana", to: "/enterprise/rh/insights-semanais" },
+                { icon: Target, title: "Planos", value: String(plansSoon.length), hint: "Com prazo", to: "/enterprise/rh/plano-acao" },
+                { icon: Zap, title: "Rituais", value: "Ver", hint: "Sugestões coletivas", to: "/enterprise/rh/rituais-inteligentes" },
+                { icon: Activity, title: "Impacto", value: impactSummary.count ? String(impactSummary.count) : "—", hint: impactSummary.avg != null ? `${impactSummary.avg >= 0 ? "+" : ""}${impactSummary.avg.toFixed(1)} médio` : "sem dados", to: "/enterprise/rh/impacto" },
+              ].map((c) => (
+                <button
+                  key={c.to}
+                  onClick={() => navigate(c.to)}
+                  className="text-left rounded-xl border border-[#EEE7E1] p-3 hover:border-[#F88A2B]/40 hover:bg-[#FFF8F1] transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <c.icon className="h-3.5 w-3.5 text-[#F88A2B]" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#666]">{c.title}</span>
                   </div>
-                ) : dna?.generated_at ? (
-                  <div className="text-[11px] text-[#666] mt-1">
-                    Última geração: {new Date(dna.generated_at).toLocaleDateString("pt-BR")}
-                  </div>
-                ) : null}
-              </div>
+                  <div className="text-[16px] font-bold text-[#111] leading-none">{c.value}</div>
+                  <div className="text-[10px] text-[#888] mt-1 truncate">{c.hint}</div>
+                </button>
+              ))}
             </div>
-            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            O DNA Organizacional™ é elaborado exclusivamente com dados agregados e anonimizados. Nenhuma pessoa é identificada.
-          </p>
+          </Card>
         </section>
 
-        {/* Conselho Executivo IA — card */}
+        {/* 4. OPERAÇÃO — Capacity + Emocional + Próximas ações */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card onClick={() => navigate('/enterprise/rh/capacidade')} className="p-5">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Capacity Pulse</div>
+            <div className="mt-1 text-[22px] font-bold text-[#111]">{fmt(summary?.pulse_energy_30d, 2)}</div>
+            <div className="text-[11px] text-[#666] mt-1">Energia coletiva · comunicação {fmt(summary?.pulse_communication_30d, 2)}</div>
+          </Card>
+          <Card onClick={() => navigate('/enterprise/rh/mapa-emocional')} className="p-5">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Mapa Emocional</div>
+            <div className="mt-1 text-[22px] font-bold text-[#111]">
+              Humor {fmt(summary?.avg_mood_30d, 1)} · Estresse {fmt(summary?.avg_stress_30d, 1)}
+            </div>
+            <div className="text-[11px] text-[#666] mt-1">Recuperação {fmt(summary?.pulse_recovery_30d, 2)}</div>
+          </Card>
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Próximas ações</div>
+              <Calendar className="h-4 w-4 text-[#F88A2B]" />
+            </div>
+            {loading ? (
+              <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-7 rounded" />)}</div>
+            ) : nextActions.length === 0 ? (
+              <p className="text-[12px] text-[#999] italic">Nada urgente no radar.</p>
+            ) : (
+              <ul className="space-y-2">
+                {nextActions.map((a) => (
+                  <li key={a.id}>
+                    <button onClick={() => navigate(a.to)} className="w-full text-left flex items-start gap-2 group">
+                      <a.icon className="h-3.5 w-3.5 text-[#F88A2B] mt-0.5 shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-semibold text-[#111] truncate group-hover:text-[#F88A2B]">{a.label}</div>
+                        <div className="text-[10px] text-[#888] truncate">{a.hint}</div>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </section>
+
+        {/* 5. EQUIPE resumo */}
         <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/conselho-executivo')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
-                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Conselho Executivo IA™</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1">Abrir Conselho Executivo</div>
-                <div className="text-[11px] text-[#666] mt-1">
-                  Converse com a IA utilizando somente dados organizacionais autorizados.
-                </div>
-              </div>
-            </div>
-            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            O Conselho Executivo IA responde exclusivamente com indicadores agregados e anonimizados. Nenhuma resposta utiliza dados individuais.
-          </p>
-        </section>
-
-        {/* Planos de Ação Inteligentes — card */}
-        <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/plano-acao')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
-                <Target className="h-5 w-5 text-[#F88A2B]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Planos de Ação Inteligentes</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1">Abrir planos de ação</div>
-                <div className="text-[11px] text-[#666] mt-1">
-                  Transforme DNA, sinais preditivos e alertas em execução real.
-                </div>
-              </div>
-            </div>
-            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            Planos de ação são gerados a partir de dados agregados. Nenhum dado individual é utilizado.
-          </p>
-        </section>
-
-        {/* Insights Semanais IA — card */}
-        <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/insights-semanais')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
-                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Insights desta semana</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1 truncate">
-                  {weeklyInsights.count > 0
-                    ? `${weeklyInsights.count} insight${weeklyInsights.count > 1 ? "s" : ""} disponíveis`
-                    : "Nenhum insight desta semana"}
-                </div>
-                <div className="text-[11px] text-[#666] mt-1 truncate">
-                  {weeklyInsights.top?.title ?? "Gere o briefing executivo semanal com IA."}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-bold text-[#F88A2B] uppercase tracking-widest hidden sm:inline">Visualizar</span>
-              <ArrowRight className="h-5 w-5 text-[#666]" />
-            </div>
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            Insights Semanais utilizam exclusivamente dados organizacionais agregados e anonimizados.
-          </p>
-        </section>
-
-        {/* Motor de Impacto — card */}
-        <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/impacto')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
-                <Activity className="h-5 w-5 text-[#F88A2B]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Motor de Impacto™</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1 truncate">
-                  {impactSummary.count > 0
-                    ? `${impactSummary.count} iniciativas avaliadas · impacto médio ${impactSummary.avg != null ? (impactSummary.avg >= 0 ? "+" : "") + impactSummary.avg.toFixed(1) : "•••"}`
-                    : "Nenhuma iniciativa medida ainda"}
-                </div>
-                {impactSummary.top && (
-                  <div className="text-[11px] text-[#666] mt-1 truncate">
-                    Melhor: {impactSummary.top.source_type === "action_plan" ? "Plano" : impactSummary.top.source_type === "ritual" ? "Ritual" : "Insight"} ({impactSummary.top.impact >= 0 ? "+" : ""}{impactSummary.top.impact.toFixed(1)})
-                  </div>
-                )}
-              </div>
-            </div>
-            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            O Motor de Impacto™ utiliza exclusivamente indicadores organizacionais agregados.
-          </p>
-        </section>
-
-        {/* Rituais Inteligentes — card */}
-        <section>
-          <button
-            onClick={() => navigate('/enterprise/rh/rituais-inteligentes')}
-            className="w-full text-left rounded-3xl bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between gap-4 hover:border-[#F88A2B]/30 transition"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#F88A2B]/10 flex items-center justify-center shrink-0">
-                <Sparkles className="h-5 w-5 text-[#F88A2B]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B]">Rituais Inteligentes™</div>
-                <div className="text-[15px] font-bold text-[#111] mt-1">Abrir rituais</div>
-                <div className="text-[11px] text-[#666] mt-1">
-                  Sugestões de rituais coletivos a partir de sinais agregados.
-                </div>
-              </div>
-            </div>
-            <ArrowRight className="h-5 w-5 text-[#666] shrink-0" />
-          </button>
-          <p className="text-[10px] text-[#999] italic mt-2 px-1">
-            Rituais são sugeridos a partir de sinais agregados. Participações individuais não são exibidas ao RH.
-          </p>
-        </section>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Temperamento do Time Chart */}
-          <section>
-            <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-6 font-montserrat px-1">Temperamento do time</h3>
-            <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full">
-              <p className="text-[13px] text-[#999] italic">
-                Aguardando dados agregados suficientes (mín. 5 participantes) para exibir o temperamento coletivo.
-              </p>
-            </div>
-          </section>
-
-          {/* O que o time mais perguntou */}
-          <section>
-            <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-6 font-montserrat px-1">O que o time mais perguntou à IA</h3>
-            <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full flex flex-col">
-              <div className="flex-1 flex items-center">
-                <p className="text-[13px] text-[#999] italic">
-                  Ainda não há temas agregados suficientes para exibir. Os tópicos aparecem quando houver volume mínimo por categoria.
-                </p>
-              </div>
-              <div className="mt-10 pt-6 border-t border-[#F7F4F2] flex items-center gap-3">
-                <ShieldCheck className="h-4 w-4 text-[#999]" />
-                <p className="text-[12px] text-[#999] font-medium italic font-montserrat">
-                  Os temas são agregados. O RH não vê conversas individuais.
-                </p>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* Recorte por área */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-end px-1">
-            <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] font-montserrat">Recorte por área</h3>
-            <span className="text-[11px] text-[#999] font-bold font-montserrat">Vol. mín. 5 pessoas</span>
+          <SectionTitle
+            label="Equipe"
+            action={<button onClick={() => navigate('/enterprise/rh/equipe')} className="text-[11px] font-bold text-[#666] hover:text-[#F88A2B] inline-flex items-center gap-1">Gerenciar <ChevronRight className="h-3 w-3" /></button>}
+          />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <MiniKPI icon={Users} label="Colaboradores" value={String(team.employees)} onClick={() => navigate('/enterprise/rh/equipe')} />
+            <MiniKPI icon={UserPlus} label="Convites pendentes" value={String(team.invites)} onClick={() => navigate('/enterprise/rh/equipe/convidar')} />
+            <MiniKPI icon={Building2} label="Departamentos" value={String(team.departments)} onClick={() => navigate('/enterprise/rh/departamentos')} />
+            <MiniKPI icon={PackageIcon} label="Unidades" value={String(team.units)} onClick={() => navigate('/enterprise/rh/unidades')} />
           </div>
-          
-          <div className="rounded-[32px] bg-white p-8 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center">
-            <p className="text-[13px] text-[#999] italic">
-              Recortes por área só aparecem quando cada grupo atinge o volume mínimo de participantes.
-            </p>
-          </div>
-
-          <p className="text-center text-[12px] text-[#999] font-bold font-montserrat px-4 mt-8 opacity-60">
-            Recortes por área só aparecem com volume mínimo de colaboradores por grupo.
-          </p>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
-          {/* Decisões sugeridas */}
-          <section>
-            <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-6 font-montserrat px-1">Decisões sugeridas</h3>
-            <div className="rounded-[32px] bg-white p-8 border-l-4 border-l-[#F88A2B] border-y border-r border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full">
-              <p className="text-[13px] text-[#999] italic">
-                Nenhuma decisão sugerida no momento. Sugestões aparecem quando a IA identificar padrões relevantes nos indicadores.
-              </p>
-            </div>
-          </section>
+        {/* 6. CONTEÚDO */}
+        <section>
+          <SectionTitle label="Conteúdo consumido" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <MiniKPI icon={Play} label="Visualizações 7d" value={String(contentStats.views7d)} />
+            <MiniKPI icon={Download} label="Downloads 7d" value={String(contentStats.downloads7d)} />
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <BookOpen className="h-3.5 w-3.5 text-[#F88A2B]" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#666]">Biblioteca</span>
+              </div>
+              <p className="text-[12px] text-[#111]">Recomende conteúdos e acompanhe o consumo agregado da equipe.</p>
+              <button onClick={() => navigate('/enterprise/rh/central-admin')} className="mt-2 text-[11px] font-bold text-[#F88A2B] inline-flex items-center gap-1">
+                Ver biblioteca <ChevronRight className="h-3 w-3" />
+              </button>
+            </Card>
+          </div>
+        </section>
 
-          {/* Action Buttons */}
-          <section className="flex flex-col justify-center gap-4 h-full">
-            <EnterpriseRHButton 
-              onClick={() => navigate('/enterprise/rh/alertas')}
-              icon={ArrowRight}
-              className="flex-row-reverse justify-between px-8"
-            >
-              Ver áreas em alerta
-            </EnterpriseRHButton>
-            
-            <EnterpriseRHButton 
-              onClick={() => navigate('/enterprise/rh/capacidade')}
-              variant="secondary"
-              icon={Zap}
-            >
-              Ver pulso de capacidade
-            </EnterpriseRHButton>
-          </section>
-        </div>
-
+        <p className="text-[10px] text-[#999] italic text-center pt-2">
+          Todos os indicadores são agregados e anonimizados. Dados individuais nunca são exibidos ao RH.
+        </p>
       </div>
     </EnterpriseRHLayout>
   );
