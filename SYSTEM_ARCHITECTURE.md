@@ -68,9 +68,13 @@ RPC agregadora (k-anonimato ≥5, SECURITY DEFINER)
 | Rituais Inteligentes™ | `/enterprise/rh/rituais-inteligentes` | intelligent_rituals, ritual_participations | — | generate-intelligent-ritual |
 | Score Organizacional™ | `/enterprise/rh/score-organizacional` | organizational_scores | calculate_organizational_score | compute-organizational-score |
 | Motor de Impacto™ | `/enterprise/rh/impacto` | impact_measurements, impact_timelines | measure_impact | measure-impact |
+| Knowledge Hub™ | `/admin/knowledge` | knowledge_documents, knowledge_chunks (pgvector), knowledge_collections, knowledge_categories, knowledge_versions, knowledge_cache, knowledge_logs, knowledge_usage | match_knowledge_chunks | knowledge-ingest, knowledge-search, _shared/knowledge_rag.ts |
 
 ## Fronteiras de segurança
 - **Cliente nunca acessa dados individuais de outros colaboradores.**
 - **RH nunca acessa dado bruto individual** — apenas agregados via RPC.
 - **Edge functions usam `service_role`** e validam autorização em código.
 - **IA nunca recebe PII** — apenas contexto agregado retornado por RPC.
+
+## Camada RAG (Knowledge Hub™)
+Todas as IAs generativas (`executive-ai`, `generate-organizational-dna`, `generate-weekly-insights`, `generate-action-plan`, `generate-intelligent-ritual`, `cms-recommend`) invocam `fetchKnowledgeContext()` antes de chamar o LLM. O helper embeda a query (`google/gemini-embedding-001`, 3072d), consulta `match_knowledge_chunks` filtrando por `organization_id` (global + org atual), respeita cache (TTL 1h, invalidação por trigger) e registra uso em `knowledge_usage`. O bloco de contexto é injetado como mensagem `user` adicional, preservando os prompts versionados. O `ai-orchestrator` não faz RAG próprio — herda o contexto via seus especialistas para evitar chamadas duplicadas. `recommend-content` é motor determinístico (sem LLM) e permanece fora do RAG.
