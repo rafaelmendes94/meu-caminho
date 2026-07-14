@@ -704,6 +704,35 @@ const FragmentRow = ({ label, children }: { label: string; children: React.React
 
 // ---------- PAGE ----------
 // ---------- ABA IA ----------
+// ---------- ABA USUÁRIOS ----------
+function UsuariosTab() {
+  const navigate = useNavigate();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Usuários e Acessos</CardTitle>
+        <CardDescription>Gestão de administradores, convites e perfis.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Button variant="outline" onClick={() => navigate("/enterprise/rh")}>
+            <Users className="h-4 w-4 mr-2" /> Central de Acesso RH
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/enterprise/rh/administradores")}>
+            <ShieldCheck className="h-4 w-4 mr-2" /> Múltiplos administradores
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/enterprise/rh/convites")}>
+            <Bell className="h-4 w-4 mr-2" /> Convites
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/enterprise/rh/times")}>
+            <Users className="h-4 w-4 mr-2" /> Times e departamentos
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 type AiCfg = {
   participates: boolean;
   allow_recommendations: boolean; allow_insights: boolean; allow_dna: boolean;
