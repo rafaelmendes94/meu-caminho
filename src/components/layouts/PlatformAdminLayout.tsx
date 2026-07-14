@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BarChart3, Building2, CreditCard, Wallet, Sparkles,
   Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap,
   Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings, Package,
-  ChevronDown, ChevronsLeft, ChevronsRight, Brain, MessageSquare, Dna, CalendarClock, ListChecks, Wand2,
+  ChevronDown, ChevronsLeft, ChevronsRight, Brain, MessageSquare, Dna, CalendarClock, ListChecks, Wand2, FlaskConical,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AdminTopbar from "@/components/admin/AdminTopbar";
@@ -73,6 +73,7 @@ const groups: NavGroup[] = [
       { to: "/admin/ai/recomendacoes", label: "Recomendações", icon: Wand2 },
       { to: "/admin/ai/orchestrator", label: "Orchestrator", icon: Brain },
       { to: "/admin/knowledge", label: "Knowledge Hub", icon: FileText },
+      { to: "/admin/ai/lab", label: "AI Lab", icon: FlaskConical },
     ],
   },
   {
