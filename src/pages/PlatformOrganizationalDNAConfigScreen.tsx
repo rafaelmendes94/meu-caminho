@@ -538,17 +538,237 @@ function ModelTab({ config, setConfig }: { config: DnaConfig; setConfig: React.D
   );
 }
 
-function TestSoonTab() {
+type OrgOpt = { id: string; name: string };
+type TestMetrics = {
+  model: string; elapsed_ms: number; tokens_in: number; tokens_out: number;
+  tokens_total: number; estimated_cost_usd: number;
+  config_source: string; config_version: number | null; config_status: string;
+};
+
+function TestTab({ configVersion, configStatus }: { configVersion: number; configStatus: string }) {
+  const [orgs, setOrgs] = useState<OrgOpt[]>([]);
+  const [orgId, setOrgId] = useState<string>("");
+  const [days, setDays] = useState<number>(90);
+  const [source, setSource] = useState<"draft" | "published">("draft");
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [report, setReport] = useState<any | null>(null);
+  const [metrics, setMetrics] = useState<TestMetrics | null>(null);
+  const [view, setView] = useState<"preview" | "json">("preview");
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.from("organizations").select("id, name").order("name").limit(200);
+      const list = (data ?? []) as OrgOpt[];
+      setOrgs(list);
+      if (list.length && !orgId) setOrgId(list[0].id);
+    })();
+    // eslint-disable-next-line
+  }, []);
+
+  async function run() {
+    if (!orgId) { toast.error("Selecione uma empresa."); return; }
+    setRunning(true); setError(null); setReport(null); setMetrics(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-organizational-dna", {
+        body: { organization_id: orgId, days, test_mode: true, config_source: source },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setReport((data as any).report);
+      setMetrics((data as any).metrics);
+      toast.success("Geração de teste concluída");
+    } catch (e: any) {
+      const msg = e?.message ?? "Falha na geração de teste";
+      setError(msg); toast.error(msg);
+    } finally {
+      setRunning(false);
+    }
+  }
+
   return (
-    <Card>
-      <div className="flex items-start gap-3">
-        <FlaskConical className="w-5 h-5 text-[#F88A2B] mt-0.5" />
-        <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Testar geração</h3>
-          <p className="text-sm text-slate-600 mt-2">O ambiente de testes isolado (com seleção de empresa, comparação rascunho x publicado e métricas de execução) será liberado na Sub-fase B. A edição por linguagem natural com diff chega na Sub-fase C.</p>
+    <div className="space-y-6">
+      <Card>
+        <div className="flex items-center gap-2 mb-4">
+          <FlaskConical className="w-4 h-4 text-[#F88A2B]" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Testar geração isolada</h3>
+        </div>
+        <p className="text-xs text-slate-500 mb-4">
+          Executa a geração do DNA em modo teste (sem persistir relatório) usando dados agregados reais da empresa. Restrito a Super Admins.
+        </p>
+        <div className="grid md:grid-cols-4 gap-4">
+          <div className="md:col-span-2">
+            <Label>Empresa</Label>
+            <select value={orgId} onChange={(e) => setOrgId(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+              {orgs.length === 0 && <option value="">— sem empresas —</option>}
+              {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <Label>Janela (dias)</Label>
+            <Input type="number" min={7} max={365} value={days} onChange={(e) => setDays(Math.max(7, Math.min(365, Number(e.target.value) || 90)))} />
+          </div>
+          <div>
+            <Label>Configuração</Label>
+            <Select value={source} onChange={(v) => setSource(v as "draft" | "published")}
+              options={[
+                { value: "draft", label: `Rascunho atual (v${configVersion} ${configStatus})` },
+                { value: "published", label: "Última publicada" },
+              ]}
+            />
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-xs text-slate-500 flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Guardrails imutáveis aplicados no backend. Nenhum dado individual é acessado.
+          </p>
+          <button onClick={run} disabled={running || !orgId}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+            <Play className="w-4 h-4" /> {running ? "Gerando…" : "Executar teste"}
+          </button>
+        </div>
+      </Card>
+
+      {error && (
+        <Card className="border-red-200 bg-red-50/40">
+          <div className="flex items-start gap-2 text-red-800">
+            <AlertTriangle className="w-4 h-4 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold">Erro na geração</p>
+              <p className="text-xs mt-1 break-all">{error}</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {metrics && (
+        <Card>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Métricas da execução
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+            <Metric icon={<Cpu className="w-3.5 h-3.5" />} label="Modelo" value={metrics.model.split("/").pop() ?? metrics.model} />
+            <Metric icon={<Clock className="w-3.5 h-3.5" />} label="Latência" value={`${(metrics.elapsed_ms / 1000).toFixed(2)}s`} />
+            <Metric icon={<Hash className="w-3.5 h-3.5" />} label="Tokens in" value={metrics.tokens_in.toLocaleString("pt-BR")} />
+            <Metric icon={<Hash className="w-3.5 h-3.5" />} label="Tokens out" value={metrics.tokens_out.toLocaleString("pt-BR")} />
+            <Metric icon={<Hash className="w-3.5 h-3.5" />} label="Total" value={metrics.tokens_total.toLocaleString("pt-BR")} />
+            <Metric icon={<DollarSign className="w-3.5 h-3.5" />} label="Custo est." value={`$${metrics.estimated_cost_usd.toFixed(4)}`} />
+          </div>
+          <div className="mt-3 text-xs text-slate-500 flex items-center gap-2">
+            <Building2 className="w-3.5 h-3.5" />
+            Config: <b>{metrics.config_source}</b> · v{metrics.config_version ?? "?"} · status <b>{metrics.config_status}</b>
+          </div>
+        </Card>
+      )}
+
+      {report && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Preview do relatório</h3>
+            <div className="flex items-center gap-1 text-xs">
+              <button onClick={() => setView("preview")}
+                className={`px-3 py-1.5 rounded-lg font-semibold ${view === "preview" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>Preview</button>
+              <button onClick={() => setView("json")}
+                className={`px-3 py-1.5 rounded-lg font-semibold ${view === "json" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>JSON</button>
+            </div>
+          </div>
+          {view === "preview" ? <ReportPreview report={report} /> : (
+            <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-4 overflow-auto max-h-[560px]">{JSON.stringify(report, null, 2)}</pre>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold flex items-center gap-1">{icon}{label}</div>
+      <div className="text-sm font-bold text-slate-800 mt-1 truncate" title={value}>{value}</div>
+    </div>
+  );
+}
+
+function ReportPreview({ report }: { report: any }) {
+  const dims = Array.isArray(report?.dimensions) ? report.dimensions : [];
+  const recs = Array.isArray(report?.recommendations) ? report.recommendations : [];
+  const risks = Array.isArray(report?.risks) ? report.risks : [];
+  const lims = Array.isArray(report?.limitations) ? report.limitations : [];
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-4">
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F88A2B] to-amber-500 text-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-[9px] uppercase tracking-wider font-semibold">Score</div>
+            <div className="text-2xl font-black">{report?.overall_score ?? "—"}</div>
+          </div>
+        </div>
+        <div className="flex-1">
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Identidade organizacional</p>
+          <p className="text-sm font-semibold text-slate-800">{report?.organizational_identity ?? "—"}</p>
+          <p className="text-xs text-slate-600 mt-1">Confiança: {report?.confidence ?? "—"} · {report?.confidence_reason ?? ""}</p>
         </div>
       </div>
-    </Card>
+      {report?.executive_summary && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Sumário executivo</p>
+          <p className="text-sm text-slate-700 leading-relaxed">{report.executive_summary}</p>
+        </div>
+      )}
+      {dims.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Dimensões</p>
+          <div className="grid md:grid-cols-2 gap-2">
+            {dims.map((d: any, i: number) => (
+              <div key={i} className="border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-800">{d.label ?? d.key}</span>
+                  <span className="text-xs font-bold text-[#F88A2B]">{d.score ?? "n/d"}</span>
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5">{d.classification ?? ""} · confiança {d.confidence ?? "—"}</div>
+                {Array.isArray(d.evidence) && d.evidence.length > 0 && (
+                  <p className="text-xs text-slate-600 mt-1 line-clamp-2">{d.evidence[0]}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {risks.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Riscos</p>
+          <ul className="space-y-1.5">
+            {risks.slice(0, 6).map((r: any, i: number) => (
+              <li key={i} className="text-xs text-slate-700 border-l-2 border-red-400 pl-2">
+                <b>{r.title}</b> <span className="text-[10px] uppercase text-red-600">[{r.level}]</span> — {r.evidence}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {recs.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Recomendações</p>
+          <ol className="space-y-1.5 list-decimal list-inside">
+            {recs.slice(0, 8).map((r: any, i: number) => (
+              <li key={i} className="text-xs text-slate-700">
+                <b>{r.title}</b> <span className="text-[10px] text-slate-500">({r.priority} · esforço {r.effort} · impacto {r.impact})</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+      {lims.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Limitações</p>
+          <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+            {lims.map((l: string, i: number) => <li key={i}>{l}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 
