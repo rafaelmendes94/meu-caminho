@@ -963,9 +963,12 @@ const ToggleRow = ({ label, checked, onChange }: { label: string; checked: boole
 function AuditoriaTab() {
   const { organization } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+  const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [entity, setEntity] = useState<string>("all");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 25;
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -977,7 +980,16 @@ function AuditoriaTab() {
         .order("created_at", { ascending: false })
         .limit(200);
       const { data } = await query;
-      setRows(data ?? []);
+      const list = data ?? [];
+      setRows(list);
+      const ids = Array.from(new Set(list.map((r) => r.actor_user_id).filter(Boolean))) as string[];
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profiles")
+          .select("id,full_name,email,avatar_url,role").in("id", ids);
+        const map: Record<string, any> = {};
+        (profs ?? []).forEach((p: any) => { map[p.id] = p; });
+        setProfilesMap(map);
+      }
       setLoading(false);
     })();
   }, [organization?.id]);
@@ -987,6 +999,9 @@ function AuditoriaTab() {
     if (q && !JSON.stringify(r).toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageRows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  useEffect(() => { setPage(0); }, [q, entity]);
 
   const exportCsv = () => {
     const header = ["data","ator","acao","entidade","metadata"];
@@ -1027,18 +1042,38 @@ function AuditoriaTab() {
                 <tr><th className="py-2">Quando</th><th>Ator</th><th>Ação</th><th>Entidade</th><th>Metadata</th></tr>
               </thead>
               <tbody>
-                {filtered.map((r) => (
+                {pageRows.map((r) => {
+                  const p = r.actor_user_id ? profilesMap[r.actor_user_id] : null;
+                  return (
                   <tr key={r.id} className="border-t">
                     <td className="py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
-                    <td className="whitespace-nowrap text-xs text-muted-foreground">{(r.actor_user_id ?? "").slice(0,8) || "—"}</td>
+                    <td className="whitespace-nowrap text-xs">
+                      {p ? (
+                        <div className="flex items-center gap-2">
+                          {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <div className="h-6 w-6 rounded-full bg-muted" />}
+                          <div className="leading-tight">
+                            <div className="font-medium">{p.full_name || p.email}</div>
+                            <div className="text-[10px] text-muted-foreground">{p.email}{p.role ? ` · ${p.role}` : ""}</div>
+                          </div>
+                        </div>
+                      ) : <span className="text-muted-foreground">{(r.actor_user_id ?? "").slice(0,8) || "—"}</span>}
+                    </td>
                     <td>{r.action}</td>
                     <td>{r.entity_type}</td>
                     <td className="text-xs text-muted-foreground max-w-md truncate">{JSON.stringify(r.metadata ?? {})}</td>
                   </tr>
-                ))}
-                {filtered.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-muted-foreground text-sm">Sem registros.</td></tr>}
+                  );
+                })}
+                {pageRows.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-muted-foreground text-sm">Sem registros.</td></tr>}
               </tbody>
             </table>
+            <div className="flex items-center justify-between mt-3">
+              <div className="text-xs text-muted-foreground">Página {page + 1} de {pageCount}</div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>Anterior</Button>
+                <Button size="sm" variant="outline" disabled={page >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>Próxima</Button>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>
