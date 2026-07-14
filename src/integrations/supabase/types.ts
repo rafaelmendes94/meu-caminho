@@ -131,6 +131,548 @@ export type Database = {
           },
         ]
       }
+      ai_lab_benchmarks: {
+        Row: {
+          aggregate: Json
+          ai_module: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          dataset_id: string | null
+          error: string | null
+          id: string
+          model: string
+          name: string
+          prompt_config_id: string | null
+          prompt_version: number | null
+          status: string
+        }
+        Insert: {
+          aggregate?: Json
+          ai_module: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string | null
+          error?: string | null
+          id?: string
+          model: string
+          name: string
+          prompt_config_id?: string | null
+          prompt_version?: number | null
+          status?: string
+        }
+        Update: {
+          aggregate?: Json
+          ai_module?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string | null
+          error?: string | null
+          id?: string
+          model?: string
+          name?: string
+          prompt_config_id?: string | null
+          prompt_version?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_benchmarks_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_benchmarks_prompt_config_id_fkey"
+            columns: ["prompt_config_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompt_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lab_dataset_items: {
+        Row: {
+          category: string | null
+          context: Json
+          created_at: string
+          criteria: Json
+          dataset_id: string
+          expected_answer: string | null
+          id: string
+          position: number
+          question: string
+          weight: number
+        }
+        Insert: {
+          category?: string | null
+          context?: Json
+          created_at?: string
+          criteria?: Json
+          dataset_id: string
+          expected_answer?: string | null
+          id?: string
+          position?: number
+          question: string
+          weight?: number
+        }
+        Update: {
+          category?: string | null
+          context?: Json
+          created_at?: string
+          criteria?: Json
+          dataset_id?: string
+          expected_answer?: string | null
+          id?: string
+          position?: number
+          question?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_dataset_items_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lab_datasets: {
+        Row: {
+          ai_module: string
+          created_at: string
+          created_by: string | null
+          default_criteria: Json
+          description: string | null
+          id: string
+          key: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          ai_module: string
+          created_at?: string
+          created_by?: string | null
+          default_criteria?: Json
+          description?: string | null
+          id?: string
+          key: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          ai_module?: string
+          created_at?: string
+          created_by?: string | null
+          default_criteria?: Json
+          description?: string | null
+          id?: string
+          key?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_lab_evaluations: {
+        Row: {
+          comment: string | null
+          created_at: string
+          evaluator_id: string | null
+          evaluator_kind: string
+          id: string
+          judge_model: string | null
+          overall: number | null
+          run_id: string
+          scores: Json
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          evaluator_id?: string | null
+          evaluator_kind: string
+          id?: string
+          judge_model?: string | null
+          overall?: number | null
+          run_id: string
+          scores?: Json
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          evaluator_id?: string | null
+          evaluator_kind?: string
+          id?: string
+          judge_model?: string | null
+          overall?: number | null
+          run_id?: string
+          scores?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_evaluations_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lab_experiment_runs: {
+        Row: {
+          created_at: string
+          experiment_id: string
+          id: string
+          run_id: string
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          experiment_id: string
+          id?: string
+          run_id: string
+          variant: string
+        }
+        Update: {
+          created_at?: string
+          experiment_id?: string
+          id?: string
+          run_id?: string
+          variant?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_experiment_runs_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_experiments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_experiment_runs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lab_experiments: {
+        Row: {
+          ai_module: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          dataset_id: string | null
+          hypothesis: string | null
+          id: string
+          metrics: Json
+          model_a: string
+          model_b: string
+          name: string
+          notes: string | null
+          prompt_a_id: string | null
+          prompt_a_snapshot: Json | null
+          prompt_a_version: number | null
+          prompt_b_id: string | null
+          prompt_b_snapshot: Json | null
+          prompt_b_version: number | null
+          status: string
+          winner: string | null
+        }
+        Insert: {
+          ai_module: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string | null
+          hypothesis?: string | null
+          id?: string
+          metrics?: Json
+          model_a: string
+          model_b: string
+          name: string
+          notes?: string | null
+          prompt_a_id?: string | null
+          prompt_a_snapshot?: Json | null
+          prompt_a_version?: number | null
+          prompt_b_id?: string | null
+          prompt_b_snapshot?: Json | null
+          prompt_b_version?: number | null
+          status?: string
+          winner?: string | null
+        }
+        Update: {
+          ai_module?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string | null
+          hypothesis?: string | null
+          id?: string
+          metrics?: Json
+          model_a?: string
+          model_b?: string
+          name?: string
+          notes?: string | null
+          prompt_a_id?: string | null
+          prompt_a_snapshot?: Json | null
+          prompt_a_version?: number | null
+          prompt_b_id?: string | null
+          prompt_b_snapshot?: Json | null
+          prompt_b_version?: number | null
+          status?: string
+          winner?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_experiments_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_experiments_prompt_a_id_fkey"
+            columns: ["prompt_a_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompt_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_experiments_prompt_b_id_fkey"
+            columns: ["prompt_b_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompt_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lab_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          payload: Json
+          target_id: string | null
+          target_kind: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          target_id?: string | null
+          target_kind?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          target_id?: string | null
+          target_kind?: string | null
+        }
+        Relationships: []
+      }
+      ai_lab_publications: {
+        Row: {
+          action: string
+          benchmark_id: string | null
+          created_at: string
+          created_by: string | null
+          experiment_id: string | null
+          from_version: number | null
+          id: string
+          notes: string | null
+          prompt_config_id: string
+          to_version: number | null
+        }
+        Insert: {
+          action: string
+          benchmark_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          experiment_id?: string | null
+          from_version?: number | null
+          id?: string
+          notes?: string | null
+          prompt_config_id: string
+          to_version?: number | null
+        }
+        Update: {
+          action?: string
+          benchmark_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          experiment_id?: string | null
+          from_version?: number | null
+          id?: string
+          notes?: string | null
+          prompt_config_id?: string
+          to_version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_publications_benchmark_id_fkey"
+            columns: ["benchmark_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_benchmarks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_publications_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_experiments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_publications_prompt_config_id_fkey"
+            columns: ["prompt_config_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompt_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lab_runs: {
+        Row: {
+          ai_module: string | null
+          chunks_used: Json
+          confidence: number | null
+          context_enabled: boolean
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          dataset_id: string | null
+          dataset_item_id: string | null
+          error: string | null
+          final_prompt: Json
+          id: string
+          kind: string
+          knowledge_enabled: boolean
+          latency_ms: number | null
+          max_tokens: number | null
+          metadata: Json
+          model: string
+          organization_id: string | null
+          parent_run_id: string | null
+          prompt_config_id: string | null
+          prompt_snapshot: Json
+          prompt_version: number | null
+          question: string
+          response_parsed: Json | null
+          response_raw: string | null
+          status: string
+          streaming: boolean
+          temperature: number | null
+          tokens_in: number | null
+          tokens_out: number | null
+        }
+        Insert: {
+          ai_module?: string | null
+          chunks_used?: Json
+          confidence?: number | null
+          context_enabled?: boolean
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string | null
+          dataset_item_id?: string | null
+          error?: string | null
+          final_prompt?: Json
+          id?: string
+          kind: string
+          knowledge_enabled?: boolean
+          latency_ms?: number | null
+          max_tokens?: number | null
+          metadata?: Json
+          model: string
+          organization_id?: string | null
+          parent_run_id?: string | null
+          prompt_config_id?: string | null
+          prompt_snapshot?: Json
+          prompt_version?: number | null
+          question: string
+          response_parsed?: Json | null
+          response_raw?: string | null
+          status?: string
+          streaming?: boolean
+          temperature?: number | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+        }
+        Update: {
+          ai_module?: string | null
+          chunks_used?: Json
+          confidence?: number | null
+          context_enabled?: boolean
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string | null
+          dataset_item_id?: string | null
+          error?: string | null
+          final_prompt?: Json
+          id?: string
+          kind?: string
+          knowledge_enabled?: boolean
+          latency_ms?: number | null
+          max_tokens?: number | null
+          metadata?: Json
+          model?: string
+          organization_id?: string | null
+          parent_run_id?: string | null
+          prompt_config_id?: string | null
+          prompt_snapshot?: Json
+          prompt_version?: number | null
+          question?: string
+          response_parsed?: Json | null
+          response_raw?: string | null
+          status?: string
+          streaming?: boolean
+          temperature?: number | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lab_runs_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_runs_dataset_item_id_fkey"
+            columns: ["dataset_item_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_dataset_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_runs_parent_run_id_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_lab_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_lab_runs_prompt_config_id_fkey"
+            columns: ["prompt_config_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompt_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_orchestrator_cache: {
         Row: {
           confidence: number | null
