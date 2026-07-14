@@ -456,8 +456,8 @@ function BrandingTab() {
       for (const k of keys) {
         const p = (value as any)[k];
         if (!p) continue;
-        const { data } = await supabase.storage.from("org-branding").createSignedUrl(p, 3600);
-        if (data?.signedUrl) map[k] = data.signedUrl;
+        const url = await getSignedUrl("org-branding", p);
+        if (url) map[k] = url;
       }
       setSigned(map);
     })();
@@ -465,18 +465,31 @@ function BrandingTab() {
 
   const uploadFile = async (field: keyof BrandingCfg, file: File) => {
     if (!orgId) return;
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${orgId}/${String(field)}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("org-branding").upload(path, file, { upsert: true, contentType: file.type });
+    let processed;
+    try {
+      processed = await validateAndCompressImage(file, {
+        maxSide: field === "favicon_path" ? 128 : 1600,
+        preferWebp: field !== "favicon_path", // favicon fica no formato original comprimido
+      });
+    } catch (e: any) {
+      return toast.error(e?.message || "Upload inválido.");
+    }
+    const path = `${orgId}/${String(field)}-${Date.now()}.${processed.ext}`;
+    const { error } = await supabase.storage.from("org-branding").upload(path, processed.file, { upsert: true, contentType: processed.mime });
     if (error) return toast.error(error.message);
+    invalidateSignedUrl("org-branding", path);
     const next = { ...value, [field]: path } as BrandingCfg;
     setValue(next);
     await save(next);
+    toast.success("Imagem enviada.");
   };
 
   const removeFile = async (field: keyof BrandingCfg) => {
     const p = (value as any)[field];
-    if (p) await supabase.storage.from("org-branding").remove([p]);
+    if (p) {
+      await supabase.storage.from("org-branding").remove([p]);
+      invalidateSignedUrl("org-branding", p);
+    }
     const next = { ...value, [field]: null } as BrandingCfg;
     setValue(next);
     await save(next);
