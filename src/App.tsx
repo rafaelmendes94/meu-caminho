@@ -197,6 +197,7 @@ const PlatformWeeklyInsightsConfigScreen = lazy(() => import("./pages/PlatformWe
 const PlatformActionPlanConfigScreen = lazy(() => import("./pages/PlatformActionPlanConfigScreen.tsx"));
 const PlatformIntelligentRitualConfigScreen = lazy(() => import("./pages/PlatformIntelligentRitualConfigScreen.tsx"));
 const PlatformRecommendationEngineConfigScreen = lazy(() => import("./pages/PlatformRecommendationEngineConfigScreen.tsx"));
+const PlatformOrchestratorConfigScreen = lazy(() => import("./pages/PlatformOrchestratorConfigScreen.tsx"));
 const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSoonScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
@@ -483,6 +484,7 @@ const App = () => (
         <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformIntelligentRitualConfigScreen /></PlatformAdmin>} />
          <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Rituais Inteligentes" /></PlatformAdmin>} />
          <Route path="/admin/ai/recomendacoes" element={<PlatformAdmin><PlatformRecommendationEngineConfigScreen /></PlatformAdmin>} />
+        <Route path="/admin/ai/orchestrator" element={<PlatformAdmin><PlatformOrchestratorConfigScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes></Suspense>

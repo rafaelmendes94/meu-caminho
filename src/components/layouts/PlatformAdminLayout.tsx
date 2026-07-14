@@ -71,6 +71,7 @@ const groups: NavGroup[] = [
       { to: "/admin/ai/planos-acao", label: "Planos de Ação", icon: ListChecks },
       { to: "/admin/ai/rituais-inteligentes", label: "Rituais Inteligentes", icon: Sparkles },
       { to: "/admin/ai/recomendacoes", label: "Recomendações", icon: Wand2 },
+      { to: "/admin/ai/orchestrator", label: "Orchestrator", icon: Brain },
     ],
   },
   {
