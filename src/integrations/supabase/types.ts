@@ -2521,6 +2521,517 @@ export type Database = {
           },
         ]
       }
+      gam_achievements: {
+        Row: {
+          badge_id: string | null
+          code: string
+          created_at: string
+          criteria: Json
+          description: string | null
+          id: string
+          name: string
+          status: string
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          badge_id?: string | null
+          code: string
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          badge_id?: string | null
+          code?: string
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gam_achievements_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "gam_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gam_badges: {
+        Row: {
+          category: string | null
+          code: string
+          color: string | null
+          created_at: string
+          criteria: Json
+          description: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          name: string
+          status: string
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          color?: string | null
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          color?: string | null
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      gam_events: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          ends_at: string
+          id: string
+          name: string
+          starts_at: string
+          status: string
+          updated_at: string
+          xp_multiplier: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          id?: string
+          name: string
+          starts_at: string
+          status?: string
+          updated_at?: string
+          xp_multiplier?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          id?: string
+          name?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          xp_multiplier?: number
+        }
+        Relationships: []
+      }
+      gam_levels: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          level: number
+          min_xp: number
+          name: string
+          perks: Json
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          level: number
+          min_xp: number
+          name: string
+          perks?: Json
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          level?: number
+          min_xp?: number
+          name?: string
+          perks?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gam_missions: {
+        Row: {
+          badge_id: string | null
+          code: string
+          created_at: string
+          criteria: Json
+          description: string | null
+          ends_at: string | null
+          event_id: string | null
+          id: string
+          mission_type: string
+          season_id: string | null
+          starts_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          badge_id?: string | null
+          code: string
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          ends_at?: string | null
+          event_id?: string | null
+          id?: string
+          mission_type?: string
+          season_id?: string | null
+          starts_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          badge_id?: string | null
+          code?: string
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          ends_at?: string | null
+          event_id?: string | null
+          id?: string
+          mission_type?: string
+          season_id?: string | null
+          starts_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gam_missions_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "gam_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gam_missions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "gam_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gam_missions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "gam_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gam_org_settings: {
+        Row: {
+          enabled: boolean
+          hide_badges: boolean
+          hide_levels: boolean
+          hide_streak: boolean
+          hide_xp: boolean
+          organization_id: string
+          settings: Json
+          streak_max_recoveries: number
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          hide_badges?: boolean
+          hide_levels?: boolean
+          hide_streak?: boolean
+          hide_xp?: boolean
+          organization_id: string
+          settings?: Json
+          streak_max_recoveries?: number
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          hide_badges?: boolean
+          hide_levels?: boolean
+          hide_streak?: boolean
+          hide_xp?: boolean
+          organization_id?: string
+          settings?: Json
+          streak_max_recoveries?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gam_seasons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          ends_at: string
+          id: string
+          name: string
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          id?: string
+          name: string
+          starts_at: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          id?: string
+          name?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gam_user_badges: {
+        Row: {
+          awarded_at: string
+          badge_id: string
+          id: string
+          metadata: Json
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_id: string
+          id?: string
+          metadata?: Json
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_id?: string
+          id?: string
+          metadata?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gam_user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "gam_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gam_user_missions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          mission_id: string
+          progress: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mission_id: string
+          progress?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string
+          progress?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gam_user_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "gam_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gam_user_streaks: {
+        Row: {
+          current_streak: number
+          last_active_date: string | null
+          longest_streak: number
+          recoveries_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          recoveries_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          recoveries_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gam_user_xp: {
+        Row: {
+          action_key: string
+          created_at: string
+          event_id: string | null
+          id: string
+          metadata: Json
+          organization_id: string | null
+          reference_id: string | null
+          season_id: string | null
+          source: string | null
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          action_key: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          reference_id?: string | null
+          season_id?: string | null
+          source?: string | null
+          user_id: string
+          xp: number
+        }
+        Update: {
+          action_key?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          reference_id?: string | null
+          season_id?: string | null
+          source?: string | null
+          user_id?: string
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gam_user_xp_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "gam_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gam_user_xp_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "gam_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gam_xp_rules: {
+        Row: {
+          action_key: string
+          active: boolean
+          created_at: string
+          daily_cap: number | null
+          id: string
+          label: string
+          metadata: Json
+          updated_at: string
+          xp: number
+        }
+        Insert: {
+          action_key: string
+          active?: boolean
+          created_at?: string
+          daily_cap?: number | null
+          id?: string
+          label: string
+          metadata?: Json
+          updated_at?: string
+          xp?: number
+        }
+        Update: {
+          action_key?: string
+          active?: boolean
+          created_at?: string
+          daily_cap?: number | null
+          id?: string
+          label?: string
+          metadata?: Json
+          updated_at?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       health_checks: {
         Row: {
           checked_at: string
