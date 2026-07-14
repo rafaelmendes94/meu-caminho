@@ -245,7 +245,7 @@ const App = () => (
         <OrgBrandingProvider>
         <OrgLocaleProvider>
         <OrganizationWorkScheduleProvider>
-        <Suspense fallback={null}><Routes>
+        <Suspense fallback={<RouteFallback />}><Routes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
           <Route path="/login" element={<Index />} />
