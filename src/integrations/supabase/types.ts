@@ -4540,6 +4540,17 @@ export type Database = {
         Returns: undefined
       }
       is_platform_admin: { Args: never; Returns: boolean }
+      list_my_sessions: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          ip: unknown
+          is_current: boolean
+          updated_at: string
+          user_agent: string
+        }[]
+      }
       match_knowledge_chunks: {
         Args: {
           match_count?: number

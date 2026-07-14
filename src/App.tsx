@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OrgBrandingProvider from "@/components/OrgBrandingProvider";
 import type { ReactNode } from "react";
 const PlatformSearchScreen = lazy(() => import("./pages/PlatformSearchScreen"));
 const PlatformDocsScreen = lazy(() => import("./pages/PlatformDocsScreen"));
@@ -233,6 +234,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+        <OrgBrandingProvider>
         <Suspense fallback={null}><Routes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
@@ -494,6 +496,7 @@ const App = () => (
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes></Suspense>
+        </OrgBrandingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
