@@ -496,6 +496,7 @@ const App = () => (
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes></Suspense>
+        </OrgBrandingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
