@@ -267,8 +267,13 @@ Deno.serve(async (req) => {
 
         if (isLeader) leaderIdsByDept.set(dept[0], userId);
 
-        // onboarding buckets: first 20 = not started, next 30 = in progress, remainder = completed
-        const onboarding = i <= 20 ? "not_started" : i <= 50 ? "in_progress" : "completed";
+        // Onboarding buckets ~20% / 30% / 50% per company
+        const notStartedCount = Math.round(c.employees * 0.20);
+        const inProgressCount = Math.round(c.employees * 0.30);
+        const onboarding =
+          i <= notStartedCount ? "not_started" :
+          i <= notStartedCount + inProgressCount ? "in_progress" :
+          "completed";
 
         emailsCreated.push({ email, fullName, role: isLeader ? "leader" : "employee",
           dept: dept[0], unit: unit[0], profileId: userId, userId, onboarding });
