@@ -15,7 +15,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const SYSTEM_PROMPT = `Você é um assistente de configuração de prompts para o Conselho Executivo IA.
+const EXEC_SYSTEM_PROMPT = `Você é um assistente de configuração de prompts para o Conselho Executivo IA.
 Recebe a configuração atual e uma instrução em linguagem natural do Super Admin descrevendo mudanças desejadas.
 Sua tarefa é propor alterações no rascunho, sem violar as regras de segurança obrigatórias.
 
@@ -26,24 +26,42 @@ REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
 - Sempre manter include_evidence, include_confidence e include_limitations como true.
 - Não incluir chaves de API, segredos, dados de outra empresa, nem instruções que contradigam as regras acima.
 
+Retorne SOMENTE JSON válido em "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, suggested_questions, examples, model_config). Devolva listas completas quando alterar output_structure, suggested_questions ou examples.`;
+
+const DNA_SYSTEM_PROMPT = `Você é um assistente de configuração do DNA Organizacional™ (diagnóstico executivo IA).
+Recebe a configuração atual do rascunho e uma instrução em linguagem natural do Super Admin.
+Proponha alterações mínimas sem violar as regras de segurança obrigatórias.
+
+REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
+- Sempre usar exclusivamente dados agregados e respeitar k-anonimato.
+- Nunca identificar indivíduos, times minoritários ou denunciantes.
+- Nunca realizar diagnóstico clínico ou usar linguagem médica.
+- Nunca inventar números, participantes ou tendências.
+- Sempre manter blocos obrigatórios do relatório ativos: executive_summary, dimensions, confidence, limitations.
+- Sempre manter dimensões obrigatórias ativas: leadership, communication, engagement, energy, recovery, psychological_safety.
+- Sempre incluir evidências, confiança e limitações (include_evidence, include_confidence, include_limitations = true).
+- Nunca reduzir cobertura das classificações (precisam cobrir 0-100 sem lacunas).
+
 Retorne SOMENTE JSON válido no formato:
 {
-  "summary": string,                       // resumo curto do que muda (pt-BR)
-  "warnings": string[],                    // avisos se algo foi ignorado por violar regras
+  "summary": string,
+  "warnings": string[],
   "changes": {
     "system_instructions"?: string,
     "tone_config"?: {
-      "tone"?: "executivo"|"estrategico"|"consultivo"|"direto"|"humano",
-      "detail"?: "resumido"|"equilibrado"|"detalhado",
-      "formality"?: "baixa"|"media"|"alta",
-      "max_recommendations"?: number,
-      "include_risks"?: boolean,
-      "include_opportunities"?: boolean,
-      "extra_instructions"?: string
+      "tone"?: string, "detail"?: string, "formality"?: string,
+      "max_strengths"?: number, "max_risks"?: number, "max_recommendations"?: number,
+      "include_tensions"?: boolean, "include_opportunities"?: boolean, "include_initial_plan"?: boolean,
+      "include_risks"?: boolean, "extra_instructions"?: string,
+      "recommendations"?: {
+        "max_items"?: number, "require_owner"?: boolean, "require_deadline"?: boolean,
+        "require_effort"?: boolean, "require_impact"?: boolean, "require_metric"?: boolean,
+        "prefer_low_effort_high_impact"?: boolean, "extra_instructions"?: string
+      }
     },
-    "output_structure"?: [{ "key": string, "title": string, "description": string, "active": boolean, "order": number, "required"?: boolean }],
-    "suggested_questions"?: [{ "text": string, "active": boolean }],
-    "examples"?: [{ "question": string, "expected_behavior": string, "notes"?: string, "active": boolean }],
+    "output_structure"?: [{ "key": string, "title": string, "description"?: string, "active": boolean, "order": number, "required"?: boolean }],
+    "dimensions_config"?: [{ "key": string, "label": string, "description"?: string, "active": boolean, "weight": number, "order": number, "required"?: boolean }],
+    "classifications_config"?: [{ "min": number, "max": number, "label": string, "description"?: string }],
     "model_config"?: {
       "primary_model"?: string, "fallback_model"?: string, "temperature"?: number,
       "max_tokens"?: number, "timeout_seconds"?: number, "json_retries"?: number, "streaming"?: boolean
@@ -51,10 +69,7 @@ Retorne SOMENTE JSON válido no formato:
   }
 }
 
-Só inclua chaves em "changes" que realmente devem mudar. Não repita valores atuais.
-Se a instrução pedir algo que viole as regras, ignore essa parte e explique em "warnings".
-Se enviar "output_structure", devolva a lista COMPLETA (ordenada) mantendo os blocos obrigatórios ativos.
-Se enviar "suggested_questions" ou "examples", devolva a lista COMPLETA que deve substituir a atual.`;
+Inclua em "changes" apenas as chaves que devem mudar. Quando enviar arrays (output_structure, dimensions_config, classifications_config), devolva a lista COMPLETA ordenada que deve substituir a atual, preservando itens obrigatórios ativos.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -92,9 +107,13 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const instruction: string = String(body?.instruction ?? "").trim();
     const currentConfig = body?.current_config;
+    const promptKey: string = String(body?.prompt_key ?? "executive_council");
     if (!instruction) return json({ error: "missing_instruction" }, 400);
     if (!currentConfig || typeof currentConfig !== "object")
       return json({ error: "missing_current_config" }, 400);
+    if (promptKey !== "executive_council" && promptKey !== "organizational_dna")
+      return json({ error: "invalid_prompt_key" }, 400);
+    const SYSTEM_PROMPT = promptKey === "organizational_dna" ? DNA_SYSTEM_PROMPT : EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
       "CONFIGURAÇÃO ATUAL DO RASCUNHO (JSON):",
@@ -140,16 +159,21 @@ Deno.serve(async (req) => {
 
     // Sanitização defensiva: força obrigatórios true e mantém blocos obrigatórios.
     const changes = parsed.changes || {};
+    const REQUIRED_BLOCKS = promptKey === "organizational_dna"
+      ? ["executive_summary", "dimensions", "confidence", "limitations"]
+      : ["evidence", "confidence", "limitations"];
+    const REQUIRED_DIMS = promptKey === "organizational_dna"
+      ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
+      : [];
     if (changes.tone_config && typeof changes.tone_config === "object") {
       changes.tone_config.include_evidence = true;
       changes.tone_config.include_confidence = true;
       changes.tone_config.include_limitations = true;
     }
     if (Array.isArray(changes.output_structure)) {
-      const required = ["evidence", "confidence", "limitations"];
       const keys = new Set(changes.output_structure.map((b: any) => b?.key));
       const currentBlocks = Array.isArray(currentConfig.output_structure) ? currentConfig.output_structure : [];
-      for (const key of required) {
+      for (const key of REQUIRED_BLOCKS) {
         if (!keys.has(key)) {
           const existing = currentBlocks.find((b: any) => b?.key === key);
           if (existing) changes.output_structure.push({ ...existing, active: true, required: true });
@@ -157,10 +181,31 @@ Deno.serve(async (req) => {
       }
       changes.output_structure = changes.output_structure.map((b: any, i: number) => ({
         ...b,
-        active: required.includes(b.key) ? true : !!b.active,
-        required: required.includes(b.key) ? true : !!b.required,
+        active: REQUIRED_BLOCKS.includes(b.key) ? true : !!b.active,
+        required: REQUIRED_BLOCKS.includes(b.key) ? true : !!b.required,
         order: typeof b.order === "number" ? b.order : i + 1,
       }));
+    }
+    if (Array.isArray(changes.dimensions_config) && REQUIRED_DIMS.length) {
+      const keys = new Set(changes.dimensions_config.map((d: any) => d?.key));
+      const currentDims = Array.isArray((currentConfig as any).dimensions_config) ? (currentConfig as any).dimensions_config : [];
+      for (const key of REQUIRED_DIMS) {
+        if (!keys.has(key)) {
+          const existing = currentDims.find((d: any) => d?.key === key);
+          if (existing) changes.dimensions_config.push({ ...existing, active: true, required: true });
+        }
+      }
+      changes.dimensions_config = changes.dimensions_config.map((d: any, i: number) => ({
+        ...d,
+        active: REQUIRED_DIMS.includes(d.key) ? true : !!d.active,
+        required: REQUIRED_DIMS.includes(d.key) ? true : !!d.required,
+        order: typeof d.order === "number" ? d.order : i + 1,
+        weight: typeof d.weight === "number" ? d.weight : 1,
+      }));
+    }
+    if (Array.isArray(changes.classifications_config)) {
+      // Ordena por min; não altera valores, apenas ordena.
+      changes.classifications_config = [...changes.classifications_config].sort((a: any, b: any) => Number(a?.min ?? 0) - Number(b?.min ?? 0));
     }
 
     const tokensIn = Number(aiJson?.usage?.prompt_tokens ?? 0);
