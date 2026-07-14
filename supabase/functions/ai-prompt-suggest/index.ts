@@ -88,6 +88,23 @@ REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
 
 Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays, devolva a lista COMPLETA ordenada.`;
 
+const ACTION_PLAN_SYSTEM_PROMPT = `Você é um assistente de configuração dos Planos de Ação IA™ (gerador executivo de planos).
+Recebe a configuração atual do rascunho e uma instrução em linguagem natural do Super Admin.
+Proponha alterações mínimas sem violar as regras de segurança obrigatórias.
+
+REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
+- Sempre usar exclusivamente dados agregados e respeitar k-anonimato.
+- Nunca identificar indivíduos, times minoritários ou denunciantes.
+- Nunca realizar diagnóstico clínico, recomendação médica, demissão individual ou ação discriminatória.
+- Nunca inventar números, participantes ou metas sem baseline.
+- Sempre manter blocos obrigatórios ativos: title, problem_statement, objective, due_date, success_metrics, tasks, impact_measurement.
+- Sempre exigir prazo, responsável (papel), métricas e medição de impacto no plano gerado.
+- Nunca sugerir pessoas específicas em owner_role — apenas papéis.
+- Nunca reduzir tarefas mínimas abaixo de 3 nem exceder 15; máx. riscos entre 1 e 10.
+- Temperatura entre 0 e 1; max_tokens entre 512 e 12000.
+
+Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays, devolva a lista COMPLETA ordenada preservando itens obrigatórios ativos.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -128,11 +145,17 @@ Deno.serve(async (req) => {
     if (!instruction) return json({ error: "missing_instruction" }, 400);
     if (!currentConfig || typeof currentConfig !== "object")
       return json({ error: "missing_current_config" }, 400);
-    if (promptKey !== "executive_council" && promptKey !== "organizational_dna" && promptKey !== "weekly_insights")
+    if (
+      promptKey !== "executive_council" &&
+      promptKey !== "organizational_dna" &&
+      promptKey !== "weekly_insights" &&
+      promptKey !== "action_plan"
+    )
       return json({ error: "invalid_prompt_key" }, 400);
     const SYSTEM_PROMPT =
       promptKey === "organizational_dna" ? DNA_SYSTEM_PROMPT :
       promptKey === "weekly_insights" ? WEEKLY_SYSTEM_PROMPT :
+      promptKey === "action_plan" ? ACTION_PLAN_SYSTEM_PROMPT :
       EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
@@ -182,6 +205,7 @@ Deno.serve(async (req) => {
     const REQUIRED_BLOCKS =
       promptKey === "organizational_dna" ? ["executive_summary", "dimensions", "confidence", "limitations"] :
       promptKey === "weekly_insights" ? ["title", "executive_summary", "key_changes", "confidence", "limitations"] :
+      promptKey === "action_plan" ? ["title", "problem_statement", "objective", "due_date", "success_metrics", "tasks", "impact_measurement"] :
       ["evidence", "confidence", "limitations"];
     const REQUIRED_DIMS = promptKey === "organizational_dna"
       ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
@@ -197,6 +221,15 @@ Deno.serve(async (req) => {
         if (changes.tone_config.signals && typeof changes.tone_config.signals === "object") {
           changes.tone_config.signals.require_evidence = true;
         }
+      } else if (promptKey === "action_plan") {
+        changes.tone_config.require_deadline = true;
+        changes.tone_config.require_owner = true;
+        changes.tone_config.require_metrics = true;
+        changes.tone_config.require_impact_measurement = true;
+        if (typeof changes.tone_config.max_tasks === "number")
+          changes.tone_config.max_tasks = Math.max(3, Math.min(15, changes.tone_config.max_tasks));
+        if (typeof changes.tone_config.max_risks === "number")
+          changes.tone_config.max_risks = Math.max(1, Math.min(10, changes.tone_config.max_risks));
       } else {
         changes.tone_config.include_evidence = true;
         changes.tone_config.include_confidence = true;
