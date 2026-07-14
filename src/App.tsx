@@ -235,6 +235,22 @@ const PlatformAdmin = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute requiredRoles={["platform_admin"]}>{children}</ProtectedRoute>
 );
 
+// Mantém a tela atual visível enquanto o chunk da próxima rota carrega.
+// Só troca a UI quando o novo componente estiver pronto — evita "tela branca".
+const DeferredRoutes = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const [, startTransition] = useTransition();
+  useEffect(() => {
+    startTransition(() => setDisplayLocation(location));
+  }, [location]);
+  return (
+    <Suspense fallback={null}>
+      <Routes location={displayLocation}>{children}</Routes>
+    </Suspense>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -245,7 +261,7 @@ const App = () => (
         <OrgBrandingProvider>
         <OrgLocaleProvider>
         <OrganizationWorkScheduleProvider>
-        <Suspense fallback={<RouteFallback />}><Routes>
+        <DeferredRoutes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
           <Route path="/login" element={<Index />} />
@@ -526,7 +542,7 @@ const App = () => (
           <Route path="/admin/ai/lab" element={<PlatformAdmin><PlatformAILabScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
-        </Routes></Suspense>
+        </DeferredRoutes>
         </OrganizationWorkScheduleProvider>
         </OrgLocaleProvider>
         </OrgBrandingProvider>
