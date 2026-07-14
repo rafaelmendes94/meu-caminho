@@ -230,10 +230,13 @@ export default function PlatformGamificationScreen() {
   );
 
   return (
-    <PlatformAdminLayout
-      title="Gamification"
-      subtitle="XP, badges, missões, sequências, temporadas e eventos — sem ranking obrigatório."
-    >
+    <PlatformAdminLayout>
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold">Gamification</h1>
+        <p className="text-sm text-muted-foreground">
+          XP, badges, missões, sequências, temporadas e eventos — sem ranking obrigatório.
+        </p>
+      </div>
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="flex flex-wrap gap-1">
           {tabs.map((t) => (
