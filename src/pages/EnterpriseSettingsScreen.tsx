@@ -802,8 +802,19 @@ function SegurancaTab() {
     session_ttl_hours: 12, min_password_length: 10,
     require_mfa: false, allow_google: true, allow_microsoft: false,
   });
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      setSessionsLoading(true);
+      const { data } = await supabase.rpc("list_my_sessions");
+      setSessions(data ?? []);
+      setSessionsLoading(false);
+    })();
+  }, []);
   if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
   return (
+    <div className="space-y-4">
     <Card>
       <CardHeader><CardTitle>Segurança</CardTitle><CardDescription>Políticas aplicadas ao acesso da empresa.</CardDescription></CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -821,11 +832,28 @@ function SegurancaTab() {
         <div className="md:col-span-2 flex justify-end">
           <Button onClick={() => save(value)} disabled={saving}><Save className="h-4 w-4 mr-2" />{saving?"Salvando…":"Salvar"}</Button>
         </div>
-        <div className="md:col-span-2 text-xs text-muted-foreground border-t pt-3">
-          Sessões ativas e dispositivos: disponíveis via listagem em `auth.sessions` — visualização será liberada em próxima iteração.
-        </div>
       </CardContent>
     </Card>
+    <Card>
+      <CardHeader><CardTitle>Sessões ativas</CardTitle><CardDescription>Dispositivos com sessão ativa da sua conta.</CardDescription></CardHeader>
+      <CardContent className="space-y-2">
+        {sessionsLoading ? <div className="text-sm text-muted-foreground">Carregando…</div> :
+         sessions.length === 0 ? <div className="text-sm text-muted-foreground">Nenhuma sessão.</div> :
+         sessions.map((s) => (
+           <div key={s.id} className="flex items-center justify-between border rounded-md px-3 py-2 text-sm">
+             <div className="min-w-0">
+               <div className="truncate max-w-[420px]">{s.user_agent || "Dispositivo desconhecido"}</div>
+               <div className="text-xs text-muted-foreground">
+                 IP {s.ip ?? "—"} · Último acesso {s.updated_at ? new Date(s.updated_at).toLocaleString() : "—"}
+               </div>
+             </div>
+             {s.is_current && <Badge variant="secondary">Atual</Badge>}
+           </div>
+         ))
+        }
+      </CardContent>
+    </Card>
+    </div>
   );
 }
 const ToggleRow = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
