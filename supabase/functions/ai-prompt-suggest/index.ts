@@ -167,13 +167,15 @@ Deno.serve(async (req) => {
       promptKey !== "executive_council" &&
       promptKey !== "organizational_dna" &&
       promptKey !== "weekly_insights" &&
-      promptKey !== "action_plan"
+      promptKey !== "action_plan" &&
+      promptKey !== "intelligent_ritual"
     )
       return json({ error: "invalid_prompt_key" }, 400);
     const SYSTEM_PROMPT =
       promptKey === "organizational_dna" ? DNA_SYSTEM_PROMPT :
       promptKey === "weekly_insights" ? WEEKLY_SYSTEM_PROMPT :
       promptKey === "action_plan" ? ACTION_PLAN_SYSTEM_PROMPT :
+      promptKey === "intelligent_ritual" ? RITUAL_SYSTEM_PROMPT :
       EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
@@ -224,6 +226,7 @@ Deno.serve(async (req) => {
       promptKey === "organizational_dna" ? ["executive_summary", "dimensions", "confidence", "limitations"] :
       promptKey === "weekly_insights" ? ["title", "executive_summary", "key_changes", "confidence", "limitations"] :
       promptKey === "action_plan" ? ["title", "problem_statement", "objective", "due_date", "success_metrics", "tasks", "impact_measurement"] :
+      promptKey === "intelligent_ritual" ? ["title","type","objective","problem","audience","duration","materials","facilitator","steps","questions","closing","variations","success_metrics","impact_measurement"] :
       ["evidence", "confidence", "limitations"];
     const REQUIRED_DIMS = promptKey === "organizational_dna"
       ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
@@ -248,6 +251,31 @@ Deno.serve(async (req) => {
           changes.tone_config.max_tasks = Math.max(3, Math.min(15, changes.tone_config.max_tasks));
         if (typeof changes.tone_config.max_risks === "number")
           changes.tone_config.max_risks = Math.max(1, Math.min(10, changes.tone_config.max_risks));
+      } else if (promptKey === "intelligent_ritual") {
+        const tc = changes.tone_config;
+        tc.require_objective = true;
+        tc.require_problem = true;
+        tc.require_audience = true;
+        tc.require_facilitator_role = true;
+        tc.require_materials = true;
+        tc.require_success_metric = true;
+        tc.require_impact_measurement = true;
+        tc.require_questions = true;
+        tc.require_closing = true;
+        if (typeof tc.min_duration_minutes === "number") tc.min_duration_minutes = Math.max(5, Math.min(120, tc.min_duration_minutes));
+        if (typeof tc.max_duration_minutes === "number") tc.max_duration_minutes = Math.max(5, Math.min(120, tc.max_duration_minutes));
+        if (typeof tc.min_duration_minutes === "number" && typeof tc.max_duration_minutes === "number" && tc.min_duration_minutes > tc.max_duration_minutes)
+          tc.max_duration_minutes = tc.min_duration_minutes;
+        if (tc.steps && typeof tc.steps === "object") {
+          if (typeof tc.steps.min === "number") tc.steps.min = Math.max(3, Math.min(12, tc.steps.min));
+          if (typeof tc.steps.max === "number") tc.steps.max = Math.max(3, Math.min(12, tc.steps.max));
+          if (typeof tc.steps.min === "number" && typeof tc.steps.max === "number" && tc.steps.min > tc.steps.max) tc.steps.max = tc.steps.min;
+        }
+        if (tc.questions && typeof tc.questions === "object") {
+          if (typeof tc.questions.min === "number") tc.questions.min = Math.max(1, Math.min(10, tc.questions.min));
+          if (typeof tc.questions.max === "number") tc.questions.max = Math.max(1, Math.min(10, tc.questions.max));
+          if (typeof tc.questions.min === "number" && typeof tc.questions.max === "number" && tc.questions.min > tc.questions.max) tc.questions.max = tc.questions.min;
+        }
       } else {
         changes.tone_config.include_evidence = true;
         changes.tone_config.include_confidence = true;
