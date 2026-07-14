@@ -209,6 +209,7 @@ const PlatformOrchestratorConfigScreen = lazy(() => import("./pages/PlatformOrch
 const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSoonScreen.tsx"));
 const PlatformKnowledgeHubScreen = lazy(() => import("./pages/PlatformKnowledgeHubScreen.tsx"));
 const PlatformAILabScreen = lazy(() => import("./pages/PlatformAILabScreen.tsx"));
+const PlatformGamificationScreen = lazy(() => import("./pages/PlatformGamificationScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
 
@@ -501,6 +502,10 @@ const App = () => (
          <Route path="/admin/content/imports" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
          <Route path="/admin/content/versions" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
          <Route path="/admin/content/analytics" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+
+         {/* Gamification (Fase 26) */}
+         <Route path="/admin/gamification" element={<PlatformAdmin><PlatformGamificationScreen /></PlatformAdmin>} />
+         <Route path="/admin/gamification/:section" element={<PlatformAdmin><PlatformGamificationScreen /></PlatformAdmin>} />
 
          {/* Inteligência Artificial */}
          <Route path="/admin/ai" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Visão Geral" description="Painel consolidado dos módulos de IA será liberado em breve." /></PlatformAdmin>} />

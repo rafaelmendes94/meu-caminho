@@ -57,3 +57,7 @@
 - Colunas novas em `organizations`: `legal_name`, `email`, `website`, `phone`, `address`, `postal_code`, `description`, `employee_count`.
 - RPC `enterprise_settings_upsert(_key text, _value jsonb)` — restrita a `owner`/`rh_admin`, audita em `organization_audit_logs`.
 - Bucket privado `org-branding` com policies por `organization_id`.
+
+
+## Fase 26 — Enterprise Gamification
+Ver [ENTERPRISE_GAMIFICATION.md](./ENTERPRISE_GAMIFICATION.md). Tabelas: gam_xp_rules, gam_levels, gam_badges, gam_missions, gam_achievements, gam_seasons, gam_events, gam_user_xp, gam_user_badges, gam_user_missions, gam_user_streaks, gam_org_settings. Rota admin: /admin/gamification.
