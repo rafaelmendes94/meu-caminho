@@ -205,6 +205,8 @@ function LicencaTab() {
   const { organization } = useAuth();
   const [row, setRow] = useState<any>(null);
   const [plan, setPlan] = useState<any>(null);
+  const [aiUsed, setAiUsed] = useState<number>(0);
+  const [storageUsedMb, setStorageUsedMb] = useState<number>(0);
   useEffect(() => {
     if (!organization?.id) return;
     (async () => {
@@ -218,10 +220,28 @@ function LicencaTab() {
           .eq("slug", data.plan).maybeSingle();
         setPlan(p);
       }
+      // Consumo real de IA no mês corrente
+      const start = new Date(); start.setDate(1); start.setHours(0,0,0,0);
+      const { data: usage } = await supabase.from("ai_usage_daily")
+        .select("total_requests")
+        .eq("organization_id", organization.id)
+        .gte("day", start.toISOString().slice(0,10));
+      setAiUsed((usage ?? []).reduce((s: number, r: any) => s + Number(r.total_requests ?? 0), 0));
+      // Consumo de storage: soma tamanho dos objetos do bucket da org (aproximação)
+      try {
+        const { data: files } = await supabase.storage.from("org-branding").list(organization.id, { limit: 1000 });
+        const bytes = (files ?? []).reduce((s: number, f: any) => s + Number(f?.metadata?.size ?? 0), 0);
+        setStorageUsedMb(Math.round(bytes / 1024 / 1024 * 100) / 100);
+      } catch { /* opcional */ }
     })();
   }, [organization?.id]);
 
   const available = Math.max(0, (row?.licenses_total ?? 0) - (row?.licenses_used ?? 0));
+  const licensesPct = row?.licenses_total ? Math.min(100, Math.round((row.licenses_used ?? 0) / row.licenses_total * 100)) : 0;
+  const aiLimit = Number(plan?.ai_monthly_limit ?? 0);
+  const aiPct = aiLimit ? Math.min(100, Math.round(aiUsed / aiLimit * 100)) : 0;
+  const storageLimit = Number(plan?.storage_limit_mb ?? 0);
+  const storagePct = storageLimit ? Math.min(100, Math.round(storageUsedMb / storageLimit * 100)) : 0;
 
   const openSupportTicket = async () => {
     if (!organization?.id) return;
@@ -253,13 +273,20 @@ function LicencaTab() {
           <Row label="Contratadas" value={row?.licenses_total ?? 0} />
           <Row label="Em uso" value={row?.licenses_used ?? 0} />
           <Row label="Disponíveis" value={available} />
+          <Progress value={licensesPct} className="h-2 mt-2" />
         </CardContent>
       </Card>
       <Card className="md:col-span-2">
         <CardHeader><CardTitle>Consumo e Recursos</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <Row label="Limite mensal de IA" value={plan?.ai_monthly_limit ?? "—"} />
-          <Row label="Storage (MB)" value={plan?.storage_limit_mb ?? "—"} />
+          <div className="space-y-1">
+            <Row label={`IA — ${aiUsed} / ${aiLimit || "—"} req (mês)`} value={`${aiPct}%`} />
+            <Progress value={aiPct} className="h-2" />
+          </div>
+          <div className="space-y-1">
+            <Row label={`Storage — ${storageUsedMb} / ${storageLimit || "—"} MB`} value={`${storagePct}%`} />
+            <Progress value={storagePct} className="h-2" />
+          </div>
           {plan?.features && (
             <div className="pt-2">
               <div className="text-xs uppercase text-muted-foreground mb-1">Recursos habilitados</div>
