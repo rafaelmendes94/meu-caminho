@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Eye, EyeOff, Archive, Copy, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import { ContentItemForm, emptyItem, type ContentItem, type ContentType } from "@/components/admin/ContentItemForm";
@@ -87,13 +88,33 @@ export function ContentItemsListPage({ type, title, extraActions }: { type: Cont
             </div>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${r.status === "published" ? "bg-green-500/20 text-green-400" : r.status === "archived" ? "bg-white/10 text-white/40" : "bg-yellow-500/20 text-yellow-400"}`}>{r.status.toUpperCase()}</span>
             {r.is_premium && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F88A2B]/20 text-[#F88A2B]">PREMIUM</span>}
-            {extraActions?.(r)}
-            <button onClick={() => setEditing(r)} className="text-[#F88A2B] text-xs font-bold hover:underline">Editar</button>
-            {r.status !== "published" && <button onClick={() => changeStatus(r.id, "published")} className="text-green-400 text-xs font-bold hover:underline">Publicar</button>}
-            {r.status === "published" && <button onClick={() => changeStatus(r.id, "draft")} className="text-yellow-400 text-xs font-bold hover:underline">Despublicar</button>}
-            {r.status !== "archived" && <button onClick={() => changeStatus(r.id, "archived")} className="text-white/50 text-xs font-bold hover:underline">Arquivar</button>}
-            <button onClick={() => duplicate(r)} className="text-white/50 text-xs font-bold hover:underline">Duplicar</button>
-            <button onClick={() => remove(r.id)} className="text-red-400 text-xs font-bold hover:underline">Excluir</button>
+            <div className="flex items-center gap-1 ml-2">
+              {extraActions?.(r)}
+              <IconAction title="Editar" onClick={() => setEditing(r)} className="text-[#F88A2B] hover:bg-[#F88A2B]/10">
+                <Pencil className="w-4 h-4" />
+              </IconAction>
+              {r.status !== "published" && (
+                <IconAction title="Publicar" onClick={() => changeStatus(r.id, "published")} className="text-green-400 hover:bg-green-400/10">
+                  <Eye className="w-4 h-4" />
+                </IconAction>
+              )}
+              {r.status === "published" && (
+                <IconAction title="Despublicar" onClick={() => changeStatus(r.id, "draft")} className="text-yellow-400 hover:bg-yellow-400/10">
+                  <EyeOff className="w-4 h-4" />
+                </IconAction>
+              )}
+              {r.status !== "archived" && (
+                <IconAction title="Arquivar" onClick={() => changeStatus(r.id, "archived")} className="text-white/60 hover:bg-white/10">
+                  <Archive className="w-4 h-4" />
+                </IconAction>
+              )}
+              <IconAction title="Duplicar" onClick={() => duplicate(r)} className="text-white/60 hover:bg-white/10">
+                <Copy className="w-4 h-4" />
+              </IconAction>
+              <IconAction title="Excluir" onClick={() => remove(r.id)} className="text-red-400 hover:bg-red-400/10">
+                <Trash2 className="w-4 h-4" />
+              </IconAction>
+            </div>
           </div>
         ))}
       </div>
