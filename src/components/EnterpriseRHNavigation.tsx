@@ -473,8 +473,8 @@ export const EnterpriseRHLayout = ({ children, title }: { children: ReactNode; t
 
         <AdminTopbar variant="rh" title={title || "Admin Empresa"} onSignOut={handleSignOut} />
 
-        <main className="flex-1 min-w-0">
-          <div className="admin-surface p-6 lg:p-8 pb-24 lg:pb-8 max-w-[1440px] mx-auto">{children}</div>
+        <main className="flex-1 min-w-0 overflow-x-clip">
+          <div className="admin-surface p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8 max-w-[1440px] mx-auto">{children}</div>
           <EnterpriseRHBottomNav />
         </main>
       </div>
