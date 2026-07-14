@@ -361,8 +361,9 @@ export default function PlatformExecutiveCouncilConfigScreen() {
         {tab === "questions" && <QuestionsTab config={config} setConfig={setConfig} />}
         {tab === "examples" && <ExamplesTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} updateModel={updateModel} />}
+        {tab === "ai_edit" && <AiEditTab config={config} setConfig={setConfig} />}
         {tab === "chat" && <ChatTestTab configVersion={config.version} configStatus={config.status} />}
-        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} onRestore={(snap) => setConfig((c) => c ? applySnapshot(c, snap) : c)} />}
 
         {/* Note for publish */}
         {(tab === "behavior" || tab === "structure" || tab === "questions" || tab === "examples" || tab === "model") && (
