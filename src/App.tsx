@@ -508,6 +508,10 @@ const App = () => (
          <Route path="/admin/gamification" element={<PlatformAdmin><PlatformGamificationScreen /></PlatformAdmin>} />
          <Route path="/admin/gamification/:section" element={<PlatformAdmin><PlatformGamificationScreen /></PlatformAdmin>} />
 
+         {/* Billing (Fase 27) */}
+         <Route path="/admin/billing/hub" element={<PlatformAdmin><PlatformBillingHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/billing/hub/:section" element={<PlatformAdmin><PlatformBillingHubScreen /></PlatformAdmin>} />
+
          {/* Inteligência Artificial */}
          <Route path="/admin/ai" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Visão Geral" description="Painel consolidado dos módulos de IA será liberado em breve." /></PlatformAdmin>} />
          <Route path="/admin/ai/conselho-executivo" element={<PlatformAdmin><PlatformExecutiveCouncilConfigScreen /></PlatformAdmin>} />
