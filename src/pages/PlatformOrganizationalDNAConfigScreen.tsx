@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, Dna,
   MessageSquare, Layers, ListChecks, Sliders, Target, Cpu, FlaskConical, History, Wand2,
+  Play, Clock, DollarSign, Hash, AlertTriangle, CheckCircle2, Building2,
 } from "lucide-react";
 
 type ToneConfig = {
@@ -296,7 +297,7 @@ export default function PlatformOrganizationalDNAConfigScreen() {
         {tab === "classifications" && <ClassificationsTab config={config} setConfig={setConfig} />}
         {tab === "recommendations" && <RecommendationsTab recCfg={recCfg} setRecCfg={setRecCfg} maxRec={config.tone_config.max_recommendations} onMaxChange={(v) => setConfig((c) => c ? { ...c, tone_config: { ...c.tone_config, max_recommendations: v } } : c)} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
-        {tab === "test" && <TestSoonTab />}
+        {tab === "test" && <TestTab configVersion={config.version} configStatus={config.status} />}
         {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
 
         {(tab !== "test" && tab !== "history") && (
