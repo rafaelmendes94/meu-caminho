@@ -50,8 +50,11 @@ Cada documento recebe: `quality_score`, `confidence`, `completeness`, `freshness
 
 ## Sub-fases
 - **A (concluída)**: schema, RLS, RPC, bucket, helper RAG, edge functions `ingest`/`search`, seeds.
-- **B (próxima)**: UI Admin `/admin/knowledge` com todas as abas (Biblioteca, Coleções, Importações, Busca, Versões, Logs, Dashboard, Chat de Teste).
-- **C**: integração RAG em `executive-ai`, `generate-organizational-dna`, `generate-weekly-insights`, `generate-action-plan`, `generate-intelligent-ritual`, `recommend-content`/`cms-recommend`, `ai-orchestrator`.
+- **B (concluída)**: UI Admin `/admin/knowledge` com todas as abas (Biblioteca, Coleções, Importações, Busca, Versões, Logs, Dashboard, Chat de Teste).
+- **C (concluída)**: integração RAG (`fetchKnowledgeContext`) injetada em `executive-ai` (fluxo normal + test mode), `generate-organizational-dna`, `generate-weekly-insights`, `generate-action-plan`, `generate-intelligent-ritual` e `cms-recommend`. `ai-orchestrator` herda RAG via seus especialistas (evita chamadas duplicadas). `recommend-content` é motor algorítmico determinístico — não usa LLM e portanto não recebe injeção RAG nesta fase (a camada CMS conversacional usa `cms-recommend`).
+
+## Integração RAG (Sub-fase C)
+Cada IA integrada chama `fetchKnowledgeContext({ query, organizationId, aiModule })` e insere o `contextBlock` retornado como mensagem `user` imediatamente antes do prompt principal, mantendo o `system_prompt` versionado intacto. Cada uso é registrado em `knowledge_usage` (por documento, chunks e confiança) e cacheado em `knowledge_cache` (TTL 1h, invalidação automática por trigger em `knowledge_documents`/`knowledge_collections`).
 
 ## Pendências conhecidas
 - Extração binária (PDF/DOCX/PPTX/XLSX) nesta fase usa fallback UTF-8 — para binários reais é necessário worker externo (fila com `pdf-parse`/`mammoth`/`officeparser`). Nesta fase A o pipeline aceita `raw_text`, `.txt`, `.md`, `.csv` e URLs.
