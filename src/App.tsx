@@ -503,6 +503,10 @@ const App = () => (
          <Route path="/admin/content/versions" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
          <Route path="/admin/content/analytics" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
 
+         {/* Gamification (Fase 26) */}
+         <Route path="/admin/gamification" element={<PlatformAdmin><PlatformGamificationScreen /></PlatformAdmin>} />
+         <Route path="/admin/gamification/:section" element={<PlatformAdmin><PlatformGamificationScreen /></PlatformAdmin>} />
+
          {/* Inteligência Artificial */}
          <Route path="/admin/ai" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Visão Geral" description="Painel consolidado dos módulos de IA será liberado em breve." /></PlatformAdmin>} />
          <Route path="/admin/ai/conselho-executivo" element={<PlatformAdmin><PlatformExecutiveCouncilConfigScreen /></PlatformAdmin>} />
