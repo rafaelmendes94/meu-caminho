@@ -320,6 +320,16 @@ Deno.serve(async (req) => {
       changes.classifications_config = [...changes.classifications_config].sort((a: any, b: any) => Number(a?.min ?? 0) - Number(b?.min ?? 0));
     }
 
+    if (changes.model_config && typeof changes.model_config === "object") {
+      const mc = changes.model_config;
+      if (typeof mc.temperature === "number") mc.temperature = Math.max(0, Math.min(1, mc.temperature));
+      if (typeof mc.max_tokens === "number") mc.max_tokens = Math.max(512, Math.min(12000, mc.max_tokens));
+      if (promptKey === "intelligent_ritual" && Array.isArray(mc.ritual_types)) {
+        const anyActive = mc.ritual_types.some((t: any) => t?.active !== false);
+        if (!anyActive && mc.ritual_types.length > 0) mc.ritual_types[0].active = true;
+      }
+    }
+
     const tokensIn = Number(aiJson?.usage?.prompt_tokens ?? 0);
     const tokensOut = Number(aiJson?.usage?.completion_tokens ?? 0);
     return json({
