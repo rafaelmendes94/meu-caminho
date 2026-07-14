@@ -5,7 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, Dna,
   MessageSquare, Layers, ListChecks, Sliders, Target, Cpu, FlaskConical, History, Wand2,
-  Play, Clock, DollarSign, Hash, AlertTriangle, CheckCircle2, Building2,
+  Play, Clock, DollarSign, Hash, AlertTriangle, CheckCircle2, Building2, Sparkles, RotateCcw, GitCompare, Undo2,
 } from "lucide-react";
 
 type ToneConfig = {
@@ -52,6 +52,7 @@ const TABS = [
   { id: "classifications", label: "Classificações", icon: Sliders },
   { id: "recommendations", label: "Recomendações", icon: Target },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
+  { id: "ai_edit", label: "Editar por IA", icon: Sparkles },
   { id: "test", label: "Testar Geração", icon: FlaskConical },
   { id: "history", label: "Histórico", icon: History },
 ] as const;
@@ -185,6 +186,24 @@ export default function PlatformOrganizationalDNAConfigScreen() {
     return { ...config!.tone_config, recommendations: recCfg };
   }
 
+  function restoreFromSnapshot(snap: any) {
+    if (!snap || typeof snap !== "object") { toast.error("Snapshot inválido"); return; }
+    // Aplica apenas ao estado local (rascunho), sem publicar.
+    setConfig((c) => c ? {
+      ...c,
+      system_instructions: String(snap.system_instructions ?? c.system_instructions),
+      tone_config: { ...(c.tone_config), ...(snap.tone_config ?? {}),
+        include_evidence: true, include_confidence: true, include_limitations: true },
+      output_structure: enforceRequiredBlocks(Array.isArray(snap.output_structure) ? snap.output_structure : c.output_structure, c.output_structure),
+      dimensions_config: enforceRequiredDims(Array.isArray(snap.dimensions_config) ? snap.dimensions_config : c.dimensions_config, c.dimensions_config),
+      classifications_config: Array.isArray(snap.classifications_config) ? snap.classifications_config : c.classifications_config,
+      model_config: { ...c.model_config, ...(snap.model_config ?? {}) },
+    } : c);
+    const rec = snap?.tone_config?.recommendations;
+    if (rec && typeof rec === "object") setRecCfg((r) => ({ ...r, ...rec }));
+    toast.success("Snapshot carregado no rascunho (não publicado)");
+  }
+
   async function saveDraft() {
     if (!config) return;
     const err = validate(); if (err) { toast.error(err); return; }
@@ -297,10 +316,11 @@ export default function PlatformOrganizationalDNAConfigScreen() {
         {tab === "classifications" && <ClassificationsTab config={config} setConfig={setConfig} />}
         {tab === "recommendations" && <RecommendationsTab recCfg={recCfg} setRecCfg={setRecCfg} maxRec={config.tone_config.max_recommendations} onMaxChange={(v) => setConfig((c) => c ? { ...c, tone_config: { ...c.tone_config, max_recommendations: v } } : c)} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
+        {tab === "ai_edit" && <AiEditTab config={config} setConfig={setConfig} recCfg={recCfg} setRecCfg={setRecCfg} />}
         {tab === "test" && <TestTab configVersion={config.version} configStatus={config.status} />}
-        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} onRestore={(snap) => restoreFromSnapshot(snap)} />}
 
-        {(tab !== "test" && tab !== "history") && (
+        {(tab !== "test" && tab !== "history" && tab !== "ai_edit") && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: Ajustado peso da recuperação e novo limite de 4 recomendações." />
@@ -772,25 +792,289 @@ function ReportPreview({ report }: { report: any }) {
   );
 }
 
-function HistoryTab({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
+// HistoryTab foi movido para o final do arquivo com compare A × B + restore.
+
+// --- Helpers de reforço de obrigatoriedade (usados por restore e Editar por IA) ---
+function enforceRequiredBlocks(next: StructureBlock[], fallback: StructureBlock[]): StructureBlock[] {
+  const req = Array.from(REQUIRED_BLOCKS);
+  const keys = new Set(next.map((b) => b.key));
+  const merged = [...next];
+  for (const k of req) {
+    if (!keys.has(k)) {
+      const ex = fallback.find((b) => b.key === k);
+      if (ex) merged.push({ ...ex, active: true, required: true });
+    }
+  }
+  return merged.map((b, i) => ({
+    ...b,
+    active: REQUIRED_BLOCKS.has(b.key) ? true : !!b.active,
+    required: REQUIRED_BLOCKS.has(b.key) ? true : !!b.required,
+    order: typeof b.order === "number" ? b.order : i + 1,
+  }));
+}
+function enforceRequiredDims(next: Dimension[], fallback: Dimension[]): Dimension[] {
+  const req = Array.from(REQUIRED_DIMENSIONS);
+  const keys = new Set(next.map((d) => d.key));
+  const merged = [...next];
+  for (const k of req) {
+    if (!keys.has(k)) {
+      const ex = fallback.find((d) => d.key === k);
+      if (ex) merged.push({ ...ex, active: true, required: true });
+    }
+  }
+  return merged.map((d, i) => ({
+    ...d,
+    active: REQUIRED_DIMENSIONS.has(d.key) ? true : !!d.active,
+    required: REQUIRED_DIMENSIONS.has(d.key) ? true : !!d.required,
+    order: typeof d.order === "number" ? d.order : i + 1,
+    weight: typeof d.weight === "number" ? d.weight : 1,
+  }));
+}
+
+// --- Aba "Editar por IA" ---
+type SuggestChanges = {
+  system_instructions?: string;
+  tone_config?: Partial<ToneConfig> & { recommendations?: Partial<RecommendationsConfig> };
+  output_structure?: StructureBlock[];
+  dimensions_config?: Dimension[];
+  classifications_config?: Classification[];
+  model_config?: Partial<ModelConfig>;
+};
+type SuggestResponse = { ok: true; summary: string; warnings: string[]; changes: SuggestChanges; metrics: any };
+
+function AiEditTab({ config, setConfig, recCfg, setRecCfg }: {
+  config: DnaConfig;
+  setConfig: React.Dispatch<React.SetStateAction<DnaConfig | null>>;
+  recCfg: RecommendationsConfig;
+  setRecCfg: React.Dispatch<React.SetStateAction<RecommendationsConfig>>;
+}) {
+  const [instruction, setInstruction] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [suggestion, setSuggestion] = useState<SuggestResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function runSuggest() {
+    const text = instruction.trim();
+    if (!text) { toast.error("Descreva a mudança desejada."); return; }
+    setLoading(true); setError(null); setSuggestion(null);
+    try {
+      const currentConfig = {
+        system_instructions: config.system_instructions,
+        tone_config: { ...config.tone_config, recommendations: recCfg },
+        output_structure: config.output_structure,
+        dimensions_config: config.dimensions_config,
+        classifications_config: config.classifications_config,
+        model_config: config.model_config,
+      };
+      const { data, error } = await supabase.functions.invoke("ai-prompt-suggest", {
+        body: { prompt_key: "organizational_dna", instruction: text, current_config: currentConfig },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setSuggestion(data as SuggestResponse);
+    } catch (e: any) {
+      setError(e?.message ?? "Falha ao consultar IA"); toast.error(e?.message ?? "Falha ao consultar IA");
+    } finally { setLoading(false); }
+  }
+
+  function apply() {
+    if (!suggestion) return;
+    const ch = suggestion.changes ?? {};
+    setConfig((c) => {
+      if (!c) return c;
+      const next: DnaConfig = { ...c };
+      if (typeof ch.system_instructions === "string") next.system_instructions = ch.system_instructions;
+      if (ch.tone_config && typeof ch.tone_config === "object") {
+        next.tone_config = {
+          ...c.tone_config, ...ch.tone_config,
+          include_evidence: true, include_confidence: true, include_limitations: true,
+        } as ToneConfig;
+      }
+      if (Array.isArray(ch.output_structure))
+        next.output_structure = enforceRequiredBlocks(ch.output_structure, c.output_structure);
+      if (Array.isArray(ch.dimensions_config))
+        next.dimensions_config = enforceRequiredDims(ch.dimensions_config, c.dimensions_config);
+      if (Array.isArray(ch.classifications_config))
+        next.classifications_config = [...ch.classifications_config].sort((a, b) => a.min - b.min);
+      if (ch.model_config && typeof ch.model_config === "object")
+        next.model_config = { ...c.model_config, ...ch.model_config } as ModelConfig;
+      return next;
+    });
+    const rec = ch.tone_config?.recommendations;
+    if (rec && typeof rec === "object") setRecCfg((r) => ({ ...r, ...rec }));
+    toast.success("Alterações aplicadas ao rascunho (não publicado)");
+    setSuggestion(null); setInstruction("");
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-4 h-4 text-[#F88A2B]" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Editar por IA</h3>
+        </div>
+        <p className="text-xs text-slate-500 mb-4">
+          Descreva em linguagem natural o que você quer mudar no DNA. A IA propõe alterações; guardrails obrigatórios são reforçados no backend. Nada é gravado até você clicar em <b>Aplicar ao rascunho</b>.
+        </p>
+        <Textarea rows={4} value={instruction} onChange={(e) => setInstruction(e.target.value)}
+          placeholder={'Ex.: "Aumente o peso da segurança psicológica, adicione dimensão \'inovação\', reduza recomendações para 4 e torne o tom mais direto."'} />
+        <div className="mt-3 flex items-center justify-end">
+          <button onClick={runSuggest} disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+            <Wand2 className="w-4 h-4" /> {loading ? "Consultando IA…" : "Sugerir alterações"}
+          </button>
+        </div>
+      </Card>
+
+      {error && (
+        <Card className="border-red-200 bg-red-50/40">
+          <div className="flex items-start gap-2 text-red-800">
+            <AlertTriangle className="w-4 h-4 mt-0.5" />
+            <div><p className="text-sm font-semibold">Erro</p><p className="text-xs mt-1 break-all">{error}</p></div>
+          </div>
+        </Card>
+      )}
+
+      {suggestion && (
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Diff da proposta</h3>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSuggestion(null)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <Undo2 className="w-3.5 h-3.5" /> Descartar
+              </button>
+              <button onClick={apply}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700">
+                <CheckCircle2 className="w-4 h-4" /> Aplicar ao rascunho
+              </button>
+            </div>
+          </div>
+          {suggestion.summary && <p className="text-sm text-slate-700 mb-3"><b>Resumo:</b> {suggestion.summary}</p>}
+          {Array.isArray(suggestion.warnings) && suggestion.warnings.length > 0 && (
+            <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
+              <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Avisos</p>
+              <ul className="text-xs text-amber-900 list-disc list-inside space-y-0.5">
+                {suggestion.warnings.map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            </div>
+          )}
+          <DiffView
+            before={{
+              system_instructions: config.system_instructions,
+              tone_config: { ...config.tone_config, recommendations: recCfg },
+              output_structure: config.output_structure,
+              dimensions_config: config.dimensions_config,
+              classifications_config: config.classifications_config,
+              model_config: config.model_config,
+            }}
+            after={suggestion.changes as any}
+            onlyChangedKeys
+          />
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function DiffView({ before, after, onlyChangedKeys }: { before: any; after: any; onlyChangedKeys?: boolean }) {
+  const keys = onlyChangedKeys ? Object.keys(after ?? {}) : Array.from(new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]));
+  if (keys.length === 0) return <p className="text-sm text-slate-500">Sem alterações propostas.</p>;
+  return (
+    <div className="space-y-3">
+      {keys.map((k) => {
+        const b = (before ?? {})[k];
+        const a = (after ?? {})[k];
+        const same = JSON.stringify(b) === JSON.stringify(a);
+        if (onlyChangedKeys && same) return null;
+        return (
+          <div key={k} className="border border-slate-200 rounded-xl overflow-hidden">
+            <div className="px-3 py-1.5 bg-slate-50 text-[11px] uppercase tracking-wider font-semibold text-slate-600 flex items-center justify-between">
+              <span>{k}</span>
+              {same ? <span className="text-slate-400">sem mudança</span> : <span className="text-amber-600">alterado</span>}
+            </div>
+            <div className="grid md:grid-cols-2 divide-x divide-slate-200">
+              <pre className="text-[11px] p-3 bg-red-50/40 overflow-auto max-h-64 whitespace-pre-wrap break-words">{safeStringify(b)}</pre>
+              <pre className="text-[11px] p-3 bg-emerald-50/40 overflow-auto max-h-64 whitespace-pre-wrap break-words">{safeStringify(a)}</pre>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function safeStringify(v: any) {
+  if (v === undefined) return "(sem valor)";
+  if (typeof v === "string") return v;
+  try { return JSON.stringify(v, null, 2); } catch { return String(v); }
+}
+
+// --- Histórico com comparação A × B e restauro ---
+function HistoryTab({ versions, currentVersion, onRestore }: { versions: VersionRow[]; currentVersion: number; onRestore: (snapshot: any) => void }) {
   const rows = useMemo(() => versions, [versions]);
+  const [aId, setAId] = useState<string>("");
+  const [bId, setBId] = useState<string>("");
+  const a = rows.find((r) => r.id === aId);
+  const b = rows.find((r) => r.id === bId);
+
   if (rows.length === 0) return <Card><p className="text-sm text-slate-500">Sem versões publicadas ainda.</p></Card>;
   return (
-    <Card>
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Histórico de versões</h3>
-      <ul className="divide-y divide-slate-100">
-        {rows.map((v) => (
-          <li key={v.id} className="py-3 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-800">v{v.version} {v.version === currentVersion && <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Atual</span>}</p>
-              <p className="text-xs text-slate-500">{new Date(v.created_at).toLocaleString("pt-BR")}</p>
-              {v.change_note && <p className="text-xs text-slate-600 mt-1">{v.change_note}</p>}
-            </div>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase tracking-wide">snapshot</span>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-3 text-xs text-slate-500 flex items-center gap-1"><Wand2 className="w-3.5 h-3.5" /> Restauração e comparação A × B chegam na Sub-fase C.</p>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Histórico de versões</h3>
+        <ul className="divide-y divide-slate-100">
+          {rows.map((v) => (
+            <li key={v.id} className="py-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  v{v.version} {v.version === currentVersion && <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Atual</span>}
+                </p>
+                <p className="text-xs text-slate-500">{new Date(v.created_at).toLocaleString("pt-BR")}</p>
+                {v.change_note && <p className="text-xs text-slate-600 mt-1">{v.change_note}</p>}
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setAId(v.id)} className={`text-[11px] px-2 py-1 rounded border ${aId === v.id ? "bg-slate-900 text-white border-slate-900" : "border-slate-300 text-slate-700 hover:bg-slate-50"}`}>A</button>
+                <button onClick={() => setBId(v.id)} className={`text-[11px] px-2 py-1 rounded border ${bId === v.id ? "bg-slate-900 text-white border-slate-900" : "border-slate-300 text-slate-700 hover:bg-slate-50"}`}>B</button>
+                <button
+                  onClick={() => onRestore(v.snapshot)}
+                  className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-amber-300 text-amber-800 hover:bg-amber-50">
+                  <RotateCcw className="w-3 h-3" /> Restaurar no rascunho
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-slate-500">Restaurar carrega o snapshot no rascunho local. Nada é publicado até você clicar em <b>Publicar versão</b>.</p>
+      </Card>
+
+      <Card>
+        <div className="flex items-center gap-2 mb-3">
+          <GitCompare className="w-4 h-4 text-[#F88A2B]" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Comparar A × B</h3>
+        </div>
+        {(!a || !b) ? (
+          <p className="text-sm text-slate-500">Selecione uma versão em <b>A</b> e outra em <b>B</b> na lista acima para ver o diff campo a campo.</p>
+        ) : (
+          <>
+            <p className="text-xs text-slate-600 mb-3">
+              <b>A:</b> v{a.version} — {new Date(a.created_at).toLocaleString("pt-BR")} &nbsp;·&nbsp;
+              <b>B:</b> v{b.version} — {new Date(b.created_at).toLocaleString("pt-BR")}
+            </p>
+            <DiffView before={snapshotFields(a.snapshot)} after={snapshotFields(b.snapshot)} />
+          </>
+        )}
+      </Card>
+    </div>
   );
+}
+function snapshotFields(snap: any) {
+  if (!snap || typeof snap !== "object") return {};
+  return {
+    system_instructions: snap.system_instructions,
+    tone_config: snap.tone_config,
+    output_structure: snap.output_structure,
+    dimensions_config: snap.dimensions_config,
+    classifications_config: snap.classifications_config,
+    model_config: snap.model_config,
+  };
 }
