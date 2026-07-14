@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, Sparkles,
   ShieldCheck, MessageSquare, ListChecks, FlaskConical, Cpu, History, Bot,
+  Wand2, RotateCcw, GitCompare, Check, X,
 } from "lucide-react";
 
 type ToneConfig = {
@@ -74,6 +75,7 @@ const TABS = [
   { id: "questions", label: "Perguntas Sugeridas", icon: Sparkles },
   { id: "examples", label: "Exemplos", icon: FlaskConical },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
+  { id: "ai_edit", label: "Editar por IA", icon: Wand2 },
   { id: "chat", label: "Testar no Chat", icon: Bot },
   { id: "history", label: "Histórico de Versões", icon: History },
 ] as const;
@@ -359,8 +361,9 @@ export default function PlatformExecutiveCouncilConfigScreen() {
         {tab === "questions" && <QuestionsTab config={config} setConfig={setConfig} />}
         {tab === "examples" && <ExamplesTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} updateModel={updateModel} />}
+        {tab === "ai_edit" && <AiEditTab config={config} setConfig={setConfig} />}
         {tab === "chat" && <ChatTestTab configVersion={config.version} configStatus={config.status} />}
-        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} onRestore={(snap) => setConfig((c) => c ? applySnapshot(c, snap) : c)} />}
 
         {/* Note for publish */}
         {(tab === "behavior" || tab === "structure" || tab === "questions" || tab === "examples" || tab === "model") && (
@@ -843,30 +846,346 @@ function Chip({ label, tone = "slate" }: { label: string; tone?: "slate" | "emer
   return <span className={`px-2 py-0.5 rounded-full font-semibold ${map[tone]}`}>{label}</span>;
 }
 
-function HistoryTab({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
+function HistoryTab({ versions, currentVersion, onRestore }: {
+  versions: VersionRow[];
+  currentVersion: number;
+  onRestore: (snap: any) => void;
+}) {
+  const [selA, setSelA] = useState<string>("");
+  const [selB, setSelB] = useState<string>("");
+  const [snapA, setSnapA] = useState<any>(null);
+  const [snapB, setSnapB] = useState<any>(null);
+  const [restoring, setRestoring] = useState<string>("");
+
+  async function loadSnap(id: string, setter: (v: any) => void) {
+    if (!id) { setter(null); return; }
+    const { data, error } = await supabase
+      .from("ai_prompt_versions")
+      .select("snapshot, version, change_note, created_at")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) { toast.error("Falha ao carregar snapshot"); return; }
+    setter(data);
+  }
+  useEffect(() => { void loadSnap(selA, setSnapA); }, [selA]);
+  useEffect(() => { void loadSnap(selB, setSnapB); }, [selB]);
+
+  async function restore(v: VersionRow) {
+    setRestoring(v.id);
+    try {
+      const { data, error } = await supabase
+        .from("ai_prompt_versions")
+        .select("snapshot")
+        .eq("id", v.id)
+        .maybeSingle();
+      if (error || !data?.snapshot) throw new Error(error?.message ?? "snapshot vazio");
+      onRestore(data.snapshot);
+      toast.success(`Versão ${v.version} carregada no rascunho. Revise e salve.`);
+    } catch (e) {
+      toast.error(`Falha ao restaurar: ${(e as Error).message}`);
+    } finally { setRestoring(""); }
+  }
+
+  const options = versions.map((v) => ({ value: v.id, label: `v${v.version} · ${new Date(v.created_at).toLocaleDateString("pt-BR")}` }));
+
   return (
-    <Card>
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Histórico de versões</h3>
-      {versions.length === 0 && <p className="text-sm text-slate-500">Nenhuma versão registrada.</p>}
-      <div className="divide-y divide-slate-200">
-        {versions.map((v) => (
-          <div key={v.id} className="py-3 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-800">
-                Versão {v.version}
-                {v.version === currentVersion && (
-                  <span className="ml-2 text-[10px] uppercase tracking-wide font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">atual</span>
-                )}
-              </p>
-              <p className="text-xs text-slate-500">
-                {new Date(v.created_at).toLocaleString("pt-BR")}
-                {v.change_note ? ` · ${v.change_note}` : ""}
-              </p>
-            </div>
+    <div className="space-y-4">
+      <Card>
+        <div className="flex items-center gap-2 mb-4">
+          <GitCompare className="w-4 h-4 text-slate-500" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Comparar versões</h3>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label>Versão A</Label>
+            <Select value={selA} onChange={setSelA} options={[{ value: "", label: "— selecionar —" }, ...options]} />
           </div>
-        ))}
+          <div>
+            <Label>Versão B</Label>
+            <Select value={selB} onChange={setSelB} options={[{ value: "", label: "— selecionar —" }, ...options]} />
+          </div>
+        </div>
+        {snapA && snapB && (
+          <div className="mt-4">
+            <DiffView a={snapA.snapshot} b={snapB.snapshot} labelA={`v${snapA.version}`} labelB={`v${snapB.version}`} />
+          </div>
+        )}
+        {(!snapA || !snapB) && <p className="mt-4 text-xs text-slate-500">Selecione duas versões para comparar.</p>}
+      </Card>
+
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Versões publicadas</h3>
+        {versions.length === 0 && <p className="text-sm text-slate-500">Nenhuma versão registrada.</p>}
+        <div className="divide-y divide-slate-200">
+          {versions.map((v) => (
+            <div key={v.id} className="py-3 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  Versão {v.version}
+                  {v.version === currentVersion && (
+                    <span className="ml-2 text-[10px] uppercase tracking-wide font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">atual</span>
+                  )}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {new Date(v.created_at).toLocaleString("pt-BR")}
+                  {v.change_note ? ` · ${v.change_note}` : ""}
+                </p>
+              </div>
+              <button
+                onClick={() => restore(v)}
+                disabled={restoring === v.id}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                {restoring === v.id ? "Restaurando…" : "Restaurar no rascunho"}
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-xs text-slate-500">Restaurar carrega o snapshot no rascunho local. Nada é publicado até você clicar em "Publicar versão".</p>
+      </Card>
+    </div>
+  );
+}
+
+/* ============ AI Edit + helpers ============ */
+
+function applySnapshot(current: PromptConfig, snap: any): PromptConfig {
+  if (!snap || typeof snap !== "object") return current;
+  return {
+    ...current,
+    system_instructions: snap.system_instructions ?? current.system_instructions,
+    tone_config: { ...current.tone_config, ...(snap.tone_config ?? {}), include_evidence: true, include_confidence: true, include_limitations: true },
+    output_structure: Array.isArray(snap.output_structure) ? snap.output_structure : current.output_structure,
+    suggested_questions: Array.isArray(snap.suggested_questions) ? snap.suggested_questions : current.suggested_questions,
+    examples: Array.isArray(snap.examples) ? snap.examples : current.examples,
+    model_config: { ...current.model_config, ...(snap.model_config ?? {}) },
+  };
+}
+
+type Proposal = {
+  summary: string;
+  warnings: string[];
+  changes: {
+    system_instructions?: string;
+    tone_config?: Partial<ToneConfig>;
+    output_structure?: StructureBlock[];
+    suggested_questions?: Array<{ text: string; active: boolean }>;
+    examples?: Array<{ question: string; expected_behavior: string; notes?: string; active: boolean }>;
+    model_config?: Partial<ModelConfig>;
+  };
+  metrics?: { model: string; elapsed_ms: number; tokens_in: number; tokens_out: number };
+};
+
+function AiEditTab({ config, setConfig }: {
+  config: PromptConfig;
+  setConfig: React.Dispatch<React.SetStateAction<PromptConfig | null>>;
+}) {
+  const [instruction, setInstruction] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
+
+  async function generate() {
+    const inst = instruction.trim();
+    if (!inst) return;
+    setLoading(true);
+    setProposal(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-prompt-suggest", {
+        body: {
+          instruction: inst,
+          current_config: {
+            system_instructions: config.system_instructions,
+            tone_config: config.tone_config,
+            output_structure: config.output_structure,
+            suggested_questions: config.suggested_questions,
+            examples: config.examples,
+            model_config: config.model_config,
+          },
+        },
+      });
+      if (error) throw error;
+      const p = data as Proposal & { error?: string };
+      if ((p as any)?.error) throw new Error(String((p as any).error));
+      setProposal(p);
+    } catch (e) {
+      toast.error(`Falha ao gerar sugestão: ${(e as Error).message}`);
+    } finally { setLoading(false); }
+  }
+
+  function apply() {
+    if (!proposal) return;
+    const c = proposal.changes;
+    setConfig((cur) => {
+      if (!cur) return cur;
+      const next: PromptConfig = { ...cur };
+      if (typeof c.system_instructions === "string") next.system_instructions = c.system_instructions;
+      if (c.tone_config) next.tone_config = { ...cur.tone_config, ...c.tone_config, include_evidence: true, include_confidence: true, include_limitations: true };
+      if (Array.isArray(c.output_structure)) next.output_structure = c.output_structure;
+      if (Array.isArray(c.suggested_questions)) {
+        next.suggested_questions = c.suggested_questions.map((q, i) => ({ id: uid(), text: q.text, active: q.active !== false, order: i + 1 }));
+      }
+      if (Array.isArray(c.examples)) {
+        next.examples = c.examples.map((ex) => ({ id: uid(), question: ex.question, expected_behavior: ex.expected_behavior, notes: ex.notes ?? "", active: ex.active !== false }));
+      }
+      if (c.model_config) next.model_config = { ...cur.model_config, ...c.model_config };
+      return next;
+    });
+    toast.success("Sugestão aplicada ao rascunho. Revise e salve.");
+    setProposal(null);
+    setInstruction("");
+  }
+
+  const c = proposal?.changes;
+  const currentSnap = {
+    system_instructions: config.system_instructions,
+    tone_config: config.tone_config,
+    output_structure: config.output_structure,
+    suggested_questions: config.suggested_questions,
+    examples: config.examples,
+    model_config: config.model_config,
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex items-center gap-2 mb-3">
+          <Wand2 className="w-4 h-4 text-[#F88A2B]" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Editar por linguagem natural</h3>
+        </div>
+        <p className="text-xs text-slate-500 mb-3">
+          Descreva o ajuste desejado. A IA propõe um diff. Nada é aplicado até você clicar em "Aplicar ao rascunho".
+          Regras de segurança obrigatórias nunca podem ser desativadas.
+        </p>
+        <Textarea
+          rows={4}
+          value={instruction}
+          onChange={(e) => setInstruction(e.target.value)}
+          placeholder="Ex.: Torne o tom mais direto, reduza para 3 recomendações e adicione uma pergunta sobre engajamento."
+        />
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={generate}
+            disabled={loading || !instruction.trim()}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50"
+          >
+            <Wand2 className="w-4 h-4" /> {loading ? "Gerando…" : "Gerar sugestão"}
+          </button>
+          {proposal && (
+            <button
+              onClick={() => { setProposal(null); }}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <X className="w-4 h-4" /> Descartar
+            </button>
+          )}
+        </div>
+      </Card>
+
+      {proposal && c && (
+        <Card>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Proposta da IA</h4>
+              <p className="text-sm text-slate-600 mt-1">{proposal.summary}</p>
+            </div>
+            <button
+              onClick={apply}
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:brightness-105"
+            >
+              <Check className="w-4 h-4" /> Aplicar ao rascunho
+            </button>
+          </div>
+
+          {proposal.warnings.length > 0 && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-semibold text-amber-800 uppercase mb-1">Avisos</p>
+              <ul className="text-xs text-amber-800 list-disc pl-5 space-y-0.5">
+                {proposal.warnings.map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {typeof c.system_instructions === "string" && (
+              <FieldDiff label="Instruções do sistema" before={config.system_instructions} after={c.system_instructions} />
+            )}
+            {c.tone_config && (
+              <FieldDiff label="Tom / composição" before={JSON.stringify(config.tone_config, null, 2)} after={JSON.stringify({ ...config.tone_config, ...c.tone_config }, null, 2)} />
+            )}
+            {c.output_structure && (
+              <FieldDiff label="Estrutura da resposta" before={JSON.stringify(config.output_structure, null, 2)} after={JSON.stringify(c.output_structure, null, 2)} />
+            )}
+            {c.suggested_questions && (
+              <FieldDiff label="Perguntas sugeridas" before={config.suggested_questions.map((q) => `• ${q.text}`).join("\n")} after={c.suggested_questions.map((q) => `• ${q.text}`).join("\n")} />
+            )}
+            {c.examples && (
+              <FieldDiff label="Exemplos" before={JSON.stringify(config.examples, null, 2)} after={JSON.stringify(c.examples, null, 2)} />
+            )}
+            {c.model_config && (
+              <FieldDiff label="Modelo e limites" before={JSON.stringify(config.model_config, null, 2)} after={JSON.stringify({ ...config.model_config, ...c.model_config }, null, 2)} />
+            )}
+          </div>
+
+          {proposal.metrics && (
+            <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
+              <Chip label={`Modelo: ${proposal.metrics.model}`} />
+              <Chip label={`${proposal.metrics.elapsed_ms} ms`} />
+              <Chip label={`${proposal.metrics.tokens_in} in · ${proposal.metrics.tokens_out} out`} />
+            </div>
+          )}
+        </Card>
+      )}
+
+      {!proposal && !loading && (
+        <Card className="bg-slate-50/70">
+          <p className="text-xs text-slate-500">Rascunho atual como referência:</p>
+          <pre className="mt-2 text-[11px] leading-relaxed text-slate-700 overflow-x-auto max-h-64">{JSON.stringify(currentSnap, null, 2)}</pre>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function FieldDiff({ label, before, after }: { label: string; before: string; after: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wide text-slate-700">{label}</div>
+      <div className="grid md:grid-cols-2 divide-x divide-slate-200">
+        <div>
+          <div className="px-3 py-1.5 bg-rose-50 text-[10px] font-semibold uppercase text-rose-700">Antes</div>
+          <pre className="p-3 text-[11px] leading-relaxed text-slate-700 whitespace-pre-wrap max-h-64 overflow-auto">{before || <em className="text-slate-400">vazio</em>}</pre>
+        </div>
+        <div>
+          <div className="px-3 py-1.5 bg-emerald-50 text-[10px] font-semibold uppercase text-emerald-700">Depois</div>
+          <pre className="p-3 text-[11px] leading-relaxed text-slate-700 whitespace-pre-wrap max-h-64 overflow-auto">{after || <em className="text-slate-400">vazio</em>}</pre>
+        </div>
       </div>
-      <p className="mt-4 text-xs text-slate-500">Ações de restauração e comparação serão disponibilizadas na próxima sub-fase.</p>
-    </Card>
+    </div>
+  );
+}
+
+function DiffView({ a, b, labelA, labelB }: { a: any; b: any; labelA: string; labelB: string }) {
+  const fields: Array<{ key: string; label: string }> = [
+    { key: "system_instructions", label: "Instruções do sistema" },
+    { key: "tone_config", label: "Tom" },
+    { key: "output_structure", label: "Estrutura" },
+    { key: "suggested_questions", label: "Perguntas" },
+    { key: "examples", label: "Exemplos" },
+    { key: "model_config", label: "Modelo" },
+  ];
+  const fmt = (v: any) => typeof v === "string" ? v : JSON.stringify(v, null, 2);
+  return (
+    <div className="space-y-3">
+      {fields.map((f) => {
+        const av = fmt(a?.[f.key] ?? "");
+        const bv = fmt(b?.[f.key] ?? "");
+        if (av === bv) return null;
+        return <FieldDiff key={f.key} label={`${f.label} · ${labelA} → ${labelB}`} before={av} after={bv} />;
+      })}
+      {fields.every((f) => fmt(a?.[f.key] ?? "") === fmt(b?.[f.key] ?? "")) && (
+        <p className="text-sm text-slate-500">As duas versões são idênticas nos campos comparáveis.</p>
+      )}
+    </div>
   );
 }
