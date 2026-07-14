@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, Sparkles,
   MessageSquare, Cpu, FlaskConical, History, Layers, ListChecks, GaugeCircle,
+  GitCompare, RotateCcw,
 } from "lucide-react";
 
 const SCENARIOS: { key: string; label: string; description: string }[] = [
@@ -63,6 +64,7 @@ const TABS = [
   { id: "steps", label: "Passo a Passo", icon: GaugeCircle },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
   { id: "test", label: "Testar Geração", icon: FlaskConical },
+  { id: "edit_ai", label: "Editar por IA", icon: Sparkles },
   { id: "history", label: "Histórico", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
@@ -272,9 +274,10 @@ export default function PlatformIntelligentRitualConfigScreen() {
         {tab === "steps" && <StepsTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
         {tab === "test" && <TestTab config={config} />}
-        {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
+        {tab === "edit_ai" && <EditByAITab config={config} setConfig={setConfig} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
-        {(tab !== "test" && tab !== "history") && (
+        {(tab !== "test" && tab !== "history" && tab !== "edit_ai") && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: Rituais mais curtos para times remotos e reforço em segurança psicológica." />
