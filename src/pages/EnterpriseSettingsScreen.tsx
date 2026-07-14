@@ -1023,7 +1023,7 @@ export default function EnterpriseSettingsScreen() {
           {tab === "regionalizacao" && <RegionalizacaoTab />}
           {tab === "jornada"        && <JornadaTab />}
           {tab === "branding"       && <BrandingTab />}
-          {tab === "usuarios"       && <ComingSoon label="Usuários" />}
+          {tab === "usuarios"       && <UsuariosTab />}
           {tab === "calendario"     && <CalendarioTab />}
           {tab === "notificacoes"   && <NotificacoesTab />}
           {tab === "ia"             && <IaTab />}
