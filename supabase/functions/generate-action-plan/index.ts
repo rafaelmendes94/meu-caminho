@@ -255,6 +255,14 @@ Deno.serve(async (req) => {
     } catch { /* opcional */ }
 
     const cfg = await loadConfig(admin, configSource);
+    // Overrides por organização
+    const { resolveOrgAiSettings } = await import("../_shared/org_ai_settings.ts");
+    const orgAi = await resolveOrgAiSettings(admin, orgId);
+    if (orgAi.participates === false || orgAi.allow_plans === false) {
+      return json({ error: "ai_disabled_for_organization" }, 403);
+    }
+    if (orgAi.model) cfg.model_config = { ...(cfg.model_config ?? {}), primary_model: orgAi.model };
+    if (orgAi.temperature != null) cfg.model_config = { ...(cfg.model_config ?? {}), temperature: orgAi.temperature };
     const systemPrompt = buildSystemPrompt(cfg);
     const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
     const rag = await fetchKnowledgeContext({
