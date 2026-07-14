@@ -1205,6 +1205,560 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_addons: {
+        Row: {
+          active: boolean
+          category: string | null
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          metadata: Json
+          name: string
+          price_cents: number
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          price_cents?: number
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          price_cents?: number
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      billing_consumption_daily: {
+        Row: {
+          ai_cost_cents: number
+          ai_tokens: number
+          created_at: string
+          day: string
+          downloads: number
+          edge_invocations: number
+          id: string
+          metadata: Json
+          organization_id: string
+          storage_mb: number
+          uploads: number
+        }
+        Insert: {
+          ai_cost_cents?: number
+          ai_tokens?: number
+          created_at?: string
+          day: string
+          downloads?: number
+          edge_invocations?: number
+          id?: string
+          metadata?: Json
+          organization_id: string
+          storage_mb?: number
+          uploads?: number
+        }
+        Update: {
+          ai_cost_cents?: number
+          ai_tokens?: number
+          created_at?: string
+          day?: string
+          downloads?: number
+          edge_invocations?: number
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          storage_mb?: number
+          uploads?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_consumption_daily_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_coupon_redemptions: {
+        Row: {
+          coupon_id: string
+          id: string
+          metadata: Json
+          organization_id: string | null
+          redeemed_at: string
+          subscription_id: string | null
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          redeemed_at?: string
+          subscription_id?: string | null
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          redeemed_at?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "billing_coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_coupon_redemptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_coupon_redemptions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "billing_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          currency: string | null
+          description: string | null
+          discount_type: string
+          expires_at: string | null
+          id: string
+          max_redemptions: number | null
+          metadata: Json
+          redemptions_count: number
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discount_type?: string
+          expires_at?: string | null
+          id?: string
+          max_redemptions?: number | null
+          metadata?: Json
+          redemptions_count?: number
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discount_type?: string
+          expires_at?: string | null
+          id?: string
+          max_redemptions?: number | null
+          metadata?: Json
+          redemptions_count?: number
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      billing_gateway_configs: {
+        Row: {
+          credentials: Json
+          enabled: boolean
+          gateway: string
+          id: string
+          mode: string
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          credentials?: Json
+          enabled?: boolean
+          gateway: string
+          id?: string
+          mode?: string
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          credentials?: Json
+          enabled?: boolean
+          gateway?: string
+          id?: string
+          mode?: string
+          settings?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      billing_invoices: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          due_date: string | null
+          external_invoice_id: string | null
+          gateway: string
+          id: string
+          metadata: Json
+          number: string
+          organization_id: string
+          paid_at: string | null
+          pdf_url: string | null
+          plan_id: string | null
+          status: string
+          subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          external_invoice_id?: string | null
+          gateway?: string
+          id?: string
+          metadata?: Json
+          number: string
+          organization_id: string
+          paid_at?: string | null
+          pdf_url?: string | null
+          plan_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          external_invoice_id?: string | null
+          gateway?: string
+          id?: string
+          metadata?: Json
+          number?: string
+          organization_id?: string
+          paid_at?: string | null
+          pdf_url?: string | null
+          plan_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "platform_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "billing_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_license_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          delta: number
+          id: string
+          organization_id: string
+          reason: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          delta: number
+          id?: string
+          organization_id: string
+          reason?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          delta?: number
+          id?: string
+          organization_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_license_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_org_addons: {
+        Row: {
+          addon_id: string
+          created_at: string
+          currency: string
+          ends_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          price_cents: number
+          quantity: number
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addon_id: string
+          created_at?: string
+          currency?: string
+          ends_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          price_cents?: number
+          quantity?: number
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addon_id?: string
+          created_at?: string
+          currency?: string
+          ends_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          price_cents?: number
+          quantity?: number
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_org_addons_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "billing_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_org_addons_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_subscriptions: {
+        Row: {
+          amount_cents: number
+          billing_cycle: string
+          cancel_at: string | null
+          canceled_at: string | null
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          current_period_start: string | null
+          external_customer_id: string | null
+          external_subscription_id: string | null
+          gateway: string
+          id: string
+          metadata: Json
+          mrr_cents: number
+          organization_id: string
+          plan_id: string | null
+          status: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          billing_cycle?: string
+          cancel_at?: string | null
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_customer_id?: string | null
+          external_subscription_id?: string | null
+          gateway?: string
+          id?: string
+          metadata?: Json
+          mrr_cents?: number
+          organization_id: string
+          plan_id?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          billing_cycle?: string
+          cancel_at?: string | null
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_customer_id?: string | null
+          external_subscription_id?: string | null
+          gateway?: string
+          id?: string
+          metadata?: Json
+          mrr_cents?: number
+          organization_id?: string
+          plan_id?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "platform_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_usage_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          created_at: string
+          current_value: number
+          id: string
+          limit_value: number
+          organization_id: string
+          resource: string
+          threshold: number
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          limit_value?: number
+          organization_id: string
+          resource: string
+          threshold: number
+        }
+        Update: {
+          acknowledged_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          limit_value?: number
+          organization_id?: string
+          resource?: string
+          threshold?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_usage_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_webhook_events: {
+        Row: {
+          created_at: string
+          error: string | null
+          event_type: string
+          external_id: string | null
+          gateway: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          event_type: string
+          external_id?: string | null
+          gateway?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          event_type?: string
+          external_id?: string | null
+          gateway?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       cms_certificates: {
         Row: {
           created_at: string
@@ -6251,6 +6805,7 @@ export type Database = {
           unit_name: string
         }[]
       }
+      user_in_org: { Args: { _org: string }; Returns: boolean }
     }
     Enums: {
       app_role:

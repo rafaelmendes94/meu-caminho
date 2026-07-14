@@ -42,6 +42,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: "/admin/subscriptions", label: "Licenças", icon: CreditCard, keywords: "assinaturas seats" },
       { to: "/admin/plans", label: "Planos", icon: Package, keywords: "pricing planos" },
       { to: "/admin/billing", label: "Billing", icon: Wallet, keywords: "financeiro faturamento" },
+      { to: "/admin/billing/hub", label: "Billing Hub", icon: Wallet, keywords: "assinaturas cupons add-ons faturas webhooks gateways" },
     ],
   },
   {

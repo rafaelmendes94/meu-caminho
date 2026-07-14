@@ -45,3 +45,7 @@ Painel completo em `/enterprise/rh/configuracoes` (Owner/RH Admin). Ver `ENTERPR
 
 ## Fase 26 — Enterprise Gamification
 Ver [ENTERPRISE_GAMIFICATION.md](./ENTERPRISE_GAMIFICATION.md). Tabelas: gam_xp_rules, gam_levels, gam_badges, gam_missions, gam_achievements, gam_seasons, gam_events, gam_user_xp, gam_user_badges, gam_user_missions, gam_user_streaks, gam_org_settings. Rota admin: /admin/gamification.
+
+
+## Fase 27 — Billing & Subscriptions (ready)
+Ver [BILLING_ARCHITECTURE.md](./BILLING_ARCHITECTURE.md). Tabelas: billing_subscriptions, billing_invoices, billing_coupons, billing_coupon_redemptions, billing_addons, billing_org_addons, billing_license_events, billing_consumption_daily, billing_webhook_events, billing_gateway_configs, billing_usage_alerts. Adapter layer em src/lib/billing/ (getBillingProvider). Rota admin: /admin/billing/hub. Nenhum gateway integrado.
