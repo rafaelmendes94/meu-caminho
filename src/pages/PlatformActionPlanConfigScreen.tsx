@@ -264,9 +264,10 @@ export default function PlatformActionPlanConfigScreen() {
         {tab === "prio" && <PrioritizationTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
         {tab === "test" && <TestTab config={config} />}
-        {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
+        {tab === "edit_ai" && <EditByAITab config={config} setConfig={setConfig} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
-        {(tab !== "test" && tab !== "history") && (
+        {(tab !== "test" && tab !== "history" && tab !== "edit_ai") && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: Reduzido máximo de tarefas para 6 e reforçado critério de conclusão." />
