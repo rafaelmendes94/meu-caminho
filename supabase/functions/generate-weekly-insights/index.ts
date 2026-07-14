@@ -156,6 +156,13 @@ async function processOrganization(
   });
   if (ctxErr) throw new Error(ctxErr.message);
 
+  const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
+  const rag = await fetchKnowledgeContext({
+    query: `insights semanais engajamento bem-estar clima organizacional semana ${weekOfStr}`,
+    organizationId: orgId,
+    aiModule: "generate-weekly-insights",
+  });
+
   const started = Date.now();
   async function callModel(model: string) {
     return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -165,6 +172,7 @@ async function processOrganization(
         model, temperature, max_tokens: maxTokens,
         messages: [
           { role: "system", content: systemPrompt },
+          ...(rag.contextBlock ? [{ role: "user" as const, content: rag.contextBlock }] : []),
           { role: "user", content:
             `Contexto agregado da organização (semana em análise: ${weekOfStr}). Gere o Insight Semanal em JSON válido conforme o schema.\n\n` +
             JSON.stringify(ctx ?? {}, null, 2),
