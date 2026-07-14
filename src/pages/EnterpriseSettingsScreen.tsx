@@ -405,6 +405,303 @@ function JornadaTab() {
   );
 }
 
+// ---------- ABA BRANDING ----------
+type BrandingCfg = {
+  primary_color: string; secondary_color: string; accent_color: string;
+  theme: "light" | "dark" | "auto";
+  logo_path?: string | null; logo_white_path?: string | null;
+  favicon_path?: string | null; login_image_path?: string | null;
+  onboarding_image_path?: string | null; dashboard_image_path?: string | null;
+};
+
+function BrandingTab() {
+  const { organization } = useAuth();
+  const { value, setValue, save, loading, saving } = useEnterpriseSettings<BrandingCfg>("branding", {
+    primary_color: "#F88A2B", secondary_color: "#0B0908", accent_color: "#F7F4F2",
+    theme: "light",
+  });
+  const [signed, setSigned] = useState<Record<string, string>>({});
+
+  const orgId = organization?.id;
+
+  useEffect(() => {
+    const keys = ["logo_path","logo_white_path","favicon_path","login_image_path","onboarding_image_path","dashboard_image_path"] as const;
+    (async () => {
+      const map: Record<string, string> = {};
+      for (const k of keys) {
+        const p = (value as any)[k];
+        if (!p) continue;
+        const { data } = await supabase.storage.from("org-branding").createSignedUrl(p, 3600);
+        if (data?.signedUrl) map[k] = data.signedUrl;
+      }
+      setSigned(map);
+    })();
+  }, [value.logo_path, value.logo_white_path, value.favicon_path, value.login_image_path, value.onboarding_image_path, value.dashboard_image_path]);
+
+  const uploadFile = async (field: keyof BrandingCfg, file: File) => {
+    if (!orgId) return;
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${orgId}/${String(field)}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("org-branding").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    const next = { ...value, [field]: path } as BrandingCfg;
+    setValue(next);
+    await save(next);
+  };
+
+  const removeFile = async (field: keyof BrandingCfg) => {
+    const p = (value as any)[field];
+    if (p) await supabase.storage.from("org-branding").remove([p]);
+    const next = { ...value, [field]: null } as BrandingCfg;
+    setValue(next);
+    await save(next);
+  };
+
+  const UploadSlot = ({ field, label }: { field: keyof BrandingCfg; label: string }) => {
+    const preview = signed[String(field)];
+    return (
+      <div className="border rounded-md p-3 space-y-2">
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="h-24 rounded bg-muted/40 flex items-center justify-center overflow-hidden">
+          {preview
+            ? <img src={preview} alt={label} className="h-full object-contain" />
+            : <ImageIcon className="h-6 w-6 text-muted-foreground" />}
+        </div>
+        <div className="flex gap-2">
+          <label className="inline-flex items-center gap-1 cursor-pointer text-xs px-2 py-1 rounded border hover:bg-accent">
+            <Upload className="h-3 w-3" /> Enviar
+            <input type="file" accept="image/*" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadFile(field, f); }} />
+          </label>
+          {(value as any)[field] && (
+            <button type="button" onClick={() => void removeFile(field)}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border text-red-600 hover:bg-red-50">
+              <Trash2 className="h-3 w-3" /> Remover
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader><CardTitle>Identidade Visual</CardTitle><CardDescription>Logos, favicon e imagens da marca (bucket privado).</CardDescription></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <UploadSlot field="logo_path" label="Logo principal" />
+          <UploadSlot field="logo_white_path" label="Logo branca" />
+          <UploadSlot field="favicon_path" label="FavIcon" />
+          <UploadSlot field="login_image_path" label="Imagem de login" />
+          <UploadSlot field="onboarding_image_path" label="Imagem onboarding" />
+          <UploadSlot field="dashboard_image_path" label="Imagem dashboard" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Cores e Tema</CardTitle><CardDescription>Aplicadas às telas do portal da empresa.</CardDescription></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Cor primária">
+            <div className="flex gap-2 items-center">
+              <input type="color" value={value.primary_color} onChange={(e) => setValue({ ...value, primary_color: e.target.value })} className="h-9 w-12 rounded border" />
+              <Input value={value.primary_color} onChange={(e) => setValue({ ...value, primary_color: e.target.value })} />
+            </div>
+          </Field>
+          <Field label="Cor secundária">
+            <div className="flex gap-2 items-center">
+              <input type="color" value={value.secondary_color} onChange={(e) => setValue({ ...value, secondary_color: e.target.value })} className="h-9 w-12 rounded border" />
+              <Input value={value.secondary_color} onChange={(e) => setValue({ ...value, secondary_color: e.target.value })} />
+            </div>
+          </Field>
+          <Field label="Cor de destaque">
+            <div className="flex gap-2 items-center">
+              <input type="color" value={value.accent_color} onChange={(e) => setValue({ ...value, accent_color: e.target.value })} className="h-9 w-12 rounded border" />
+              <Input value={value.accent_color} onChange={(e) => setValue({ ...value, accent_color: e.target.value })} />
+            </div>
+          </Field>
+          <Field label="Tema">
+            <SelectBox value={value.theme} onChange={(v) => setValue({ ...value, theme: v as any })}
+              options={[["light","Claro"],["dark","Escuro"],["auto","Automático"]]} />
+          </Field>
+          <div className="md:col-span-2">
+            <div className="text-xs uppercase text-muted-foreground mb-2">Preview</div>
+            <div className="flex gap-2">
+              <div className="h-14 w-14 rounded-md" style={{ background: value.primary_color }} />
+              <div className="h-14 w-14 rounded-md" style={{ background: value.secondary_color }} />
+              <div className="h-14 w-14 rounded-md border" style={{ background: value.accent_color }} />
+            </div>
+          </div>
+          <div className="md:col-span-2 flex justify-end">
+            <Button onClick={() => save(value)} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" /> {saving ? "Salvando…" : "Salvar cores"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ---------- ABA CALENDÁRIO ----------
+type Holiday = { id: string; date: string; name: string; type: "national" | "state" | "city" | "internal" | "vacation" | "event" };
+
+function CalendarioTab() {
+  const { value, setValue, save, loading, saving } = useEnterpriseSettings<{ items: Holiday[] }>("calendar_holidays", { items: [] });
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Holiday | null>(null);
+  const [selected, setSelected] = useState<Date | undefined>(new Date());
+
+  const items = value.items ?? [];
+
+  const openNew = () => { setEditing({ id: crypto.randomUUID(), date: new Date().toISOString().slice(0,10), name: "", type: "internal" }); setOpen(true); };
+  const openEdit = (h: Holiday) => { setEditing({ ...h }); setOpen(true); };
+
+  const commit = async (next: Holiday[]) => {
+    const nv = { items: next };
+    setValue(nv);
+    await save(nv);
+  };
+
+  const handleSave = async () => {
+    if (!editing) return;
+    if (!editing.name.trim() || !editing.date) return toast.error("Nome e data são obrigatórios.");
+    const exists = items.some((i) => i.id === editing.id);
+    const next = exists ? items.map((i) => i.id === editing.id ? editing : i) : [...items, editing];
+    await commit(next);
+    setOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    await commit(items.filter((i) => i.id !== id));
+  };
+
+  const marked = useMemo(() => items.map((i) => new Date(i.date + "T00:00:00")), [items]);
+
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4">
+      <Card>
+        <CardHeader><CardTitle>Datas</CardTitle></CardHeader>
+        <CardContent>
+          <Calendar mode="single" selected={selected} onSelect={setSelected}
+            modifiers={{ event: marked }}
+            modifiersClassNames={{ event: "bg-primary/20 text-primary font-semibold" }}
+            className="pointer-events-auto" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <div><CardTitle>Feriados e eventos</CardTitle><CardDescription>{items.length} registro(s)</CardDescription></div>
+          <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo</Button>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {items.length === 0 && <div className="text-sm text-muted-foreground">Nenhum registro.</div>}
+          {items.sort((a,b) => a.date.localeCompare(b.date)).map((h) => (
+            <div key={h.id} className="flex items-center justify-between border rounded-md px-3 py-2">
+              <div className="flex items-center gap-3">
+                <Badge variant="outline">{h.date}</Badge>
+                <div>
+                  <div className="text-sm font-medium">{h.name}</div>
+                  <div className="text-xs text-muted-foreground capitalize">{h.type}</div>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" onClick={() => openEdit(h)}>Editar</Button>
+                <Button size="sm" variant="ghost" onClick={() => handleDelete(h.id)} className="text-red-600 hover:text-red-700">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing && items.some(i => i.id === editing.id) ? "Editar data" : "Nova data"}</DialogTitle></DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <Field label="Nome"><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
+              <Field label="Data"><Input type="date" value={editing.date} onChange={(e) => setEditing({ ...editing, date: e.target.value })} /></Field>
+              <Field label="Tipo">
+                <SelectBox value={editing.type} onChange={(v) => setEditing({ ...editing, type: v as any })}
+                  options={[["national","Feriado nacional"],["state","Feriado estadual"],["city","Feriado municipal"],["internal","Data interna"],["vacation","Férias coletivas"],["event","Evento interno"]]} />
+              </Field>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={saving}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ---------- ABA NOTIFICAÇÕES ----------
+const NOTIF_CHANNELS = [["email","E-mail"],["in_app","In-App"]] as const;
+const NOTIF_EVENTS: [string, string][] = [
+  ["weekly_summary","Resumo semanal"],
+  ["monthly_summary","Resumo mensal"],
+  ["critical_alerts","Alertas críticos"],
+  ["insights","Insights"],
+  ["action_plans","Planos de Ação"],
+  ["rituals","Rituais"],
+  ["pulse","Pulse"],
+  ["checkin","Check-in"],
+  ["birthdays","Aniversários"],
+  ["new_content","Novos conteúdos"],
+];
+
+function NotificacoesTab() {
+  const { value, setValue, save, loading, saving } = useEnterpriseSettings<Record<string, Record<string, boolean>>>(
+    "notifications",
+    Object.fromEntries(NOTIF_EVENTS.map(([k]) => [k, { email: true, in_app: true }]))
+  );
+
+  const toggle = (ev: string, ch: string, v: boolean) => {
+    setValue({ ...value, [ev]: { ...(value[ev] ?? {}), [ch]: v } });
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Notificações</CardTitle><CardDescription>Escolha quais eventos disparam alertas em cada canal.</CardDescription></CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-[1fr_auto_auto] gap-y-2 items-center text-sm">
+          <div className="text-xs uppercase text-muted-foreground">Evento</div>
+          {NOTIF_CHANNELS.map(([k, l]) => <div key={k} className="text-xs uppercase text-muted-foreground px-3 text-center">{l}</div>)}
+          {NOTIF_EVENTS.map(([ev, label]) => (
+            <FragmentRow key={ev} label={label}>
+              {NOTIF_CHANNELS.map(([ch]) => (
+                <div key={ch} className="px-3 flex justify-center">
+                  <Switch checked={!!value[ev]?.[ch]} onCheckedChange={(v) => toggle(ev, ch, v)} />
+                </div>
+              ))}
+            </FragmentRow>
+          ))}
+        </div>
+        <div className="flex justify-end mt-4">
+          <Button onClick={() => save(value)} disabled={saving}>
+            <Save className="h-4 w-4 mr-2" /> {saving ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+const FragmentRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <>
+    <div className="py-2 border-t">{label}</div>
+    {Array.isArray(children) ? children.map((c, i) => <div key={i} className="py-2 border-t">{c}</div>) : <div className="py-2 border-t">{children}</div>}
+  </>
+);
+
 // ---------- PAGE ----------
 export default function EnterpriseSettingsScreen() {
   const { hasAnyRole, loading } = useAuth();
@@ -449,10 +746,10 @@ export default function EnterpriseSettingsScreen() {
           {tab === "licenca"        && <LicencaTab />}
           {tab === "regionalizacao" && <RegionalizacaoTab />}
           {tab === "jornada"        && <JornadaTab />}
-          {tab === "branding"       && <ComingSoon label="Branding" />}
+          {tab === "branding"       && <BrandingTab />}
           {tab === "usuarios"       && <ComingSoon label="Usuários" />}
-          {tab === "calendario"     && <ComingSoon label="Calendário" />}
-          {tab === "notificacoes"   && <ComingSoon label="Notificações" />}
+          {tab === "calendario"     && <CalendarioTab />}
+          {tab === "notificacoes"   && <NotificacoesTab />}
           {tab === "ia"             && <ComingSoon label="IA" />}
           {tab === "integracoes"    && <ComingSoon label="Integrações" />}
           {tab === "seguranca"      && <ComingSoon label="Segurança" />}
