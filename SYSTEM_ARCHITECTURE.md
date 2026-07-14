@@ -86,3 +86,7 @@ Rota `/enterprise/rh/configuracoes` (Sub-fases A/B/C — Fase 18). 11 abas persi
 ## Backup & Disaster Recovery
 
 Rota `/admin/system/backup` (platform_admin). Tabelas: `backup_jobs`, `backup_schedules`, `restore_jobs`, `health_checks`, `backup_logs`, `backup_policies`. Ver [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md). Integrações externas (Supabase Backups, S3, GCS, Azure Blob) preparadas na arquitetura, ainda não conectadas.
+
+## Performance Center
+
+Rota `/admin/system/performance` (platform_admin). Tabelas: `perf_snapshots`, `perf_alert_rules`, `perf_alerts`, `load_test_plans`, `load_test_runs`, `health_score_history`. Ver [PERFORMANCE_CENTER.md](./PERFORMANCE_CENTER.md). Load tests apenas em modo simulação matemática — nenhuma carga é gerada contra produção.
