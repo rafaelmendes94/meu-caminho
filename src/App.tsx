@@ -479,6 +479,7 @@ const App = () => (
         <Route path="/admin/ai/dna-organizacional" element={<PlatformAdmin><PlatformOrganizationalDNAConfigScreen /></PlatformAdmin>} />
         <Route path="/admin/ai/insights-semanais" element={<PlatformAdmin><PlatformWeeklyInsightsConfigScreen /></PlatformAdmin>} />
         <Route path="/admin/ai/planos-acao" element={<PlatformAdmin><PlatformActionPlanConfigScreen /></PlatformAdmin>} />
+        <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformIntelligentRitualConfigScreen /></PlatformAdmin>} />
          <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Rituais Inteligentes" /></PlatformAdmin>} />
          <Route path="/admin/ai/recomendacoes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Recomendações" /></PlatformAdmin>} />
 
