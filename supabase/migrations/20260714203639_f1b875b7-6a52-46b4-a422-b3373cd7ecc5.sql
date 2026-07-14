@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.qa_seed_users_export() TO authenticator, postgres;
