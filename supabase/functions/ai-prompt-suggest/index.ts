@@ -140,6 +140,23 @@ REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
 
 Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays (output_structure, model_config.categories, model_config.formats), devolva a lista COMPLETA ordenada, preservando ao menos 1 item ativo.`;
 
+const ORCHESTRATOR_SYSTEM_PROMPT = `Você é um assistente de configuração do AI Orchestrator™ (camada acima das IAs especialistas).
+Recebe a configuração atual do rascunho e uma instrução em linguagem natural do Super Admin.
+Proponha alterações mínimas e cirúrgicas sem violar as regras invioláveis.
+
+REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
+- O orquestrador nunca conversa diretamente com o usuário: apenas roteia, consolida, valida e mede.
+- Nunca substituir uma edge function especialista existente — apenas coordená-las.
+- Nunca inventar dados: se um especialista falhar, degradar para "sem dados suficientes".
+- Memória é sempre organizacional (nunca individual) e usa k-anonimato ≥ 5.
+- Cache expira em no máximo 24h e invalida em check-in, pulse, DNA, insight, plano e score.
+- Ao menos 1 especialista precisa permanecer ativo; ao menos 1 regra de roteamento precisa existir.
+- Cost table deve manter valores ≥ 0. Temperatura entre 0 e 1; max_tokens entre 256 e 8000; timeout entre 5 e 120s; cache_ttl_seconds entre 60 e 86400.
+- Consolidation.max_sections entre 1 e 12. Confidence.min_sources entre 1 e 5; ideal_sources entre 1 e 7.
+- Nunca reduzir os guardrails da lista publicada abaixo de 1 item.
+
+Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, model_config). Quando enviar arrays (routing, specialists, cost_table entries), devolva a lista COMPLETA preservando itens obrigatórios ativos.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -186,7 +203,8 @@ Deno.serve(async (req) => {
       promptKey !== "weekly_insights" &&
       promptKey !== "action_plan" &&
       promptKey !== "intelligent_ritual" &&
-      promptKey !== "recommendation_engine"
+      promptKey !== "recommendation_engine" &&
+      promptKey !== "orchestrator"
     )
       return json({ error: "invalid_prompt_key" }, 400);
     const SYSTEM_PROMPT =
@@ -195,6 +213,7 @@ Deno.serve(async (req) => {
       promptKey === "action_plan" ? ACTION_PLAN_SYSTEM_PROMPT :
       promptKey === "intelligent_ritual" ? RITUAL_SYSTEM_PROMPT :
       promptKey === "recommendation_engine" ? RECOMMENDATION_SYSTEM_PROMPT :
+      promptKey === "orchestrator" ? ORCHESTRATOR_SYSTEM_PROMPT :
       EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
