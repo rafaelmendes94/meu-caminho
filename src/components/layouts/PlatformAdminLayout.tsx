@@ -54,7 +54,6 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
   void profile;
 
   const favorites = getFavorites();
-  const recents = getRecents().slice(0, 4);
 
   return (
     <div className="min-h-[100dvh] flex bg-[#F6F7FB] font-montserrat text-[#0F172A]">
@@ -79,7 +78,7 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-          {!collapsed && (favorites.length > 0 || recents.length > 0) && (
+          {!collapsed && favorites.length > 0 && (
             <div className="space-y-3">
               {favorites.length > 0 && (
                 <div>
@@ -99,30 +98,6 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
                         >
                           <Star className="w-3.5 h-3.5 shrink-0 text-amber-300" />
                           <span className="truncate">{f.label}</span>
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {recents.length > 0 && (
-                <div>
-                  <p className="px-3 pb-1 text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold flex items-center gap-1.5">
-                    <Clock className="w-3 h-3" /> Recentes
-                  </p>
-                  <ul className="space-y-0.5">
-                    {recents.map((r) => (
-                      <li key={`rec-${r.to}`}>
-                        <NavLink
-                          to={r.to}
-                          className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-colors ${
-                              isActive ? "bg-[#F88A2B] text-black" : "text-slate-300 hover:bg-white/5 hover:text-white"
-                            }`
-                          }
-                        >
-                          <Clock className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-                          <span className="truncate">{r.label}</span>
                         </NavLink>
                       </li>
                     ))}
