@@ -131,6 +131,186 @@ export type Database = {
           },
         ]
       }
+      ai_orchestrator_cache: {
+        Row: {
+          confidence: number | null
+          config_version: number | null
+          expires_at: string
+          generated_at: string
+          hits: number
+          id: string
+          intent: string
+          intent_hash: string
+          invalidation_reason: string | null
+          is_stale: boolean
+          organization_id: string | null
+          response: Json
+          specialists: string[]
+          updated_at: string
+        }
+        Insert: {
+          confidence?: number | null
+          config_version?: number | null
+          expires_at?: string
+          generated_at?: string
+          hits?: number
+          id?: string
+          intent: string
+          intent_hash: string
+          invalidation_reason?: string | null
+          is_stale?: boolean
+          organization_id?: string | null
+          response?: Json
+          specialists?: string[]
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number | null
+          config_version?: number | null
+          expires_at?: string
+          generated_at?: string
+          hits?: number
+          id?: string
+          intent?: string
+          intent_hash?: string
+          invalidation_reason?: string | null
+          is_stale?: boolean
+          organization_id?: string | null
+          response?: Json
+          specialists?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_orchestrator_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_orchestrator_logs: {
+        Row: {
+          cache_hit: boolean
+          confidence: number | null
+          config_version: number | null
+          cost_usd: number | null
+          created_at: string
+          error: string | null
+          fallback_used: boolean
+          id: string
+          intent: string
+          intent_hash: string | null
+          latency_ms: number | null
+          model: string | null
+          organization_id: string | null
+          routing: Json
+          specialists: string[]
+          status: string
+          tokens_input: number | null
+          tokens_output: number | null
+          user_id: string | null
+        }
+        Insert: {
+          cache_hit?: boolean
+          confidence?: number | null
+          config_version?: number | null
+          cost_usd?: number | null
+          created_at?: string
+          error?: string | null
+          fallback_used?: boolean
+          id?: string
+          intent: string
+          intent_hash?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          organization_id?: string | null
+          routing?: Json
+          specialists?: string[]
+          status?: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          cache_hit?: boolean
+          confidence?: number | null
+          config_version?: number | null
+          cost_usd?: number | null
+          created_at?: string
+          error?: string | null
+          fallback_used?: boolean
+          id?: string
+          intent?: string
+          intent_hash?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          organization_id?: string | null
+          routing?: Json
+          specialists?: string[]
+          status?: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_orchestrator_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_orchestrator_memory: {
+        Row: {
+          captured_at: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          kind: string
+          organization_id: string
+          payload: Json
+          ref_id: string | null
+          summary: string
+          weight: number
+        }
+        Insert: {
+          captured_at?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kind: string
+          organization_id: string
+          payload?: Json
+          ref_id?: string | null
+          summary: string
+          weight?: number
+        }
+        Update: {
+          captured_at?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          organization_id?: string
+          payload?: Json
+          ref_id?: string | null
+          summary?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_orchestrator_memory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_prompt_configs: {
         Row: {
           classifications_config: Json
@@ -3323,6 +3503,10 @@ export type Database = {
         Returns: boolean
       }
       health_check: { Args: never; Returns: Json }
+      invalidate_orch_cache_org: {
+        Args: { _org_id: string; _reason: string }
+        Returns: undefined
+      }
       invalidate_rec_cache_all: {
         Args: { _reason: string }
         Returns: undefined
