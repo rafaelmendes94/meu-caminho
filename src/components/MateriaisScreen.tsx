@@ -147,7 +147,7 @@ const MateriaisScreen = () => {
     : (({ children }: any) => <AppUserLayout>{children}</AppUserLayout>);
 
   const content = (
-    <div className={`relative w-full min-h-screen flex flex-col font-display ${isEnterprise ? 'lg:min-h-0' : ''}`} style={{ background: isEnterprise ? 'transparent' : bg }}>
+    <div className={`relative w-full min-h-screen flex flex-col font-display overflow-x-clip ${isEnterprise ? 'lg:min-h-0' : ''}`} style={{ background: isEnterprise ? 'transparent' : bg }}>
       {/* Background Glows - Mobile only or non-enterprise */}
       {!isEnterprise && (
         <>

@@ -101,7 +101,7 @@ const AulaPlayerScreen = () => {
     <Layout title="Aula" backTo={isEnterprise ? "/enterprise/jornada" : "/jornada"}>
       <main className={`${isEnterprise ? 'w-full max-w-full' : 'h-screen min-h-[100dvh] w-full flex items-center justify-center bg-[#F7F4F2] overflow-hidden'} font-display`}>
  <div
- className={`relative w-full ${isEnterprise ? 'bg-transparent lg:h-auto' : 'h-[100dvh] overflow-hidden md:ring-black/30 flex flex-col'}`}
+ className={`relative w-full overflow-x-clip ${isEnterprise ? 'bg-transparent lg:h-auto' : 'h-[100dvh] overflow-hidden md:ring-black/30 flex flex-col'}`}
  style={!isEnterprise ? { background: bg } : {}}
  aria-label="Player de Aula"
  >
