@@ -2,7 +2,7 @@ import { ReactNode, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BarChart3, Building2, CreditCard, Wallet, Sparkles,
-  Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap,
+  Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap, DatabaseBackup,
   Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings, Package,
   ChevronDown, ChevronsLeft, ChevronsRight, Brain, MessageSquare, Dna, CalendarClock, ListChecks, Wand2, FlaskConical,
 } from "lucide-react";
@@ -32,6 +32,7 @@ const groups: NavGroup[] = [
       { to: "/admin/billing", label: "Financeiro", icon: Wallet },
       { to: "/admin/ai-usage", label: "IA", icon: Sparkles },
       { to: "/admin/system", label: "System Health", icon: Activity },
+      { to: "/admin/system/backup", label: "Backup & Recovery", icon: DatabaseBackup },
       { to: "/admin/support", label: "Suporte", icon: LifeBuoy },
       { to: "/admin/audit", label: "Auditoria", icon: ShieldCheck },
     ],
