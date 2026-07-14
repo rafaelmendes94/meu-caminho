@@ -298,10 +298,11 @@ export default function PlatformOrganizationalDNAConfigScreen() {
         {tab === "classifications" && <ClassificationsTab config={config} setConfig={setConfig} />}
         {tab === "recommendations" && <RecommendationsTab recCfg={recCfg} setRecCfg={setRecCfg} maxRec={config.tone_config.max_recommendations} onMaxChange={(v) => setConfig((c) => c ? { ...c, tone_config: { ...c.tone_config, max_recommendations: v } } : c)} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
+        {tab === "ai_edit" && <AiEditTab config={config} setConfig={setConfig} recCfg={recCfg} setRecCfg={setRecCfg} />}
         {tab === "test" && <TestTab configVersion={config.version} configStatus={config.status} />}
-        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} onRestore={(snap) => restoreFromSnapshot(snap)} />}
 
-        {(tab !== "test" && tab !== "history") && (
+        {(tab !== "test" && tab !== "history" && tab !== "ai_edit") && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: Ajustado peso da recuperação e novo limite de 4 recomendações." />
