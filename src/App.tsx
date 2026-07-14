@@ -488,6 +488,7 @@ const App = () => (
          <Route path="/admin/ai/recomendacoes" element={<PlatformAdmin><PlatformRecommendationEngineConfigScreen /></PlatformAdmin>} />
         <Route path="/admin/ai/orchestrator" element={<PlatformAdmin><PlatformOrchestratorConfigScreen /></PlatformAdmin>} />
          <Route path="/admin/knowledge" element={<PlatformAdmin><PlatformKnowledgeHubScreen /></PlatformAdmin>} />
+          <Route path="/admin/ai/lab" element={<PlatformAdmin><PlatformAILabScreen /></PlatformAdmin>} />
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes></Suspense>
