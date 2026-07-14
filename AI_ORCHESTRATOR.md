@@ -73,3 +73,10 @@ Resposta:
 - Se todos os especialistas falharem → status `insufficient_data`, cache
   não é gravado.
 - Config editável em `/admin/ai/orchestrator` (Sub-fase B).
+## Sub-fase C — Testes, Edição por IA e Métricas
+
+- **Aba "Testar"**: chat contra `ai-orchestrator` com seleção de organização e toggle `force_refresh`. Mostra intent detectada, especialistas usados, cache hit, confiança e limitações.
+- **Aba "Editar com IA"**: `ai-prompt-suggest` com `prompt_key=orchestrator`. Retorna `summary`, `warnings`, `changes` (system_instructions, tone_config, model_config). Sanitização server-side força regras invioráveis (memória org, TTLs, clamps, ≥1 especialista ativo).
+- **Métricas**: KPIs consolidados por aba — Especialistas (usos, latência média, custo 30d), Cache (hit rate, stale), Custos (dia/semana/30d, por modelo), Memória (últimas capturas).
+- **Roteamento verificado**: prioriza `priority[]` acima de `specialists[]`, corta em 3, fallback para `general → council` quando nenhuma keyword bater.
+- **Sem hallucination**: se todos os especialistas falharem → `insufficient_data`, cache não escrito, resposta agregada `sem dados suficientes`.

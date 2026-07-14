@@ -140,6 +140,23 @@ REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
 
 Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays (output_structure, model_config.categories, model_config.formats), devolva a lista COMPLETA ordenada, preservando ao menos 1 item ativo.`;
 
+const ORCHESTRATOR_SYSTEM_PROMPT = `Você é um assistente de configuração do AI Orchestrator™ (camada acima das IAs especialistas).
+Recebe a configuração atual do rascunho e uma instrução em linguagem natural do Super Admin.
+Proponha alterações mínimas e cirúrgicas sem violar as regras invioláveis.
+
+REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
+- O orquestrador nunca conversa diretamente com o usuário: apenas roteia, consolida, valida e mede.
+- Nunca substituir uma edge function especialista existente — apenas coordená-las.
+- Nunca inventar dados: se um especialista falhar, degradar para "sem dados suficientes".
+- Memória é sempre organizacional (nunca individual) e usa k-anonimato ≥ 5.
+- Cache expira em no máximo 24h e invalida em check-in, pulse, DNA, insight, plano e score.
+- Ao menos 1 especialista precisa permanecer ativo; ao menos 1 regra de roteamento precisa existir.
+- Cost table deve manter valores ≥ 0. Temperatura entre 0 e 1; max_tokens entre 256 e 8000; timeout entre 5 e 120s; cache_ttl_seconds entre 60 e 86400.
+- Consolidation.max_sections entre 1 e 12. Confidence.min_sources entre 1 e 5; ideal_sources entre 1 e 7.
+- Nunca reduzir os guardrails da lista publicada abaixo de 1 item.
+
+Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, model_config). Quando enviar arrays (routing, specialists, cost_table entries), devolva a lista COMPLETA preservando itens obrigatórios ativos.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -186,7 +203,8 @@ Deno.serve(async (req) => {
       promptKey !== "weekly_insights" &&
       promptKey !== "action_plan" &&
       promptKey !== "intelligent_ritual" &&
-      promptKey !== "recommendation_engine"
+      promptKey !== "recommendation_engine" &&
+      promptKey !== "orchestrator"
     )
       return json({ error: "invalid_prompt_key" }, 400);
     const SYSTEM_PROMPT =
@@ -195,6 +213,7 @@ Deno.serve(async (req) => {
       promptKey === "action_plan" ? ACTION_PLAN_SYSTEM_PROMPT :
       promptKey === "intelligent_ritual" ? RITUAL_SYSTEM_PROMPT :
       promptKey === "recommendation_engine" ? RECOMMENDATION_SYSTEM_PROMPT :
+      promptKey === "orchestrator" ? ORCHESTRATOR_SYSTEM_PROMPT :
       EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
@@ -247,6 +266,7 @@ Deno.serve(async (req) => {
       promptKey === "action_plan" ? ["title", "problem_statement", "objective", "due_date", "success_metrics", "tasks", "impact_measurement"] :
       promptKey === "intelligent_ritual" ? ["title","type","objective","problem","audience","duration","materials","facilitator","steps","questions","closing","variations","success_metrics","impact_measurement"] :
       promptKey === "recommendation_engine" ? ["item_id","score","reason","factors","type","title","confidence"] :
+      promptKey === "orchestrator" ? [] :
       ["evidence", "confidence", "limitations"];
     const REQUIRED_DIMS = promptKey === "organizational_dna"
       ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
@@ -334,6 +354,19 @@ Deno.serve(async (req) => {
         if (tc.explanation && typeof tc.explanation === "object") {
           if (typeof tc.explanation.max_length === "number") tc.explanation.max_length = Math.max(80, Math.min(400, tc.explanation.max_length));
         }
+      } else if (promptKey === "orchestrator") {
+        // clamps
+        const tc = changes.tone_config;
+        if (tc.consolidation && typeof tc.consolidation === "object") {
+          if (typeof tc.consolidation.max_sections === "number")
+            tc.consolidation.max_sections = Math.max(1, Math.min(12, tc.consolidation.max_sections));
+        }
+        if (tc.confidence && typeof tc.confidence === "object") {
+          if (typeof tc.confidence.min_sources === "number")
+            tc.confidence.min_sources = Math.max(1, Math.min(5, tc.confidence.min_sources));
+          if (typeof tc.confidence.ideal_sources === "number")
+            tc.confidence.ideal_sources = Math.max(1, Math.min(7, tc.confidence.ideal_sources));
+        }
       } else {
         changes.tone_config.include_evidence = true;
         changes.tone_config.include_confidence = true;
@@ -381,7 +414,23 @@ Deno.serve(async (req) => {
     if (changes.model_config && typeof changes.model_config === "object") {
       const mc = changes.model_config;
       if (typeof mc.temperature === "number") mc.temperature = Math.max(0, Math.min(1, mc.temperature));
-      if (typeof mc.max_tokens === "number") mc.max_tokens = Math.max(512, Math.min(12000, mc.max_tokens));
+      if (typeof mc.max_tokens === "number") mc.max_tokens = Math.max(256, Math.min(12000, mc.max_tokens));
+      if (promptKey === "orchestrator") {
+        if (typeof mc.timeout_seconds === "number") mc.timeout_seconds = Math.max(5, Math.min(120, mc.timeout_seconds));
+        if (typeof mc.cache_ttl_seconds === "number") mc.cache_ttl_seconds = Math.max(60, Math.min(86400, mc.cache_ttl_seconds));
+        if (Array.isArray(mc.specialists)) {
+          const anyActive = mc.specialists.some((s: any) => s?.active !== false);
+          if (!anyActive && mc.specialists.length > 0) mc.specialists[0].active = true;
+        }
+        if (mc.cost_table && typeof mc.cost_table === "object") {
+          for (const [k, v] of Object.entries(mc.cost_table)) {
+            const row: any = v ?? {};
+            row.input_per_1k = Math.max(0, Number(row.input_per_1k ?? 0));
+            row.output_per_1k = Math.max(0, Number(row.output_per_1k ?? 0));
+            (mc.cost_table as any)[k] = row;
+          }
+        }
+      }
       if (promptKey === "intelligent_ritual" && Array.isArray(mc.ritual_types)) {
         const anyActive = mc.ritual_types.some((t: any) => t?.active !== false);
         if (!anyActive && mc.ritual_types.length > 0) mc.ritual_types[0].active = true;

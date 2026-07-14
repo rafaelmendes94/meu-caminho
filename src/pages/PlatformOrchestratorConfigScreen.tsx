@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Brain, Save, Send, Lock, ShieldCheck, Sparkles, Route as RouteIcon,
   Cpu, Database, DollarSign, Layers, ScrollText, History, Plus, Trash2, Users,
+  MessageSquare, Wand2, Loader2,
 } from "lucide-react";
 
 type Specialist = { key: string; label: string; function: string; active: boolean };
@@ -56,6 +57,8 @@ const TABS = [
   { id: "costs", label: "Custos", icon: DollarSign },
   { id: "memory", label: "Memória", icon: Layers },
   { id: "logs", label: "Logs", icon: ScrollText },
+  { id: "test", label: "Testar", icon: MessageSquare },
+  { id: "editor", label: "Editar com IA", icon: Wand2 },
   { id: "versions", label: "Versões", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
@@ -236,9 +239,11 @@ export default function PlatformOrchestratorConfigScreen() {
         {tab === "costs" && <CostsTab config={config} setConfig={setConfig} />}
         {tab === "memory" && <MemoryTab config={config} setConfig={setConfig} />}
         {tab === "logs" && <LogsTab />}
+        {tab === "test" && <TestTab />}
+        {tab === "editor" && <EditorAITab config={config} setConfig={setConfig} />}
         {tab === "versions" && <VersionsTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
-        {tab !== "logs" && tab !== "versions" && (
+        {tab !== "logs" && tab !== "versions" && tab !== "test" && tab !== "editor" && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: nova regra de roteamento para risco." />
@@ -433,6 +438,191 @@ function ModelTab({ config, setConfig }: { config: Cfg; setConfig: React.Dispatc
           <div><Label>Timeout (s)</Label><Input type="number" min={5} max={120} value={m.timeout_seconds} onChange={(e) => upd({ timeout_seconds: Number(e.target.value) })} /></div>
         </div>
       </Card>
+    </div>
+  );
+}
+
+// ---------- Testar (chat contra ai-orchestrator) ----------
+type TestMsg = { role: "user" | "orchestrator"; text: string; meta?: any };
+function TestTab() {
+  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [orgId, setOrgId] = useState<string>("");
+  const [question, setQuestion] = useState("");
+  const [msgs, setMsgs] = useState<TestMsg[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [forceRefresh, setForceRefresh] = useState(false);
+
+  useEffect(() => { void (async () => {
+    const { data } = await supabase.from("organizations").select("id, name").order("name").limit(100);
+    setOrgs((data ?? []) as any); if (data && data[0]) setOrgId((data[0] as any).id);
+  })(); }, []);
+
+  const send = async () => {
+    if (!question.trim()) return;
+    const q = question.trim();
+    setMsgs((m) => [...m, { role: "user", text: q }]);
+    setQuestion(""); setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-orchestrator", {
+        body: { question: q, organization_id: orgId || null, force_refresh: forceRefresh, mode: "run" },
+      });
+      if (error) throw error;
+      setMsgs((m) => [...m, {
+        role: "orchestrator",
+        text: (data as any)?.answer ?? "sem resposta",
+        meta: {
+          intent: (data as any)?.intent, specialists: (data as any)?.specialists,
+          confidence: (data as any)?.confidence, cache_hit: (data as any)?.cache_hit,
+          limitations: (data as any)?.limitations, version: (data as any)?.config_version,
+        },
+      }]);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao consultar o orquestrador");
+      setMsgs((m) => [...m, { role: "orchestrator", text: `Erro: ${e?.message ?? "desconhecido"}` }]);
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Chat de teste do orquestrador</h3>
+        <div className="flex items-center gap-3">
+          <div className="w-72">
+            <Select value={orgId} onChange={setOrgId} options={[{ value: "", label: "— sem organização —" }, ...orgs.map((o) => ({ value: o.id, label: o.name }))]} />
+          </div>
+          <label className="inline-flex items-center gap-2 text-xs text-slate-600"><Toggle checked={forceRefresh} onChange={setForceRefresh} /> ignorar cache</label>
+        </div>
+      </div>
+      <div className="border border-slate-200 rounded-xl bg-slate-50 h-[380px] overflow-y-auto p-3 space-y-3">
+        {msgs.length === 0 && <p className="text-xs text-slate-400 text-center pt-24">Faça uma pergunta como "quais rituais recomendo para engajamento?" para ver o roteamento em ação.</p>}
+        {msgs.map((m, i) => (
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-[#F88A2B] text-black" : "bg-white border border-slate-200 text-slate-800"}`}>
+              {m.text}
+              {m.meta && (
+                <div className="mt-2 pt-2 border-t border-slate-200 text-[10px] text-slate-500 flex flex-wrap gap-2">
+                  <Pill tone="sky">intent: {m.meta.intent}</Pill>
+                  {m.meta.cache_hit && <Pill tone="amber">cache</Pill>}
+                  <Pill tone="emerald">conf: {Number(m.meta.confidence ?? 0).toFixed(2)}</Pill>
+                  {(m.meta.specialists ?? []).map((s: string) => <Pill key={s}>{s}</Pill>)}
+                  {(m.meta.limitations ?? []).map((l: string, k: number) => <span key={k} className="text-rose-500">{l}</span>)}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+        {loading && <div className="flex items-center gap-2 text-xs text-slate-500"><Loader2 className="w-3 h-3 animate-spin" /> orquestrando especialistas…</div>}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Pergunte ao orquestrador…"
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }} />
+        <button onClick={send} disabled={loading || !question.trim()}
+          className="inline-flex items-center gap-2 px-4 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold disabled:opacity-50">
+          <Send className="w-4 h-4" /> Enviar
+        </button>
+      </div>
+      <p className="mt-2 text-[11px] text-slate-500">O teste executa o pipeline real (roteamento → especialistas → consolidação → cache → log), sem alterar UX das telas.</p>
+    </Card>
+  );
+}
+
+// ---------- Editar com IA ----------
+function EditorAITab({ config, setConfig }: { config: Cfg; setConfig: React.Dispatch<React.SetStateAction<Cfg | null>> }) {
+  const [instruction, setInstruction] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [proposal, setProposal] = useState<{ summary: string; warnings: string[]; changes: any } | null>(null);
+
+  const suggest = async () => {
+    if (!instruction.trim()) return;
+    setLoading(true); setProposal(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-prompt-suggest", {
+        body: {
+          prompt_key: "orchestrator", instruction: instruction.trim(),
+          current_config: {
+            system_instructions: config.system_instructions,
+            tone_config: config.tone_config,
+            model_config: config.model_config,
+          },
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setProposal({
+        summary: (data as any)?.summary ?? "",
+        warnings: (data as any)?.warnings ?? [],
+        changes: (data as any)?.changes ?? {},
+      });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao sugerir alteração");
+    } finally { setLoading(false); }
+  };
+
+  const apply = () => {
+    if (!proposal?.changes) return;
+    const ch = proposal.changes;
+    setConfig((c) => c ? {
+      ...c,
+      system_instructions: typeof ch.system_instructions === "string" ? ch.system_instructions : c.system_instructions,
+      tone_config: ch.tone_config ? { ...c.tone_config, ...ch.tone_config } : c.tone_config,
+      model_config: ch.model_config ? { ...c.model_config, ...ch.model_config } : c.model_config,
+      status: "draft",
+    } : c);
+    toast.success("Alterações aplicadas ao rascunho. Salve e publique quando quiser.");
+    setProposal(null); setInstruction("");
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-2">
+          <Wand2 className="w-4 h-4 text-[#F88A2B]" /> Instrução em linguagem natural
+        </h3>
+        <p className="text-xs text-slate-500 mb-3">A IA propõe alterações cirúrgicas ao rascunho, respeitando todas as regras invioláveis. Nada é publicado sem sua aprovação.</p>
+        <Textarea rows={4} value={instruction} onChange={(e) => setInstruction(e.target.value)}
+          placeholder="Ex.: aumente o peso do DNA na consolidação; adicione a intent 'burnout' rota para insights e council; TTL do cache para 1h." />
+        <div className="mt-3 flex justify-end">
+          <button onClick={suggest} disabled={loading || !instruction.trim()}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold disabled:opacity-50">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Propor alterações
+          </button>
+        </div>
+      </Card>
+
+      {proposal && (
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Proposta da IA</h3>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setProposal(null)} className="text-xs text-slate-500 hover:text-slate-700">Descartar</button>
+              <button onClick={apply} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Aplicar ao rascunho</button>
+            </div>
+          </div>
+          {proposal.summary && <p className="text-sm text-slate-700 mb-3">{proposal.summary}</p>}
+          {proposal.warnings.length > 0 && (
+            <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+              <p className="font-semibold uppercase tracking-wide mb-1">Avisos</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                {proposal.warnings.map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            </div>
+          )}
+          <div className="grid md:grid-cols-2 gap-3 text-[11px] font-mono">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Atual</p>
+              <pre className="bg-slate-50 border border-slate-200 rounded-lg p-3 overflow-auto max-h-[420px]">{JSON.stringify({
+                system_instructions: config.system_instructions,
+                tone_config: config.tone_config,
+                model_config: config.model_config,
+              }, null, 2)}</pre>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Proposto (diff)</p>
+              <pre className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 overflow-auto max-h-[420px]">{JSON.stringify(proposal.changes, null, 2)}</pre>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
