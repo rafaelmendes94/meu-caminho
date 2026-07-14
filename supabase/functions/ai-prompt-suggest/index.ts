@@ -266,6 +266,7 @@ Deno.serve(async (req) => {
       promptKey === "action_plan" ? ["title", "problem_statement", "objective", "due_date", "success_metrics", "tasks", "impact_measurement"] :
       promptKey === "intelligent_ritual" ? ["title","type","objective","problem","audience","duration","materials","facilitator","steps","questions","closing","variations","success_metrics","impact_measurement"] :
       promptKey === "recommendation_engine" ? ["item_id","score","reason","factors","type","title","confidence"] :
+      promptKey === "orchestrator" ? [] :
       ["evidence", "confidence", "limitations"];
     const REQUIRED_DIMS = promptKey === "organizational_dna"
       ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
@@ -353,6 +354,19 @@ Deno.serve(async (req) => {
         if (tc.explanation && typeof tc.explanation === "object") {
           if (typeof tc.explanation.max_length === "number") tc.explanation.max_length = Math.max(80, Math.min(400, tc.explanation.max_length));
         }
+      } else if (promptKey === "orchestrator") {
+        // clamps
+        const tc = changes.tone_config;
+        if (tc.consolidation && typeof tc.consolidation === "object") {
+          if (typeof tc.consolidation.max_sections === "number")
+            tc.consolidation.max_sections = Math.max(1, Math.min(12, tc.consolidation.max_sections));
+        }
+        if (tc.confidence && typeof tc.confidence === "object") {
+          if (typeof tc.confidence.min_sources === "number")
+            tc.confidence.min_sources = Math.max(1, Math.min(5, tc.confidence.min_sources));
+          if (typeof tc.confidence.ideal_sources === "number")
+            tc.confidence.ideal_sources = Math.max(1, Math.min(7, tc.confidence.ideal_sources));
+        }
       } else {
         changes.tone_config.include_evidence = true;
         changes.tone_config.include_confidence = true;
@@ -400,7 +414,23 @@ Deno.serve(async (req) => {
     if (changes.model_config && typeof changes.model_config === "object") {
       const mc = changes.model_config;
       if (typeof mc.temperature === "number") mc.temperature = Math.max(0, Math.min(1, mc.temperature));
-      if (typeof mc.max_tokens === "number") mc.max_tokens = Math.max(512, Math.min(12000, mc.max_tokens));
+      if (typeof mc.max_tokens === "number") mc.max_tokens = Math.max(256, Math.min(12000, mc.max_tokens));
+      if (promptKey === "orchestrator") {
+        if (typeof mc.timeout_seconds === "number") mc.timeout_seconds = Math.max(5, Math.min(120, mc.timeout_seconds));
+        if (typeof mc.cache_ttl_seconds === "number") mc.cache_ttl_seconds = Math.max(60, Math.min(86400, mc.cache_ttl_seconds));
+        if (Array.isArray(mc.specialists)) {
+          const anyActive = mc.specialists.some((s: any) => s?.active !== false);
+          if (!anyActive && mc.specialists.length > 0) mc.specialists[0].active = true;
+        }
+        if (mc.cost_table && typeof mc.cost_table === "object") {
+          for (const [k, v] of Object.entries(mc.cost_table)) {
+            const row: any = v ?? {};
+            row.input_per_1k = Math.max(0, Number(row.input_per_1k ?? 0));
+            row.output_per_1k = Math.max(0, Number(row.output_per_1k ?? 0));
+            (mc.cost_table as any)[k] = row;
+          }
+        }
+      }
       if (promptKey === "intelligent_ritual" && Array.isArray(mc.ritual_types)) {
         const anyActive = mc.ritual_types.some((t: any) => t?.active !== false);
         if (!anyActive && mc.ritual_types.length > 0) mc.ritual_types[0].active = true;
