@@ -132,12 +132,21 @@ async function processOrganization(
   const configSource: "draft" | "published" = opts.configSource === "draft" ? "draft" : "published";
   const cfg = await loadConfigBySource(admin, configSource);
   const tone = cfg?.tone_config ?? {};
-  const modelPrimary = cfg?.model_config?.primary_model ?? "google/gemini-2.5-pro";
+  let modelPrimary = cfg?.model_config?.primary_model ?? "google/gemini-2.5-pro";
   const modelFallback = cfg?.model_config?.fallback_model ?? "google/gemini-2.5-flash";
-  const temperature = Number(cfg?.model_config?.temperature ?? 0.4);
+  let temperature = Number(cfg?.model_config?.temperature ?? 0.4);
   const maxTokens = Number(cfg?.model_config?.max_tokens ?? 6000);
   const systemPrompt = cfg ? buildSystemPrompt(cfg) : FALLBACK_SYSTEM_PROMPT;
   const weekOfStr = computeWeekOf(String(tone?.period?.week_start ?? "monday"));
+
+  // Overrides por organização (organization_settings.ai_settings)
+  const { resolveOrgAiSettings } = await import("../_shared/org_ai_settings.ts");
+  const orgAi = await resolveOrgAiSettings(admin, orgId);
+  if (orgAi.participates === false || orgAi.allow_insights === false) {
+    return { skipped: true, reason: "ai_disabled_for_organization", inserted: 0 };
+  }
+  if (orgAi.model) modelPrimary = orgAi.model;
+  if (orgAi.temperature != null) temperature = orgAi.temperature;
 
   if (!testMode && !opts.force) {
     const { data: existing } = await admin
