@@ -8,6 +8,22 @@ import { ContentItemForm, emptyItem, type ContentItem, type ContentType } from "
 
 type Row = ContentItem & { id: string };
 
+function IconAction({
+  title, onClick, className = "", children,
+}: { title: string; onClick: () => void; className?: string; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      className={`inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function ContentItemsListPage({ type, title, extraActions }: { type: ContentType; title: string; extraActions?: (row: Row) => React.ReactNode }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
