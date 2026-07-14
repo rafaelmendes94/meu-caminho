@@ -33,12 +33,12 @@ type SimpleTable =
   | "cms_quizzes"
   | "cms_certificates";
 
-function useTable(table: SimpleTable, order = "created_at") {
+function useTable(table: SimpleTable | "cms_content_imports", order = "created_at") {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const reload = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from(table).select("*").order(order, { ascending: false }).limit(500);
+    const { data, error } = await (supabase.from as any)(table).select("*").order(order, { ascending: false }).limit(500);
     if (error) toast.error(error.message);
     setRows(data ?? []);
     setLoading(false);
@@ -68,8 +68,8 @@ function TaxonomyCRUD({ table, label }: { table: "cms_competencies" | "cms_emoti
     if (!form.name || !form.slug) return toast.error("Nome e slug são obrigatórios");
     setSaving(true);
     const { error } = form.id
-      ? await supabase.from(table).update(form).eq("id", form.id)
-      : await supabase.from(table).insert(form);
+      ? await (supabase.from(table) as any).update(form).eq("id", form.id)
+      : await (supabase.from(table) as any).insert(form);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Salvo");
@@ -127,8 +127,8 @@ function ReflectionsCRUD() {
   const save = async () => {
     if (!form.title || !form.body) return toast.error("Título e texto obrigatórios");
     const { error } = form.id
-      ? await supabase.from("cms_reflections").update(form).eq("id", form.id)
-      : await supabase.from("cms_reflections").insert(form);
+      ? await (supabase.from("cms_reflections") as any).update(form).eq("id", form.id)
+      : await (supabase.from("cms_reflections") as any).insert(form);
     if (error) return toast.error(error.message);
     toast.success("Salvo"); setForm({ title: "", body: "", theme: "", status: "draft" }); reload();
   };
@@ -188,8 +188,8 @@ function MessagesCRUD() {
   const save = async () => {
     if (!form.body) return toast.error("Texto obrigatório");
     const { error } = form.id
-      ? await supabase.from("cms_messages").update(form).eq("id", form.id)
-      : await supabase.from("cms_messages").insert(form);
+      ? await (supabase.from("cms_messages") as any).update(form).eq("id", form.id)
+      : await (supabase.from("cms_messages") as any).insert(form);
     if (error) return toast.error(error.message);
     toast.success("Salvo"); setForm({ body: "", category: "energia", tone: "", status: "draft" }); reload();
   };
@@ -250,8 +250,8 @@ function QuizzesCRUD() {
   const save = async () => {
     if (!form.title) return toast.error("Título obrigatório");
     const { error } = form.id
-      ? await supabase.from("cms_quizzes").update(form).eq("id", form.id)
-      : await supabase.from("cms_quizzes").insert(form);
+      ? await (supabase.from("cms_quizzes") as any).update(form).eq("id", form.id)
+      : await (supabase.from("cms_quizzes") as any).insert(form);
     if (error) return toast.error(error.message);
     toast.success("Salvo"); setForm({ title: "", description: "", passing_score: 70, status: "draft" }); reload();
   };
@@ -315,8 +315,8 @@ function CertificatesCRUD() {
   const save = async () => {
     if (!form.name) return toast.error("Nome obrigatório");
     const { error } = form.id
-      ? await supabase.from("cms_certificates").update(form).eq("id", form.id)
-      : await supabase.from("cms_certificates").insert(form);
+      ? await (supabase.from("cms_certificates") as any).update(form).eq("id", form.id)
+      : await (supabase.from("cms_certificates") as any).insert(form);
     if (error) return toast.error(error.message);
     toast.success("Salvo"); setForm({ name: "", html_template: DEFAULT_CERT_HTML, status: "draft" }); reload();
   };
@@ -364,7 +364,7 @@ function ImportsPanel() {
   const [kind, setKind] = useState("books");
   const [source, setSource] = useState("");
   const create = async () => {
-    const { error } = await supabase.from("cms_content_imports").insert({ kind, source, status: "pending" });
+    const { error } = await (supabase.from("cms_content_imports") as any).insert({ kind, source, status: "pending" });
     if (error) return toast.error(error.message);
     toast.success("Importação registrada. O processamento é feito por edge function futura.");
     setSource(""); reload();
@@ -419,8 +419,8 @@ function VersionsPanel() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("cms_content_versions")
+      const { data } = await (supabase
+        .from("cms_content_versions") as any)
         .select("id,content_item_id,version,comment,created_at,author_id")
         .order("created_at", { ascending: false })
         .limit(200);
@@ -538,8 +538,12 @@ export default function PlatformCMSHubScreen() {
   const [tab, setTab] = useState("competencies");
   const nav = useMemo(() => SHORTCUTS, []);
   return (
-    <PlatformAdminLayout title="CMS Enterprise" subtitle="Content Hub — Fase 25">
+    <PlatformAdminLayout>
       <div className="space-y-6">
+        <header>
+          <h1 className="text-2xl font-semibold">CMS Enterprise</h1>
+          <p className="text-sm text-muted-foreground">Content Hub — Fase 25</p>
+        </header>
         <Card className="p-4">
           <div className="flex flex-wrap gap-2">
             {nav.map((n) => (
