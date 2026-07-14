@@ -222,11 +222,13 @@ function LicencaTab() {
       }
       // Consumo real de IA no mês corrente
       const start = new Date(); start.setDate(1); start.setHours(0,0,0,0);
-      const { data: usage } = await supabase.from("ai_usage_daily")
-        .select("total_requests")
+      const { data: usage } = await supabase.from("platform_usage_daily")
+        .select("ai_messages_count,executive_ai_messages_count,dna_reports_count,action_plans_count,rituals_count")
         .eq("organization_id", organization.id)
-        .gte("day", start.toISOString().slice(0,10));
-      setAiUsed((usage ?? []).reduce((s: number, r: any) => s + Number(r.total_requests ?? 0), 0));
+        .gte("usage_date", start.toISOString().slice(0,10));
+      setAiUsed((usage ?? []).reduce((s: number, r: any) =>
+        s + Number(r.ai_messages_count ?? 0) + Number(r.executive_ai_messages_count ?? 0)
+        + Number(r.dna_reports_count ?? 0) + Number(r.action_plans_count ?? 0) + Number(r.rituals_count ?? 0), 0));
       // Consumo de storage: soma tamanho dos objetos do bucket da org (aproximação)
       try {
         const { data: files } = await supabase.storage.from("org-branding").list(organization.id, { limit: 1000 });
