@@ -18,8 +18,12 @@ import { toast } from "sonner";
 import {
   Building2, Palette, Users, KeyRound, Globe, Clock, CalendarDays, Plug, Bell,
   ShieldCheck, Sparkles, ScrollText, Save, ArrowUpRight, Construction,
-  Upload, Trash2, Plus, Image as ImageIcon,
+  Upload, Trash2, Plus, Image as ImageIcon, Menu,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Progress } from "@/components/ui/progress";
+import { validateAndCompressImage } from "@/lib/imageUpload";
+import { getSignedUrl, invalidateSignedUrl } from "@/lib/signedUrlCache";
 
 type TabKey =
   | "empresa" | "branding" | "usuarios" | "licenca" | "regionalizacao"
