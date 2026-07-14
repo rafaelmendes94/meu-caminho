@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, CalendarClock,
   MessageSquare, ListChecks, CalendarRange, Target, Cpu, FlaskConical, History,
+  Building2, Play, Coins, Timer, Hash, Sparkles,
 } from "lucide-react";
 
 type Period = {
@@ -275,7 +276,7 @@ export default function PlatformWeeklyInsightsConfigScreen() {
         {tab === "structure" && <StructureTab config={config} setConfig={setConfig} />}
         {tab === "signals" && <SignalsTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
-        {tab === "test" && <TestPlaceholder />}
+        {tab === "test" && <TestTab />}
         {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
 
         {(tab !== "test" && tab !== "history") && (
@@ -470,12 +471,177 @@ function ModelTab({ config, setConfig }: { config: WiConfig; setConfig: React.Di
   );
 }
 
-function TestPlaceholder() {
+function TestTab() {
+  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [orgId, setOrgId] = useState<string>("");
+  const [source, setSource] = useState<"draft" | "published">("draft");
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.from("organizations").select("id, name").order("name");
+      if (error) { toast.error("Falha ao carregar empresas"); return; }
+      setOrgs((data ?? []) as any);
+      if (data && data.length && !orgId) setOrgId((data[0] as any).id);
+    })();
+    // eslint-disable-next-line
+  }, []);
+
+  async function runTest() {
+    if (!orgId) { toast.error("Selecione uma empresa"); return; }
+    setRunning(true); setError(null); setResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-weekly-insights", {
+        body: { test_mode: true, organization_id: orgId, config_source: source, force: true },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setResult(data);
+      toast.success("Geração de teste concluída");
+    } catch (e: any) {
+      const msg = e?.message ?? "Falha na geração";
+      setError(msg);
+      if (/rate_limited/i.test(msg)) toast.error("Limite temporário excedido. Tente novamente em instantes.");
+      else if (/credits_exhausted/i.test(msg)) toast.error("Créditos de IA esgotados. Recarregue na área de billing.");
+      else if (/forbidden/i.test(msg)) toast.error("Apenas Super Admin pode executar testes.");
+      else toast.error("Falha no teste: " + msg);
+    } finally { setRunning(false); }
+  }
+
+  const report = result?.report ?? null;
+  const metrics = result?.metrics ?? null;
+
   return (
-    <Card>
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-2">Testar Geração</h3>
-      <p className="text-sm text-slate-500">Ambiente de teste (selecionar empresa, executar em <code>test_mode</code>, preview + métricas) chega na Sub-fase B.</p>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+          <FlaskConical className="w-4 h-4 text-[#F88A2B]" /> Testar Geração
+        </h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <Label>Empresa</Label>
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-slate-400" />
+              <Select value={orgId} onChange={setOrgId} options={orgs.map((o) => ({ value: o.id, label: o.name }))} />
+            </div>
+          </div>
+          <div>
+            <Label>Origem da configuração</Label>
+            <Select value={source} onChange={(v) => setSource(v as any)}
+              options={[{ value: "draft", label: "Rascunho atual" }, { value: "published", label: "Versão publicada" }]} />
+          </div>
+          <div className="flex items-end">
+            <button onClick={runTest} disabled={running || !orgId}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50 w-full justify-center">
+              <Play className="w-4 h-4" /> {running ? "Gerando…" : "Executar teste"}
+            </button>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Modo teste: nada é persistido em <code>weekly_insights</code>. Guardrails de agregação e k-anonimato continuam aplicados no backend.
+        </p>
+      </Card>
+
+      {error && (
+        <Card className="border-red-200 bg-red-50/40">
+          <p className="text-sm text-red-700 font-semibold">Falha na geração</p>
+          <p className="text-xs text-red-600 mt-1 break-words">{error}</p>
+        </Card>
+      )}
+
+      {metrics && (
+        <Card>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#F88A2B]" /> Métricas da execução
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Metric icon={<Cpu className="w-4 h-4" />} label="Modelo" value={String(metrics.model ?? "-")} />
+            <Metric icon={<Timer className="w-4 h-4" />} label="Latência" value={`${Math.round(Number(metrics.latency_ms ?? 0))} ms`} />
+            <Metric icon={<Hash className="w-4 h-4" />} label="Tokens (in / out)" value={`${metrics.tokens_in ?? 0} / ${metrics.tokens_out ?? 0}`} />
+            <Metric icon={<Coins className="w-4 h-4" />} label="Custo estimado" value={`US$ ${Number(metrics.estimated_cost_usd ?? 0).toFixed(6)}`} />
+          </div>
+          {metrics.fallback_used && (
+            <p className="mt-3 text-xs text-amber-700">⚠ Fallback acionado — modelo secundário foi utilizado.</p>
+          )}
+        </Card>
+      )}
+
+      {report && (
+        <Card>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Preview do insight</h3>
+          <ReportPreview report={report} />
+          <details className="mt-6">
+            <summary className="text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900">Ver JSON completo</summary>
+            <pre className="mt-2 text-[11px] bg-slate-900 text-slate-100 p-4 rounded-lg overflow-auto max-h-96">{JSON.stringify(report, null, 2)}</pre>
+          </details>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-slate-500 font-semibold">{icon}{label}</div>
+      <p className="mt-1 text-sm font-bold text-slate-800 break-words">{value}</p>
+    </div>
+  );
+}
+
+function ReportPreview({ report }: { report: any }) {
+  const sections: { title: string; content: React.ReactNode }[] = [];
+  if (report.title) sections.push({ title: "Título", content: <p className="text-base font-bold text-slate-900">{String(report.title)}</p> });
+  if (report.executive_summary) sections.push({ title: "Resumo executivo", content: <p className="text-sm text-slate-700 whitespace-pre-wrap">{String(report.executive_summary)}</p> });
+  const arrayBlocks: [string, string][] = [
+    ["key_changes", "Principais mudanças"],
+    ["positive_evolutions", "Evoluções positivas"],
+    ["attention_signals", "Sinais de atenção"],
+    ["priority_actions", "Ações prioritárias"],
+    ["watchlist", "Watchlist"],
+    ["hypotheses", "Hipóteses"],
+  ];
+  for (const [k, label] of arrayBlocks) {
+    const arr = report[k];
+    if (Array.isArray(arr) && arr.length) {
+      sections.push({
+        title: label,
+        content: (
+          <ul className="space-y-2">
+            {arr.map((item: any, i: number) => (
+              <li key={i} className="text-sm text-slate-700 border-l-2 border-[#F88A2B]/60 pl-3">
+                {typeof item === "string" ? item : (
+                  <div className="space-y-0.5">
+                    {item.title && <p className="font-semibold text-slate-800">{item.title}</p>}
+                    {item.description && <p>{item.description}</p>}
+                    {item.severity && <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 mr-1">{item.severity}</span>}
+                    {item.evidence && <p className="text-xs text-slate-500 mt-0.5">Evidência: {String(item.evidence)}</p>}
+                    {item.deadline && <p className="text-xs text-slate-500">Prazo: {String(item.deadline)}</p>}
+                    {item.success_indicator && <p className="text-xs text-slate-500">Indicador: {String(item.success_indicator)}</p>}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ),
+      });
+    }
+  }
+  if (report.confidence) sections.push({ title: "Confiança", content: <p className="text-sm text-slate-700">{String(report.confidence)}</p> });
+  if (report.limitations) sections.push({ title: "Limitações", content: <p className="text-sm text-slate-700 whitespace-pre-wrap">{String(report.limitations)}</p> });
+
+  if (sections.length === 0) return <p className="text-sm text-slate-500">Resposta vazia.</p>;
+  return (
+    <div className="space-y-5">
+      {sections.map((s, i) => (
+        <div key={i}>
+          <h4 className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">{s.title}</h4>
+          {s.content}
+        </div>
+      ))}
+    </div>
   );
 }
 function HistoryPlaceholder({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
