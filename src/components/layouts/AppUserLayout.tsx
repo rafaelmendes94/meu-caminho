@@ -7,6 +7,9 @@ import { AppDesktopTopbar } from "./AppDesktopTopbar";
 import { EnterpriseUserLayout } from "./EnterpriseUserLayout";
 import { AppMobileHeader } from "./AppMobileHeader";
 import BottomNav from "../BottomNav";
+import { useLocation } from "react-router-dom";
+import { EmployeeCommandPalette } from "../employee/EmployeeCommandPalette";
+import { trackRoute, pingMotivation } from "@/lib/employeePrefs";
 
 interface BaseLayoutProps {
   children: React.ReactNode;
@@ -27,6 +30,15 @@ const MOBILE_BOTTOM_PAD = "calc(72px + env(safe-area-inset-bottom))";
 export const AppUserLayout = ({ children }: BaseLayoutProps) => {
   const isDesktop = useIsDesktop();
   const audience = useAudience();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (audience === "rh") return;
+    trackRoute(location.pathname);
+    pingMotivation();
+  }, [location.pathname, audience]);
+
+  const paletteEnabled = audience !== "rh";
 
   if (!isDesktop) {
     if (audience === "rh") return <>{children}</>;
@@ -35,6 +47,7 @@ export const AppUserLayout = ({ children }: BaseLayoutProps) => {
         <AppMobileHeader />
         <div style={{ paddingBottom: MOBILE_BOTTOM_PAD }}>{children}</div>
         <BottomNav />
+        {paletteEnabled && <EmployeeCommandPalette />}
       </div>
     );
   }
@@ -44,7 +57,12 @@ export const AppUserLayout = ({ children }: BaseLayoutProps) => {
   }
 
   if (audience === "enterprise-user") {
-    return <EnterpriseUserLayout>{children}</EnterpriseUserLayout>;
+    return (
+      <EnterpriseUserLayout>
+        {children}
+        {paletteEnabled && <EmployeeCommandPalette />}
+      </EnterpriseUserLayout>
+    );
   }
 
   return (
@@ -64,6 +82,7 @@ export const AppUserLayout = ({ children }: BaseLayoutProps) => {
       </div>
 
       <RevealFooter />
+      {paletteEnabled && <EmployeeCommandPalette />}
     </>
   );
 };
