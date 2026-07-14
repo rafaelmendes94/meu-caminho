@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OrgBrandingProvider from "@/components/OrgBrandingProvider";
+import OrgLocaleProvider from "@/components/OrgLocaleProvider";
+import OrganizationWorkScheduleProvider from "@/components/OrganizationWorkScheduleProvider";
 import type { ReactNode } from "react";
 const PlatformSearchScreen = lazy(() => import("./pages/PlatformSearchScreen"));
 const PlatformDocsScreen = lazy(() => import("./pages/PlatformDocsScreen"));
@@ -235,6 +237,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
         <OrgBrandingProvider>
+        <OrgLocaleProvider>
+        <OrganizationWorkScheduleProvider>
         <Suspense fallback={null}><Routes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
@@ -496,6 +500,8 @@ const App = () => (
 
           <Route path="*" element={<Auth><NotFound /></Auth>} />
         </Routes></Suspense>
+        </OrganizationWorkScheduleProvider>
+        </OrgLocaleProvider>
         </OrgBrandingProvider>
         </AuthProvider>
       </BrowserRouter>
