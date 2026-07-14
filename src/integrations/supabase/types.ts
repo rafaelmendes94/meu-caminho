@@ -6805,6 +6805,21 @@ export type Database = {
           unit_name: string
         }[]
       }
+      qa_seed_users_export: {
+        Args: never
+        Returns: {
+          account_status: string
+          company: string
+          department: string
+          email: string
+          full_name: string
+          manager_email: string
+          onboarding_status: string
+          role: string
+          temporary_password: string
+          unit: string
+        }[]
+      }
       user_in_org: { Args: { _org: string }; Returns: boolean }
     }
     Enums: {

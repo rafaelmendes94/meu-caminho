@@ -1,42 +1,44 @@
-# QA_SEED_REPORT.md
+# QA_SEED_REPORT — Massa QA 3 empresas / 100 colaboradores
 
-Seed: `qa_three_companies_100_employees`
+## Empresas criadas (idempotente por slug)
+| Empresa | Slug | Plano | Licenças (usadas/total) | Status |
+|---|---|---|---|---|
+| Horizonte Tecnologia Ltda. | horizonte-tecnologia-qa | Plano 1.000 | 35 / 1000 | active |
+| ValeSul Indústria Ltda. | valesul-industria-qa | Plano 5.000 | 34 / 5000 | active |
+| Atlântica Serviços Corporativos Ltda. | atlantica-servicos-qa | Plano 1.000 | 34 / 1000 | trialing |
 
-- Empresas criadas: 3
-- Contas de autenticação: 103
-- Admins (owner): 3
-- Líderes: 16
-- Employees: 84
+## Contas de autenticação (email_confirm = true, senha `McQa@2026!`)
+- Total: **103** — Admins/owners: 3 — Líderes: 16 — Colaboradores (employee): 84
+- Distribuição: Horizonte 34 (5 lead + 29 emp), ValeSul 33 (6 lead + 27 emp), Atlântica 33 (5 lead + 28 emp).
 
-## Onboarding (colaboradores)
-- Não iniciado: 60
-- Em andamento: 40
-- Concluído: 0
+## Estrutura organizacional
+- Departamentos criados: 19 (6 + 7 + 6) — todos únicos por org.
+- Unidades criadas: 7 (2 + 2 + 3) — todos únicos por org.
+- `manager_id` atribuído para todos os employees cujo dept tem um leader.
 
-## Por empresa
-- **Horizonte Tecnologia Ltda.** — 34 colaboradores + 1 admin, licenças 35/1000
-- **ValeSul Indústria Ltda.** — 33 colaboradores + 1 admin, licenças 34/5000
-- **Atlântica Serviços Corporativos Ltda.** — 33 colaboradores + 1 admin, licenças 34/1000
+## Onboarding
+- `not_started`: ~20% (sem employee_profile)
+- `in_progress`: ~30%
+- `completed`: 49 colaboradores (17 Horizonte + 16 ValeSul + 16 Atlântica) com `employee_profiles` sintéticos.
 
-## Idempotência
-A função `seed-qa-enterprise-data` reexecuta sem duplicar (busca por slug, e-mail, nome de dep/unidade e chaves únicas).
+## Dados operacionais sintéticos
+- Check-ins emocionais (30 dias): **490** — tag `qa_seed`, viés por empresa.
+- Respostas Pulse (30 dias): **588** — context `qa_seed`.
+- Alerts sintéticos: 3 (1 por empresa) — tipo `qa_seed`.
+- Sinais preditivos sintéticos: 3.
+- Planos de ação: 3 (draft).
+- Rituais Inteligentes publicados: 3.
 
 ## Duplicidades evitadas
-- Auth users: reaproveitados por e-mail.
-- Organizações: upsert por `slug`.
-- Departamentos e unidades: upsert por (org, nome).
-- Roles: reset e reinsert por usuário.
-- Check-ins e pulse dos últimos 40 dias com contexto `qa_seed` são removidos antes de reinserção.
+- Upsert por `slug` (organizations), por `name+organization_id` (departments/units), por `id` (profiles), por `user_id` (employee_profiles). Re-execuções não duplicam.
 
-## Logins de teste sugeridos
-- admin@teste.com.br (platform_admin) — 12345678
-- admin.horizonte@qa.meucaminho.test — McQa@2026! (owner de Horizonte Tecnologia Ltda.)
-- admin.valesul@qa.meucaminho.test — McQa@2026! (owner de ValeSul Indústria Ltda.)
-- admin.atlantica@qa.meucaminho.test — McQa@2026! (owner de Atlântica Serviços Corporativos Ltda.)
-- colaborador.horizonte.001@qa.meucaminho.test — McQa@2026! (líder Horizonte)
-- colaborador.horizonte.010@qa.meucaminho.test — McQa@2026! (employee Horizonte)
-- colaborador.valesul.001@qa.meucaminho.test — McQa@2026! (líder ValeSul)
-- colaborador.atlantica.001@qa.meucaminho.test — McQa@2026! (líder Atlântica)
+## Isolamento (RLS)
+- Todas as tabelas seguem RLS por `current_organization_id()`. Usuários de uma empresa não veem dados de outras (validado por consulta: joins retornam 0 fora do próprio `organization_id`).
 
-## Isolamento
-Garantido por RLS existente (`current_organization_id()` + `has_role`). Cada owner só acessa a própria organização.
+## Artefatos
+- `QA_TEST_USERS.csv` (raiz) — 103 linhas + header — **em .gitignore**.
+- `QA_TEST_COMPANIES.md` — descritivo por empresa.
+
+## Pendências
+- Validação manual de login por usuário deve ser feita pela equipe de QA (o script não executa login end-to-end).
+- Não foi enviado nenhum e-mail (contas criadas com `email_confirm=true`).
