@@ -37,8 +37,16 @@ Tabela fixa por modelo dentro das edge functions (mesma referência do AI Orches
 
 ## Sub-fases
 - **A (concluída)**: schema completo, RLS por platform_admin, 4 edge functions core (`playground`, `judge`, `benchmark`, `publish`).
-- **B (próxima)**: UI `/admin/ai/lab` — Dashboard, Playground, Prompt Studio, Comparador, Benchmarks, Datasets, Avaliações, Experimentos, Publicações, Rollback, Histórico.
-- **C**: execução A/B lado-a-lado com streaming, insights automáticos ("qualidade +8%, custo −18%"), exportação CSV/JSON, seed dos datasets iniciais (Conselho 100, DNA 50, Insights 50, Planos 50, Rituais 40, Recomendação 80), atualização de `AI_PLAYBOOK_ENTERPRISE.md`, `SYSTEM_ARCHITECTURE.md` e `SUPER_ADMIN.md`.
+- **B (concluída)**: UI `/admin/ai/lab` completa (Dashboard, Playground, Prompt Studio, Comparador, Benchmarks, Datasets, Avaliações, Experimentos, Publicações, Rollback, Logs).
+- **C (concluída)**: comparador A/B via `ai-lab-compare`, insights automáticos via `ai-lab-insights` ("qualidade +8% · custo −18%"), exportação CSV/JSON via `ai-lab-export`, seed inicial dos datasets (`seed_executive_council`, `seed_organizational_dna`, `seed_weekly_insights`, `seed_action_plan`, `seed_intelligent_ritual`, `seed_cms_recommend`) e docs atualizados.
+
+### Novas Edge Functions (Sub-fase C)
+- `ai-lab-compare` — executa duas variantes (modelo/prompt/temperatura) em paralelo sobre a mesma pergunta, persiste 2 runs `kind=experiment`, opcionalmente aciona o judge e devolve `insight { verdict, latency_delta_ms, cost_delta_usd, quality_delta, summary }`.
+- `ai-lab-insights` — compara 2 benchmarks (baseline vs candidato), calcula deltas percentuais (aprovação, qualidade, latência, custo), define `winner` e devolve `summary` legível.
+- `ai-lab-export` — baixa qualquer tabela do Lab (`ai_lab_runs`, `ai_lab_benchmarks`, `ai_lab_evaluations`, `ai_lab_publications`, `ai_lab_logs`, `ai_lab_datasets`, `ai_lab_dataset_items`) em CSV ou JSON, com filtros por coluna e limite (até 10.000 linhas).
+
+### Seed inicial de datasets
+Migration `20260714163000` cria 6 datasets seed idempotentes cobrindo todos os módulos IA em produção. Volumes maiores (Conselho 100, DNA 50, Insights 50, Planos 50, Rituais 40, Recomendação 80) podem ser adicionados incrementalmente pela UI ou via import CSV/JSON.
 
 ## Segurança
 - Nenhuma edição direta em produção — sempre via `Draft → Publish`.
@@ -47,7 +55,6 @@ Tabela fixa por modelo dentro das edge functions (mesma referência do AI Orches
 - Rollback nunca sobrescreve histórico: cria nova versão restaurando o snapshot.
 
 ## Pendências conhecidas
-- Streaming lado-a-lado (Sub-fase C).
-- Insights automáticos de comparação entre versões (Sub-fase C).
-- Seed inicial de datasets (Sub-fase C).
-- Exportação CSV/JSON (Sub-fase C).
+- Streaming token-a-token no comparador (server-sent events) — atualmente a resposta é entregue completa quando pronta.
+- Import de datasets via upload CSV/JSON pela UI (export já disponível).
+- Anthropic Claude direto (Multi-provider adicional — fora do escopo atual: só Lovable AI Gateway).
