@@ -261,7 +261,7 @@ export default function PlatformActionPlanConfigScreen() {
         {tab === "metrics" && <MetricsTab config={config} setConfig={setConfig} />}
         {tab === "prio" && <PrioritizationTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
-        {tab === "test" && <TestPlaceholder />}
+        {tab === "test" && <TestTab config={config} />}
         {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
 
         {(tab !== "test" && tab !== "history") && (
@@ -477,13 +477,219 @@ function ModelTab({ config, setConfig }: { config: Cfg; setConfig: React.Dispatc
   );
 }
 
-function TestPlaceholder() {
+type SourceKind = "manual" | "alert" | "predictive_signal" | "dna" | "executive_ai" | "weekly_insight";
+const SOURCE_OPTS: { value: SourceKind; label: string; needsId: boolean }[] = [
+  { value: "manual", label: "Manual (sem origem)", needsId: false },
+  { value: "alert", label: "Alerta", needsId: true },
+  { value: "predictive_signal", label: "Sinal preditivo", needsId: true },
+  { value: "dna", label: "DNA Organizacional (mais recente ou específico)", needsId: false },
+  { value: "weekly_insight", label: "Insight Semanal (mais recente ou específico)", needsId: false },
+  { value: "executive_ai", label: "Mensagem do Conselho Executivo", needsId: true },
+];
+
+function TestTab({ config }: { config: Cfg }) {
+  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [orgId, setOrgId] = useState<string>("");
+  const [sourceType, setSourceType] = useState<SourceKind>("manual");
+  const [sources, setSources] = useState<{ id: string; label: string }[]>([]);
+  const [sourceId, setSourceId] = useState<string>("");
+  const [prompt, setPrompt] = useState("");
+  const [configSource, setConfigSource] = useState<"draft" | "published">("draft");
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState<any | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("organizations").select("id, name").order("name").limit(200);
+      const list = (data ?? []) as { id: string; name: string }[];
+      setOrgs(list); if (list[0]) setOrgId((prev) => prev || list[0].id);
+    })();
+  }, []);
+
+  useEffect(() => {
+    setSources([]); setSourceId("");
+    if (!orgId) return;
+    (async () => {
+      if (sourceType === "alert") {
+        const { data } = await supabase.from("alerts").select("id, title, severity, created_at")
+          .eq("organization_id", orgId).order("created_at", { ascending: false }).limit(20);
+        setSources((data ?? []).map((a: any) => ({ id: a.id, label: `[${a.severity}] ${a.title}` })));
+      } else if (sourceType === "predictive_signal") {
+        const { data } = await supabase.from("predictive_signals").select("id, title, severity, detected_at")
+          .eq("organization_id", orgId).order("detected_at", { ascending: false }).limit(20);
+        setSources((data ?? []).map((s: any) => ({ id: s.id, label: `[${s.severity}] ${s.title}` })));
+      } else if (sourceType === "dna") {
+        const { data } = await supabase.from("organizational_dna_reports").select("id, generated_at, overall_score")
+          .eq("organization_id", orgId).order("generated_at", { ascending: false }).limit(20);
+        setSources((data ?? []).map((d: any) => ({ id: d.id, label: `DNA ${new Date(d.generated_at).toLocaleDateString("pt-BR")} — score ${d.overall_score ?? "–"}` })));
+      } else if (sourceType === "weekly_insight") {
+        const { data } = await supabase.from("weekly_ai_insights").select("id, created_at")
+          .eq("organization_id", orgId).order("created_at", { ascending: false }).limit(20);
+        setSources((data ?? []).map((w: any) => ({ id: w.id, label: `Insight ${new Date(w.created_at).toLocaleString("pt-BR")}` })));
+      } else if (sourceType === "executive_ai") {
+        const { data } = await supabase.from("executive_ai_messages").select("id, role, created_at").order("created_at", { ascending: false }).limit(20);
+        setSources((data ?? []).map((m: any) => ({ id: m.id, label: `[${m.role}] ${new Date(m.created_at).toLocaleString("pt-BR")}` })));
+      }
+    })();
+  }, [orgId, sourceType]);
+
+  const needsId = SOURCE_OPTS.find((s) => s.value === sourceType)?.needsId ?? false;
+
+  async function run() {
+    if (!orgId) { toast.error("Selecione uma empresa"); return; }
+    if (needsId && !sourceId) { toast.error("Selecione a origem específica"); return; }
+    setRunning(true); setResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-action-plan", {
+        body: {
+          test_mode: true, config_source: configSource,
+          organization_id: orgId, source_type: sourceType,
+          source_id: sourceId || null, prompt: prompt || undefined,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setResult(data);
+      toast.success("Plano gerado em modo teste (não persistido)");
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      if (msg.includes("rate_limited")) toast.error("Limite temporário atingido. Tente novamente em instantes.");
+      else if (msg.includes("credits_exhausted")) toast.error("Créditos de IA esgotados no workspace.");
+      else if (msg.includes("forbidden")) toast.error("Sem permissão para test_mode.");
+      else toast.error(`Falha na geração: ${msg}`);
+    } finally { setRunning(false); }
+  }
+
+  const plan = result?.plan;
+  const metrics = result?.metrics;
+  const warnings: string[] = result?.warnings ?? [];
+
   return (
-    <Card>
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-2">Testar Geração</h3>
-      <p className="text-sm text-slate-500">Ambiente de teste (selecionar empresa + fonte, executar em <code>test_mode</code>, preview + métricas) chega na Sub-fase B.</p>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Parâmetros de teste</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label>Empresa</Label>
+            <select value={orgId} onChange={(e) => setOrgId(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+              {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <Label>Fonte</Label>
+            <select value={sourceType} onChange={(e) => setSourceType(e.target.value as SourceKind)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+              {SOURCE_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
+          {(needsId || sources.length > 0) && (
+            <div className="md:col-span-2">
+              <Label>{needsId ? "Item de origem (obrigatório)" : "Item específico (opcional)"}</Label>
+              <select value={sourceId} onChange={(e) => setSourceId(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                <option value="">{needsId ? "— selecione —" : "— usar mais recente —"}</option>
+                {sources.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </select>
+            </div>
+          )}
+          <div className="md:col-span-2">
+            <Label>Orientação adicional (opcional)</Label>
+            <Textarea rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Ex.: focar em ações que possam ser executadas em 30 dias." />
+          </div>
+          <div>
+            <Label>Configuração usada</Label>
+            <Select value={configSource} onChange={(v) => setConfigSource(v as "draft" | "published")}
+              options={[{ value: "draft", label: `Rascunho (v${config.version} em edição)` }, { value: "published", label: `Publicada (v${config.version})` }]} />
+          </div>
+          <div className="flex items-end">
+            <button onClick={run} disabled={running}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+              <FlaskConical className="w-4 h-4" /> {running ? "Gerando…" : "Executar teste"}
+            </button>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">Modo teste: nenhum plano é persistido; nenhum e-mail/notificação é enviado. Contexto respeita agregação e k-anonimato.</p>
+      </Card>
+
+      {result && (
+        <>
+          <Card>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">Métricas da execução</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <Metric label="Modelo" value={metrics?.model} />
+              <Metric label="Fallback usado" value={metrics?.fallback_used ? "Sim" : "Não"} />
+              <Metric label="Latência" value={`${metrics?.latency_ms} ms`} />
+              <Metric label="Tokens (in/out)" value={`${metrics?.tokens_in}/${metrics?.tokens_out}`} />
+              <Metric label="Custo estimado" value={`US$ ${Number(metrics?.estimated_cost_usd ?? 0).toFixed(5)}`} />
+              <Metric label="Config" value={`${metrics?.config_source} v${metrics?.config_version}`} />
+            </div>
+            {warnings.length > 0 && (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">Avisos do sanitizador</p>
+                <ul className="text-xs text-amber-900 list-disc list-inside space-y-0.5">{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">Preview do plano</h3>
+            {plan ? (
+              <div className="space-y-4 text-sm text-slate-800">
+                <div>
+                  <p className="text-lg font-bold">{plan.title}</p>
+                  {plan.priority && <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 uppercase tracking-wide font-semibold">Prioridade {plan.priority}</span>}
+                </div>
+                {plan.problem_statement && <Field label="Problema">{plan.problem_statement}</Field>}
+                {plan.objective && <Field label="Objetivo">{plan.objective}</Field>}
+                {plan.description && <Field label="Descrição">{plan.description}</Field>}
+                {Array.isArray(plan.tasks) && plan.tasks.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Tarefas</p>
+                    <ol className="space-y-2">
+                      {plan.tasks.map((t: any, i: number) => (
+                        <li key={i} className="rounded-lg border border-slate-200 p-3">
+                          <p className="font-semibold">{i + 1}. {t.title}</p>
+                          {t.description && <p className="text-xs text-slate-600 mt-1">{t.description}</p>}
+                          <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-500">
+                            {t.owner_role && <span>👤 {t.owner_role}</span>}
+                            {typeof t.due_offset_days === "number" && <span>⏱ D+{t.due_offset_days}</span>}
+                            {t.effort && <span>Esforço: {t.effort}</span>}
+                            {t.impact && <span>Impacto: {t.impact}</span>}
+                            {t.completion_criteria && <span>✓ {t.completion_criteria}</span>}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+                {Array.isArray(plan.success_metrics) && plan.success_metrics.length > 0 && (
+                  <Field label="Métricas de sucesso">
+                    <ul className="list-disc list-inside">{plan.success_metrics.map((m: any, i: number) => (
+                      <li key={i}>{typeof m === "string" ? m : `${m.indicator ?? ""} — baseline ${m.baseline ?? "?"} → meta ${m.target ?? "?"} (${m.direction ?? ""})`}</li>
+                    ))}</ul>
+                  </Field>
+                )}
+                {Array.isArray(plan.risks) && plan.risks.length > 0 && (
+                  <Field label="Riscos">
+                    <ul className="list-disc list-inside">{plan.risks.map((r: any, i: number) => <li key={i}>{typeof r === "string" ? r : `${r.description} (mitigação: ${r.mitigation ?? "–"})`}</li>)}</ul>
+                  </Field>
+                )}
+                {plan.impact_measurement && <Field label="Medição de impacto">{typeof plan.impact_measurement === "string" ? plan.impact_measurement : JSON.stringify(plan.impact_measurement, null, 2)}</Field>}
+                <details className="mt-2">
+                  <summary className="text-xs text-slate-500 cursor-pointer">Ver JSON completo</summary>
+                  <pre className="mt-2 text-[11px] bg-slate-50 border border-slate-200 rounded-lg p-3 overflow-auto max-h-96">{JSON.stringify(plan, null, 2)}</pre>
+                </details>
+              </div>
+            ) : <p className="text-sm text-slate-500">Nenhum plano retornado.</p>}
+          </Card>
+        </>
+      )}
+    </div>
   );
+}
+function Metric({ label, value }: { label: string; value: React.ReactNode }) {
+  return <div className="rounded-lg border border-slate-200 p-3"><p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{label}</p><p className="text-sm font-semibold text-slate-800 mt-0.5">{value ?? "–"}</p></div>;
+}
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{label}</p><div className="text-sm text-slate-800 whitespace-pre-wrap">{children}</div></div>;
 }
 function HistoryPlaceholder({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
   const rows = useMemo(() => versions, [versions]);
