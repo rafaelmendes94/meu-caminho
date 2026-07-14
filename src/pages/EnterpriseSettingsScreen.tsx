@@ -199,11 +199,10 @@ function LicencaTab() {
     if (!organization?.id) return;
     const { error } = await supabase.from("support_tickets").insert({
       organization_id: organization.id,
-      subject: "Solicitação de upgrade de plano",
-      description: `Solicitamos avaliação para upgrade do plano atual (${row?.plan ?? "n/d"}).`,
+      title: "Solicitação de upgrade de plano",
+      message: `Solicitamos avaliação para upgrade do plano atual (${row?.plan ?? "n/d"}).`,
       priority: "high",
       status: "open",
-      category: "billing",
     });
     if (error) toast.error(error.message);
     else toast.success("Solicitação enviada. Nossa equipe entrará em contato.");
