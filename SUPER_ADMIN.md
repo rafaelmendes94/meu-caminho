@@ -66,3 +66,7 @@ Toda tela do Super Admin implementa:
 ## Performance Center
 
 Acesso em Sistema → Performance (`/admin/system/performance`). 12 abas cobrem Dashboard, Banco, Edge Functions, Storage, Realtime, Cron, IA, Cache, Consultas, Stress Tests, Load Tests e Relatórios. Health Score 0–100 com breakdown por componente. Simulações não executam carga real.
+
+## QA Center
+
+Acesso em Sistema → QA Center (`/admin/system/qa`). 11 abas cobrem Dashboard, Suites, Execuções, Casos, Bugs, Evidências, Cobertura, Checklists, Smoke Tests, Go Live e Histórico. Seed pronto: 10 suites por módulo e 6 checklists (Go Live, Nova Empresa, Nova Versão, Release, Hotfix, Smoke Tests).
