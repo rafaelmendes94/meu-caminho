@@ -62,3 +62,7 @@ Toda tela do Super Admin implementa:
 - `ADMIN_DATABASE.md` — tabelas usadas.
 - `ADMIN_RPCS.md` — RPCs administrativas.
 - `ADMIN_EDGE_FUNCTIONS.md` — edge functions relacionadas.
+
+## Performance Center
+
+Acesso em Sistema → Performance (`/admin/system/performance`). 12 abas cobrem Dashboard, Banco, Edge Functions, Storage, Realtime, Cron, IA, Cache, Consultas, Stress Tests, Load Tests e Relatórios. Health Score 0–100 com breakdown por componente. Simulações não executam carga real.
