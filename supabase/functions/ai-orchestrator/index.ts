@@ -184,6 +184,16 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     const cfg = await loadConfig(admin);
+
+    // Overrides por organização (organization_settings.ai_settings)
+    if (orgId) {
+      const { resolveOrgAiSettings } = await import("../_shared/org_ai_settings.ts");
+      const orgAi = await resolveOrgAiSettings(admin, orgId);
+      if (orgAi.participates === false) {
+        return json({ error: "ai_disabled_for_organization" }, 403);
+      }
+      if (orgAi.model) cfg.model_config = { ...(cfg.model_config ?? {}), primary_model: orgAi.model };
+    }
     const routing = cfg.tone_config?.routing ?? [];
     const { intent, specialists: baseSpecs, priority } = detectIntent(question, routing);
 

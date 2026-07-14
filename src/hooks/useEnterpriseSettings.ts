@@ -25,6 +25,22 @@ export function useEnterpriseSettings<T = any>(key: string, defaultValue: T) {
 
   useEffect(() => { void load(); }, [load]);
 
+  // Realtime: recarrega quando outra sessão altera a mesma chave da organização.
+  useEffect(() => {
+    if (!organization?.id) return;
+    const channel = supabase
+      .channel(`org-settings:${organization.id}:${key}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "organization_settings",
+        filter: `organization_id=eq.${organization.id}`,
+      }, (payload: any) => {
+        const row = payload.new ?? payload.old;
+        if (row?.key === key) void load();
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [organization?.id, key, load]);
+
   const save = useCallback(async (next: T) => {
     setSaving(true);
     const { data, error } = await supabase.rpc("enterprise_settings_upsert", {

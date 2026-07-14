@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { resolveOrgAiSettings } from "../_shared/org_ai_settings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -190,11 +191,19 @@ Deno.serve(async (req) => {
 
     // Carregar configuração publicada / rascunho + fallback
     const cfg = await loadConfigBySource(admin, configSource);
-    const modelPrimary = cfg?.model_config?.primary_model ?? "google/gemini-2.5-pro";
+    let modelPrimary = cfg?.model_config?.primary_model ?? "google/gemini-2.5-pro";
     const modelFallback = cfg?.model_config?.fallback_model ?? "google/gemini-2.5-flash";
-    const temperature = Number(cfg?.model_config?.temperature ?? 0.4);
+    let temperature = Number(cfg?.model_config?.temperature ?? 0.4);
     const maxTokens = Number(cfg?.model_config?.max_tokens ?? 6000);
     const systemPrompt = cfg ? buildSystemPrompt(cfg) : FALLBACK_SYSTEM_PROMPT;
+
+    // Overrides por organização
+    const orgAi = await resolveOrgAiSettings(admin, orgId);
+    if (orgAi.participates === false || orgAi.allow_dna === false) {
+      return json({ error: "ai_disabled_for_organization" }, 403);
+    }
+    if (orgAi.model) modelPrimary = orgAi.model;
+    if (orgAi.temperature != null) temperature = orgAi.temperature;
 
     const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
     const rag = await fetchKnowledgeContext({

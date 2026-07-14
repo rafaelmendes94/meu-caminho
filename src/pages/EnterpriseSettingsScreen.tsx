@@ -18,8 +18,12 @@ import { toast } from "sonner";
 import {
   Building2, Palette, Users, KeyRound, Globe, Clock, CalendarDays, Plug, Bell,
   ShieldCheck, Sparkles, ScrollText, Save, ArrowUpRight, Construction,
-  Upload, Trash2, Plus, Image as ImageIcon,
+  Upload, Trash2, Plus, Image as ImageIcon, Menu,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Progress } from "@/components/ui/progress";
+import { validateAndCompressImage } from "@/lib/imageUpload";
+import { getSignedUrl, invalidateSignedUrl } from "@/lib/signedUrlCache";
 
 type TabKey =
   | "empresa" | "branding" | "usuarios" | "licenca" | "regionalizacao"
@@ -57,6 +61,19 @@ const isValidCnpj = (v: string) => {
   return calc(12) === Number(s[12]) && calc(13) === Number(s[13]);
 };
 
+// ---------- máscaras de input ----------
+const maskCnpj = (v: string) => v.replace(/\D/g, "").slice(0, 14)
+  .replace(/^(\d{2})(\d)/, "$1.$2")
+  .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+  .replace(/\.(\d{3})(\d)/, ".$1/$2")
+  .replace(/(\d{4})(\d)/, "$1-$2");
+const maskCep = (v: string) => v.replace(/\D/g, "").slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2");
+const maskPhone = (v: string) => {
+  const s = v.replace(/\D/g, "").slice(0, 11);
+  if (s.length <= 10) return s.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+  return s.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+};
+
 const ComingSoon = ({ label }: { label: string }) => (
   <Card>
     <CardContent className="py-16 flex flex-col items-center justify-center text-center gap-3">
@@ -74,11 +91,13 @@ function EmpresaTab() {
   const { organization, refresh } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
+  const empty = {
     name: "", legal_name: "", cnpj: "", segment: "", employee_count: 0,
     website: "", email: "", phone: "", address: "", city: "", state: "",
     country: "", postal_code: "", description: "",
-  });
+  };
+  const [form, setForm] = useState(empty);
+  const [snapshot, setSnapshot] = useState(empty);
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -87,25 +106,30 @@ function EmpresaTab() {
       const { data } = await supabase.from("organizations").select(
         "name,legal_name,cnpj,segment,employee_count,website,email,phone,address,city,state,country,postal_code,description"
       ).eq("id", organization.id).maybeSingle();
-      if (data) setForm({
-        name: data.name ?? "", legal_name: data.legal_name ?? "",
-        cnpj: data.cnpj ?? "", segment: data.segment ?? "",
-        employee_count: data.employee_count ?? 0, website: data.website ?? "",
-        email: data.email ?? "", phone: data.phone ?? "",
-        address: data.address ?? "", city: data.city ?? "",
-        state: data.state ?? "", country: data.country ?? "Brasil",
-        postal_code: data.postal_code ?? "", description: data.description ?? "",
-      });
+      if (data) {
+        const next = {
+          name: data.name ?? "", legal_name: data.legal_name ?? "",
+          cnpj: data.cnpj ?? "", segment: data.segment ?? "",
+          employee_count: data.employee_count ?? 0, website: data.website ?? "",
+          email: data.email ?? "", phone: data.phone ?? "",
+          address: data.address ?? "", city: data.city ?? "",
+          state: data.state ?? "", country: data.country ?? "Brasil",
+          postal_code: data.postal_code ?? "", description: data.description ?? "",
+        };
+        setForm(next); setSnapshot(next);
+      }
       setLoading(false);
     })();
   }, [organization?.id]);
 
   const handleSave = async () => {
     if (!organization?.id) return;
+    if (!form.name.trim()) return toast.error("Nome fantasia é obrigatório.");
     if (form.cnpj && !isValidCnpj(form.cnpj)) return toast.error("CNPJ inválido.");
     if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("E-mail inválido.");
     setSaving(true);
     const { error } = await supabase.from("organizations").update({
+      name: form.name,
       legal_name: form.legal_name || null,
       cnpj: form.cnpj || null,
       segment: form.segment || null,
@@ -122,6 +146,7 @@ function EmpresaTab() {
     }).eq("id", organization.id);
     setSaving(false);
     if (error) return toast.error(error.message);
+    setSnapshot(form);
     toast.success("Dados da empresa atualizados.");
     void refresh();
   };
@@ -138,9 +163,9 @@ function EmpresaTab() {
         <CardDescription>Informações institucionais visíveis para RH e integrações.</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Nome fantasia"><Input value={form.name} readOnly /></Field>
+        <Field label="Nome fantasia"><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
         <Field label="Razão social"><Input value={form.legal_name} onChange={(e) => set("legal_name", e.target.value)} /></Field>
-        <Field label="CNPJ"><Input value={form.cnpj} onChange={(e) => set("cnpj", e.target.value)} placeholder="00.000.000/0000-00" /></Field>
+        <Field label="CNPJ"><Input value={form.cnpj} onChange={(e) => set("cnpj", maskCnpj(e.target.value))} placeholder="00.000.000/0000-00" /></Field>
         <Field label="Segmento"><Input value={form.segment} onChange={(e) => set("segment", e.target.value)} /></Field>
         <Field label="Nº de colaboradores">
           <Input type="number" min={0} value={form.employee_count}
@@ -148,17 +173,17 @@ function EmpresaTab() {
         </Field>
         <Field label="Site"><Input value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" /></Field>
         <Field label="E-mail institucional"><Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} /></Field>
-        <Field label="Telefone"><Input value={form.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
+        <Field label="Telefone"><Input value={form.phone} onChange={(e) => set("phone", maskPhone(e.target.value))} placeholder="(00) 00000-0000" /></Field>
         <Field label="Endereço" className="md:col-span-2"><Input value={form.address} onChange={(e) => set("address", e.target.value)} /></Field>
         <Field label="Cidade"><Input value={form.city} onChange={(e) => set("city", e.target.value)} /></Field>
         <Field label="Estado"><Input value={form.state} onChange={(e) => set("state", e.target.value)} /></Field>
         <Field label="País"><Input value={form.country} onChange={(e) => set("country", e.target.value)} /></Field>
-        <Field label="CEP"><Input value={form.postal_code} onChange={(e) => set("postal_code", e.target.value)} /></Field>
+        <Field label="CEP"><Input value={form.postal_code} onChange={(e) => set("postal_code", maskCep(e.target.value))} placeholder="00000-000" /></Field>
         <Field label="Descrição" className="md:col-span-2">
           <Textarea rows={4} value={form.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
         <div className="md:col-span-2 flex gap-2 justify-end pt-2">
-          <Button variant="outline" onClick={() => window.location.reload()}>Cancelar</Button>
+          <Button variant="outline" onClick={() => setForm(snapshot)}>Cancelar</Button>
           <Button onClick={handleSave} disabled={saving}>
             <Save className="h-4 w-4 mr-2" /> {saving ? "Salvando…" : "Salvar"}
           </Button>
@@ -180,6 +205,8 @@ function LicencaTab() {
   const { organization } = useAuth();
   const [row, setRow] = useState<any>(null);
   const [plan, setPlan] = useState<any>(null);
+  const [aiUsed, setAiUsed] = useState<number>(0);
+  const [storageUsedMb, setStorageUsedMb] = useState<number>(0);
   useEffect(() => {
     if (!organization?.id) return;
     (async () => {
@@ -193,10 +220,30 @@ function LicencaTab() {
           .eq("slug", data.plan).maybeSingle();
         setPlan(p);
       }
+      // Consumo real de IA no mês corrente
+      const start = new Date(); start.setDate(1); start.setHours(0,0,0,0);
+      const { data: usage } = await supabase.from("platform_usage_daily")
+        .select("ai_messages_count,executive_ai_messages_count,dna_reports_count,action_plans_count,rituals_count")
+        .eq("organization_id", organization.id)
+        .gte("usage_date", start.toISOString().slice(0,10));
+      setAiUsed((usage ?? []).reduce((s: number, r: any) =>
+        s + Number(r.ai_messages_count ?? 0) + Number(r.executive_ai_messages_count ?? 0)
+        + Number(r.dna_reports_count ?? 0) + Number(r.action_plans_count ?? 0) + Number(r.rituals_count ?? 0), 0));
+      // Consumo de storage: soma tamanho dos objetos do bucket da org (aproximação)
+      try {
+        const { data: files } = await supabase.storage.from("org-branding").list(organization.id, { limit: 1000 });
+        const bytes = (files ?? []).reduce((s: number, f: any) => s + Number(f?.metadata?.size ?? 0), 0);
+        setStorageUsedMb(Math.round(bytes / 1024 / 1024 * 100) / 100);
+      } catch { /* opcional */ }
     })();
   }, [organization?.id]);
 
   const available = Math.max(0, (row?.licenses_total ?? 0) - (row?.licenses_used ?? 0));
+  const licensesPct = row?.licenses_total ? Math.min(100, Math.round((row.licenses_used ?? 0) / row.licenses_total * 100)) : 0;
+  const aiLimit = Number(plan?.ai_monthly_limit ?? 0);
+  const aiPct = aiLimit ? Math.min(100, Math.round(aiUsed / aiLimit * 100)) : 0;
+  const storageLimit = Number(plan?.storage_limit_mb ?? 0);
+  const storagePct = storageLimit ? Math.min(100, Math.round(storageUsedMb / storageLimit * 100)) : 0;
 
   const openSupportTicket = async () => {
     if (!organization?.id) return;
@@ -228,13 +275,20 @@ function LicencaTab() {
           <Row label="Contratadas" value={row?.licenses_total ?? 0} />
           <Row label="Em uso" value={row?.licenses_used ?? 0} />
           <Row label="Disponíveis" value={available} />
+          <Progress value={licensesPct} className="h-2 mt-2" />
         </CardContent>
       </Card>
       <Card className="md:col-span-2">
         <CardHeader><CardTitle>Consumo e Recursos</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <Row label="Limite mensal de IA" value={plan?.ai_monthly_limit ?? "—"} />
-          <Row label="Storage (MB)" value={plan?.storage_limit_mb ?? "—"} />
+          <div className="space-y-1">
+            <Row label={`IA — ${aiUsed} / ${aiLimit || "—"} req (mês)`} value={`${aiPct}%`} />
+            <Progress value={aiPct} className="h-2" />
+          </div>
+          <div className="space-y-1">
+            <Row label={`Storage — ${storageUsedMb} / ${storageLimit || "—"} MB`} value={`${storagePct}%`} />
+            <Progress value={storagePct} className="h-2" />
+          </div>
           {plan?.features && (
             <div className="pt-2">
               <div className="text-xs uppercase text-muted-foreground mb-1">Recursos habilitados</div>
@@ -431,8 +485,8 @@ function BrandingTab() {
       for (const k of keys) {
         const p = (value as any)[k];
         if (!p) continue;
-        const { data } = await supabase.storage.from("org-branding").createSignedUrl(p, 3600);
-        if (data?.signedUrl) map[k] = data.signedUrl;
+        const url = await getSignedUrl("org-branding", p);
+        if (url) map[k] = url;
       }
       setSigned(map);
     })();
@@ -440,18 +494,31 @@ function BrandingTab() {
 
   const uploadFile = async (field: keyof BrandingCfg, file: File) => {
     if (!orgId) return;
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${orgId}/${String(field)}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("org-branding").upload(path, file, { upsert: true, contentType: file.type });
+    let processed;
+    try {
+      processed = await validateAndCompressImage(file, {
+        maxSide: field === "favicon_path" ? 128 : 1600,
+        preferWebp: field !== "favicon_path", // favicon fica no formato original comprimido
+      });
+    } catch (e: any) {
+      return toast.error(e?.message || "Upload inválido.");
+    }
+    const path = `${orgId}/${String(field)}-${Date.now()}.${processed.ext}`;
+    const { error } = await supabase.storage.from("org-branding").upload(path, processed.file, { upsert: true, contentType: processed.mime });
     if (error) return toast.error(error.message);
+    invalidateSignedUrl("org-branding", path);
     const next = { ...value, [field]: path } as BrandingCfg;
     setValue(next);
     await save(next);
+    toast.success("Imagem enviada.");
   };
 
   const removeFile = async (field: keyof BrandingCfg) => {
     const p = (value as any)[field];
-    if (p) await supabase.storage.from("org-branding").remove([p]);
+    if (p) {
+      await supabase.storage.from("org-branding").remove([p]);
+      invalidateSignedUrl("org-branding", p);
+    }
     const next = { ...value, [field]: null } as BrandingCfg;
     setValue(next);
     await save(next);
@@ -896,9 +963,12 @@ const ToggleRow = ({ label, checked, onChange }: { label: string; checked: boole
 function AuditoriaTab() {
   const { organization } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+  const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [entity, setEntity] = useState<string>("all");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 25;
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -910,7 +980,16 @@ function AuditoriaTab() {
         .order("created_at", { ascending: false })
         .limit(200);
       const { data } = await query;
-      setRows(data ?? []);
+      const list = data ?? [];
+      setRows(list);
+      const ids = Array.from(new Set(list.map((r) => r.actor_user_id).filter(Boolean))) as string[];
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profiles")
+          .select("id,full_name,email,avatar_url,role").in("id", ids);
+        const map: Record<string, any> = {};
+        (profs ?? []).forEach((p: any) => { map[p.id] = p; });
+        setProfilesMap(map);
+      }
       setLoading(false);
     })();
   }, [organization?.id]);
@@ -920,6 +999,9 @@ function AuditoriaTab() {
     if (q && !JSON.stringify(r).toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageRows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  useEffect(() => { setPage(0); }, [q, entity]);
 
   const exportCsv = () => {
     const header = ["data","ator","acao","entidade","metadata"];
@@ -960,18 +1042,38 @@ function AuditoriaTab() {
                 <tr><th className="py-2">Quando</th><th>Ator</th><th>Ação</th><th>Entidade</th><th>Metadata</th></tr>
               </thead>
               <tbody>
-                {filtered.map((r) => (
+                {pageRows.map((r) => {
+                  const p = r.actor_user_id ? profilesMap[r.actor_user_id] : null;
+                  return (
                   <tr key={r.id} className="border-t">
                     <td className="py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
-                    <td className="whitespace-nowrap text-xs text-muted-foreground">{(r.actor_user_id ?? "").slice(0,8) || "—"}</td>
+                    <td className="whitespace-nowrap text-xs">
+                      {p ? (
+                        <div className="flex items-center gap-2">
+                          {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <div className="h-6 w-6 rounded-full bg-muted" />}
+                          <div className="leading-tight">
+                            <div className="font-medium">{p.full_name || p.email}</div>
+                            <div className="text-[10px] text-muted-foreground">{p.email}{p.role ? ` · ${p.role}` : ""}</div>
+                          </div>
+                        </div>
+                      ) : <span className="text-muted-foreground">{(r.actor_user_id ?? "").slice(0,8) || "—"}</span>}
+                    </td>
                     <td>{r.action}</td>
                     <td>{r.entity_type}</td>
                     <td className="text-xs text-muted-foreground max-w-md truncate">{JSON.stringify(r.metadata ?? {})}</td>
                   </tr>
-                ))}
-                {filtered.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-muted-foreground text-sm">Sem registros.</td></tr>}
+                  );
+                })}
+                {pageRows.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-muted-foreground text-sm">Sem registros.</td></tr>}
               </tbody>
             </table>
+            <div className="flex items-center justify-between mt-3">
+              <div className="text-xs text-muted-foreground">Página {page + 1} de {pageCount}</div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>Anterior</Button>
+                <Button size="sm" variant="outline" disabled={page >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>Próxima</Button>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>
@@ -991,7 +1093,7 @@ export default function EnterpriseSettingsScreen() {
   }, [tab, setSearch]);
 
   useEffect(() => {
-    if (!loading && !hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh", { replace: true });
+    if (!loading && !hasAnyRole(["owner", "rh_admin", "platform_admin"])) navigate("/enterprise/rh", { replace: true });
   }, [loading, hasAnyRole, navigate]);
 
   const active = useMemo(() => TABS.find((t) => t.key === tab)!, [tab]);
@@ -999,7 +1101,34 @@ export default function EnterpriseSettingsScreen() {
   return (
     <EnterpriseRHLayout title="Configurações da Empresa">
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
-        <aside className="space-y-1">
+        {/* Mobile: drawer */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full justify-start">
+                <Menu className="h-4 w-4 mr-2" /> {active.label}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-3">
+              <div className="space-y-1 mt-6">
+                {TABS.map((t) => {
+                  const Icon = t.icon;
+                  const isActive = t.key === tab;
+                  return (
+                    <button key={t.key} onClick={() => setTab(t.key)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition ${
+                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-accent text-foreground"
+                      }`}>
+                      <Icon className="h-4 w-4" /> {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+        {/* Desktop: aside */}
+        <aside className="space-y-1 hidden md:block">
           {TABS.map((t) => {
             const Icon = t.icon;
             const isActive = t.key === tab;

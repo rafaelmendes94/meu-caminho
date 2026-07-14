@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { getSignedUrl, invalidateSignedUrl } from "@/lib/signedUrlCache";
 
 function hexToHslTriplet(hex: string): string | null {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -31,37 +32,53 @@ export default function OrgBrandingProvider({ children }: { children: React.Reac
   const { organization } = useAuth();
   const orgId = organization?.id;
 
+  const applyBranding = useCallback(async () => {
+    if (!orgId) return;
+    const { data } = await supabase.from("organization_settings")
+      .select("value").eq("organization_id", orgId).eq("key", "branding").maybeSingle();
+    if (!data?.value) return;
+    const v: any = data.value;
+    const root = document.documentElement;
+    const apply = (name: string, hex?: string) => {
+      if (!hex) return;
+      const hsl = hexToHslTriplet(hex);
+      if (hsl) root.style.setProperty(name, hsl);
+    };
+    apply("--primary", v.primary_color);
+    apply("--secondary", v.secondary_color);
+    apply("--accent", v.accent_color);
+    if (v.theme && v.theme !== "auto") root.setAttribute("data-theme", v.theme);
+
+    if (v.favicon_path) {
+      invalidateSignedUrl("org-branding", v.favicon_path);
+      const url = await getSignedUrl("org-branding", v.favicon_path);
+      if (url) {
+        let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+        if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+        link.href = url;
+      }
+    }
+    // Broadcast para outros consumidores (ex.: preview de sidebar/login)
+    window.dispatchEvent(new CustomEvent("org-branding:updated", { detail: v }));
+  }, [orgId]);
+
+  useEffect(() => { void applyBranding(); }, [applyBranding]);
+
+  // Realtime: aplica imediatamente ao salvar.
   useEffect(() => {
     if (!orgId) return;
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from("organization_settings")
-        .select("value").eq("organization_id", orgId).eq("key", "branding").maybeSingle();
-      if (cancelled || !data?.value) return;
-      const v: any = data.value;
-      const root = document.documentElement;
-      const apply = (name: string, hex?: string) => {
-        if (!hex) return;
-        const hsl = hexToHslTriplet(hex);
-        if (hsl) root.style.setProperty(name, hsl);
-      };
-      apply("--primary", v.primary_color);
-      apply("--secondary", v.secondary_color);
-      apply("--accent", v.accent_color);
-      if (v.theme && v.theme !== "auto") root.setAttribute("data-theme", v.theme);
-
-      if (v.favicon_path) {
-        const { data: signed } = await supabase.storage.from("org-branding")
-          .createSignedUrl(v.favicon_path, 3600);
-        if (signed?.signedUrl) {
-          let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-          if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-          link.href = signed.signedUrl;
-        }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [orgId]);
+    const channel = supabase
+      .channel(`branding:${orgId}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "organization_settings",
+        filter: `organization_id=eq.${orgId}`,
+      }, (payload: any) => {
+        const row = payload.new ?? payload.old;
+        if (row?.key === "branding") void applyBranding();
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [orgId, applyBranding]);
 
   return <>{children}</>;
 }

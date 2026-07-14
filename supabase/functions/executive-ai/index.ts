@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { enforceRateLimit } from "../_shared/rate_limit.ts";
 import { fetchKnowledgeContext } from "../_shared/knowledge_rag.ts";
+import { resolveOrgAiSettings } from "../_shared/org_ai_settings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -293,6 +294,14 @@ Deno.serve(async (req) => {
       return json({ error: "forbidden" }, 403);
     }
 
+    // Overrides por organização (organization_settings.ai_settings)
+    const orgAi = await resolveOrgAiSettings(admin, orgId);
+    if (orgAi.participates === false || orgAi.allow_council === false) {
+      return json({ error: "ai_disabled_for_organization" }, 403);
+    }
+    const effectiveModel = orgAi.model || primaryModel;
+    const effectiveTemperature = orgAi.temperature != null ? orgAi.temperature : temperature;
+
     // Aggregated context via user client (RLS + role check inside function)
     const { data: ctx, error: ctxErr } = await userClient.rpc("get_executive_context", {
       _organization_id: orgId,
@@ -366,9 +375,9 @@ Deno.serve(async (req) => {
         "Authorization": `Bearer ${lovableKey}`,
       },
       body: JSON.stringify({
-        model: primaryModel,
+        model: effectiveModel,
         messages,
-        temperature,
+        temperature: effectiveTemperature,
         max_tokens: maxTokens,
         response_format: { type: "json_object" },
       }),
