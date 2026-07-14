@@ -1205,6 +1205,353 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_certificates: {
+        Row: {
+          created_at: string
+          fields: Json
+          html_template: string
+          id: string
+          name: string
+          organization_logo_url: string | null
+          platform_logo_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fields?: Json
+          html_template: string
+          id?: string
+          name: string
+          organization_logo_url?: string | null
+          platform_logo_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fields?: Json
+          html_template?: string
+          id?: string
+          name?: string
+          organization_logo_url?: string | null
+          platform_logo_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_competencies: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_content_imports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          failed: number
+          file_url: string | null
+          id: string
+          kind: string
+          log: Json
+          source: string | null
+          status: string
+          succeeded: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          file_url?: string | null
+          id?: string
+          kind: string
+          log?: Json
+          source?: string | null
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          file_url?: string | null
+          id?: string
+          kind?: string
+          log?: Json
+          source?: string | null
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_content_versions: {
+        Row: {
+          author_id: string | null
+          comment: string | null
+          content_item_id: string
+          created_at: string
+          id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          author_id?: string | null
+          comment?: string | null
+          content_item_id: string
+          created_at?: string
+          id?: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          author_id?: string | null
+          comment?: string | null
+          content_item_id?: string
+          created_at?: string
+          id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: []
+      }
+      cms_emotions: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_messages: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          status: string
+          tone: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          id?: string
+          status?: string
+          tone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          status?: string
+          tone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_quiz_questions: {
+        Row: {
+          answer: Json | null
+          created_at: string
+          feedback: string | null
+          id: string
+          options: Json
+          position: number
+          prompt: string
+          qtype: string
+          quiz_id: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          answer?: Json | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          options?: Json
+          position?: number
+          prompt: string
+          qtype?: string
+          quiz_id: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          answer?: Json | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          options?: Json
+          position?: number
+          prompt?: string
+          qtype?: string
+          quiz_id?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "cms_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_quizzes: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          passing_score: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          passing_score?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          passing_score?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_reflections: {
+        Row: {
+          body: string
+          category_id: string | null
+          competency_id: string | null
+          created_at: string
+          emotion_id: string | null
+          id: string
+          image_url: string | null
+          status: string
+          theme: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category_id?: string | null
+          competency_id?: string | null
+          created_at?: string
+          emotion_id?: string | null
+          id?: string
+          image_url?: string | null
+          status?: string
+          theme?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category_id?: string | null
+          competency_id?: string | null
+          created_at?: string
+          emotion_id?: string | null
+          id?: string
+          image_url?: string | null
+          status?: string
+          theme?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_reflections_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "cms_competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_reflections_emotion_id_fkey"
+            columns: ["emotion_id"]
+            isOneToOne: false
+            referencedRelation: "cms_emotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_events: {
         Row: {
           action: string
