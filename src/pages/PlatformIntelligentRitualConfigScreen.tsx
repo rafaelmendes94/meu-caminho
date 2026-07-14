@@ -7,6 +7,17 @@ import {
   MessageSquare, Cpu, FlaskConical, History, Layers, ListChecks, GaugeCircle,
 } from "lucide-react";
 
+const SCENARIOS: { key: string; label: string; description: string }[] = [
+  { key: "low_communication", label: "Queda de comunicação", description: "Comunicação em declínio, pulse abrindo pouco." },
+  { key: "low_energy", label: "Energia baixa", description: "Humor em queda, sobrecarga percebida." },
+  { key: "high_overload", label: "Alta sobrecarga", description: "Capacidade no vermelho, horas extras altas." },
+  { key: "low_engagement", label: "Baixo engajamento", description: "Participação e conclusão de rituais caindo." },
+  { key: "good_recovery", label: "Boa recuperação", description: "Humor e energia em recuperação positiva." },
+  { key: "high_participation", label: "Alta participação", description: "Participação e conclusão excelentes." },
+  { key: "low_score", label: "Score organizacional baixo", description: "Score < 50 com liderança e segurança fracos." },
+  { key: "high_score", label: "Score organizacional alto", description: "Score > 80 com engajamento e cultura fortes." },
+];
+
 type RitualType = { key: string; label: string; description?: string; active: boolean };
 type StepsCfg = { min: number; max: number; require_time_per_step: boolean; granularity: string };
 type QuestionsCfg = { min: number; max: number };
@@ -260,7 +271,7 @@ export default function PlatformIntelligentRitualConfigScreen() {
         {tab === "structure" && <StructureTab config={config} setConfig={setConfig} />}
         {tab === "steps" && <StepsTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
-        {tab === "test" && <TestPlaceholder />}
+        {tab === "test" && <TestTab config={config} />}
         {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
 
         {(tab !== "test" && tab !== "history") && (
@@ -462,8 +473,242 @@ function ModelTab({ config, setConfig }: { config: Cfg; setConfig: React.Dispatc
   );
 }
 
-function TestPlaceholder() {
-  return <Card><p className="text-sm text-slate-500">Teste guiado com os 8 cenários (queda de comunicação, energia baixa, sobrecarga, engajamento, recuperação, participação, Score baixo/alto) chega na Sub-fase B.</p></Card>;
+function TestTab({ config }: { config: Cfg }) {
+  const activeTypes = (config.model_config.ritual_types ?? []).filter((t) => t.active);
+  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [orgId, setOrgId] = useState<string>("");
+  const [scenario, setScenario] = useState<string>(SCENARIOS[0].key);
+  const [ritualType, setRitualType] = useState<string>(activeTypes[0]?.key ?? "");
+  const [modality, setModality] = useState<"presencial" | "remoto" | "hibrido">("hibrido");
+  const [extra, setExtra] = useState("");
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [metrics, setMetrics] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("organizations").select("id, name").order("name").limit(200);
+      const list = (data ?? []) as { id: string; name: string }[];
+      setOrgs(list);
+      if (list[0]) setOrgId(list[0].id);
+    })();
+  }, []);
+
+  async function runTest() {
+    if (!orgId) { toast.error("Selecione uma organização."); return; }
+    setRunning(true); setError(null); setResult(null); setWarnings([]); setMetrics(null);
+    const { data, error } = await supabase.functions.invoke("generate-intelligent-ritual", {
+      body: {
+        source_type: "scenario",
+        scenario,
+        ritual_type: ritualType || null,
+        organization_id: orgId,
+        test_mode: true,
+        prompt: [
+          `Modalidade preferencial: ${modality}.`,
+          extra ? `Contexto do teste: ${extra}` : "",
+        ].filter(Boolean).join(" "),
+      },
+    });
+    setRunning(false);
+    if (error) { setError(error.message); toast.error("Falha na geração de teste"); return; }
+    if ((data as any)?.error) { setError((data as any).error); toast.error((data as any).error); return; }
+    setResult((data as any)?.ritual ?? null);
+    setWarnings((data as any)?.warnings ?? []);
+    setMetrics((data as any)?.metrics ?? null);
+    toast.success("Teste concluído (sem persistir)");
+  }
+
+  const sc = SCENARIOS.find((s) => s.key === scenario);
+  return (
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Configuração do teste</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label>Organização (contexto real, sem persistência)</Label>
+            <Select value={orgId} onChange={setOrgId} options={orgs.map((o) => ({ value: o.id, label: o.name }))} />
+          </div>
+          <div>
+            <Label>Cenário simulado</Label>
+            <Select value={scenario} onChange={setScenario} options={SCENARIOS.map((s) => ({ value: s.key, label: s.label }))} />
+            {sc && <p className="mt-1 text-xs text-slate-500">{sc.description}</p>}
+          </div>
+          <div>
+            <Label>Tipo de ritual</Label>
+            <Select value={ritualType} onChange={setRitualType} options={[{ value: "", label: "IA escolhe" }, ...activeTypes.map((t) => ({ value: t.key, label: t.label }))]} />
+          </div>
+          <div>
+            <Label>Modalidade preferencial</Label>
+            <Select value={modality} onChange={(v) => setModality(v as any)} options={[
+              { value: "presencial", label: "Presencial" },
+              { value: "remoto", label: "Remoto" },
+              { value: "hibrido", label: "Híbrido" },
+            ]} />
+          </div>
+          <div className="md:col-span-2">
+            <Label>Orientação adicional (opcional)</Label>
+            <Textarea rows={3} value={extra} onChange={(e) => setExtra(e.target.value)} placeholder="Ex.: time comercial em final de trimestre, foco em recuperação de energia." />
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-xs text-slate-500">O teste roda com a config atual (rascunho ou publicada), respeita guardrails e não grava rituais.</p>
+          <button onClick={runTest} disabled={running || !orgId}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+            <FlaskConical className="w-4 h-4" /> {running ? "Gerando…" : "Rodar teste"}
+          </button>
+        </div>
+      </Card>
+
+      {error && <Card className="border-red-200 bg-red-50/40"><p className="text-sm text-red-700">{error}</p></Card>}
+
+      {metrics && (
+        <Card>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">Métricas da execução</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <Metric label="Modelo" value={metrics.model} sub={metrics.fallback_used ? "fallback usado" : "primário"} />
+            <Metric label="Latência" value={`${metrics.latency_ms} ms`} />
+            <Metric label="Tokens" value={`${metrics.tokens_total}`} sub={`in ${metrics.tokens_in} · out ${metrics.tokens_out}`} />
+            <Metric label="Custo est." value={`US$ ${Number(metrics.estimated_cost_usd ?? 0).toFixed(6)}`} sub={`config v${metrics.config_version}`} />
+          </div>
+        </Card>
+      )}
+
+      {warnings.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/40">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-amber-800 mb-2">Avisos</h3>
+          <ul className="text-xs text-amber-900 space-y-1">{warnings.map((w, i) => <li key={i}>• {w}</li>)}</ul>
+        </Card>
+      )}
+
+      {result && <RitualPreview ritual={result} modality={modality} />}
+    </div>
+  );
+}
+
+function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{label}</p>
+      <p className="text-sm font-bold text-slate-800 mt-0.5">{value}</p>
+      {sub && <p className="text-[11px] text-slate-500 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function RitualPreview({ ritual, modality }: { ritual: any; modality: "presencial" | "remoto" | "hibrido" }) {
+  const variation = ritual?.variations?.[modality] ?? null;
+  return (
+    <Card>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-[#F88A2B] font-semibold">{ritual.type ?? "ritual"}</p>
+          <h3 className="text-lg font-bold text-slate-900">{ritual.title}</h3>
+          {ritual.description && <p className="text-sm text-slate-600 mt-1">{ritual.description}</p>}
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Duração</p>
+          <p className="text-sm font-bold text-slate-800">{ritual.duration ?? "—"} min</p>
+          {typeof ritual.confidence === "number" && (
+            <p className="text-[11px] text-slate-500 mt-1">Confiança {(ritual.confidence * 100).toFixed(0)}%</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4 mt-2">
+        <Section title="Objetivo">{ritual.objective}</Section>
+        <Section title="Problema que resolve">{ritual.problem}</Section>
+        <Section title="Público-alvo">{ritual.audience}</Section>
+        <Section title="Facilitador (papel)">{ritual.facilitator}</Section>
+        <Section title="Contexto">{ritual.context}</Section>
+        <Section title="Quando aplicar">{ritual.when_to_apply}</Section>
+      </div>
+
+      {Array.isArray(ritual.materials) && ritual.materials.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Materiais</p>
+          <div className="flex flex-wrap gap-1.5">{ritual.materials.map((m: string, i: number) => <span key={i} className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-700">{m}</span>)}</div>
+        </div>
+      )}
+
+      {Array.isArray(ritual.steps) && ritual.steps.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Passo a passo</p>
+          <ol className="space-y-2">
+            {ritual.steps.map((s: any, i: number) => (
+              <li key={i} className="border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-slate-800">{s.order ?? i + 1}. {s.title}</p>
+                  {s.minutes != null && <span className="text-[11px] text-slate-500">{s.minutes} min</span>}
+                </div>
+                {s.description && <p className="text-xs text-slate-600 mt-1">{s.description}</p>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {Array.isArray(ritual.questions) && ritual.questions.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Perguntas de reflexão</p>
+          <ul className="text-sm text-slate-700 space-y-1 list-disc pl-5">{ritual.questions.map((q: string, i: number) => <li key={i}>{q}</li>)}</ul>
+        </div>
+      )}
+
+      {ritual.closing && <Section title="Fechamento">{ritual.closing}</Section>}
+
+      {variation && (
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Variação · {modality}</p>
+          <div className="grid md:grid-cols-2 gap-3">
+            <Section title="Setup">{variation.setup}</Section>
+            <Section title="Ajustes">{variation.adjustments}</Section>
+          </div>
+        </div>
+      )}
+
+      {Array.isArray(ritual.success_metrics) && ritual.success_metrics.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Métricas de sucesso</p>
+          <ul className="text-sm text-slate-700 space-y-1 list-disc pl-5">{ritual.success_metrics.map((m: any, i: number) => <li key={i}>{typeof m === "string" ? m : JSON.stringify(m)}</li>)}</ul>
+        </div>
+      )}
+
+      {ritual.impact_measurement && (
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Medição de impacto</p>
+          <div className="text-xs text-slate-700 space-y-1">
+            {Array.isArray(ritual.impact_measurement.baseline_metrics) && ritual.impact_measurement.baseline_metrics.length > 0 && (
+              <p><span className="font-semibold">Baseline:</span> {ritual.impact_measurement.baseline_metrics.join(", ")}</p>
+            )}
+            {ritual.impact_measurement.comparison_window_days != null && (
+              <p><span className="font-semibold">Janela:</span> {ritual.impact_measurement.comparison_window_days} dias</p>
+            )}
+            {ritual.impact_measurement.success_rule && <p><span className="font-semibold">Regra de sucesso:</span> {ritual.impact_measurement.success_rule}</p>}
+          </div>
+        </div>
+      )}
+
+      {Array.isArray(ritual.limitations) && ritual.limitations.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Limitações declaradas</p>
+          <ul className="text-xs text-slate-600 space-y-1 list-disc pl-5">{ritual.limitations.map((l: string, i: number) => <li key={i}>{l}</li>)}</ul>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  if (!children) return null;
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">{title}</p>
+      <p className="text-sm text-slate-800 whitespace-pre-wrap">{children}</p>
+    </div>
+  );
 }
 
 function HistoryPlaceholder({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
