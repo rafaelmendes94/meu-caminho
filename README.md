@@ -33,3 +33,7 @@ Auth · Multi-tenant · Onboarding IA · Perfil Inteligente · Pulse IA™ · Ch
 npm install
 npm run dev
 ```
+
+## Configurações da Empresa
+
+Painel completo em `/enterprise/rh/configuracoes` (Owner/RH Admin). Ver `ENTERPRISE_SETTINGS.md`.

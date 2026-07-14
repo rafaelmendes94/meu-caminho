@@ -51,3 +51,9 @@
 - Snapshot org chart: diário.
 - Sinais preditivos: 03:00 UTC.
 - Insights semanais: segunda-feira 07:00 UTC.
+
+## Enterprise Settings (Fase 18)
+
+- Colunas novas em `organizations`: `legal_name`, `email`, `website`, `phone`, `address`, `postal_code`, `description`, `employee_count`.
+- RPC `enterprise_settings_upsert(_key text, _value jsonb)` — restrita a `owner`/`rh_admin`, audita em `organization_audit_logs`.
+- Bucket privado `org-branding` com policies por `organization_id`.
