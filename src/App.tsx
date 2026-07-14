@@ -210,6 +210,7 @@ const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSo
 const PlatformKnowledgeHubScreen = lazy(() => import("./pages/PlatformKnowledgeHubScreen.tsx"));
 const PlatformAILabScreen = lazy(() => import("./pages/PlatformAILabScreen.tsx"));
 const PlatformGamificationScreen = lazy(() => import("./pages/PlatformGamificationScreen.tsx"));
+const PlatformBillingHubScreen = lazy(() => import("./pages/PlatformBillingHubScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
 
