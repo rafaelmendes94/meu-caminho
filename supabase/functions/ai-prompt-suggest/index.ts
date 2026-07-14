@@ -123,6 +123,23 @@ REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
 
 Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays (output_structure ou model_config.ritual_types), devolva a lista COMPLETA ordenada preservando itens obrigatórios ativos.`;
 
+const RECOMMENDATION_SYSTEM_PROMPT = `Você é um assistente de configuração do Motor de Recomendação Inteligente™.
+Recebe a configuração atual do rascunho e uma instrução em linguagem natural do Super Admin.
+Proponha alterações mínimas e cirúrgicas sem violar as regras invioláveis.
+
+REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
+- A recomendação diária é feita por ranking rápido (<300ms). A IA apenas ajusta pesos e explicações — nunca a cada acesso.
+- Nunca usar dados de outro colaborador, denúncias ou chats privados.
+- Nunca recomendar conteúdo arquivado, rascunho ou premium sem licença.
+- Nunca repetir conteúdo já concluído dentro da janela configurada.
+- Manter as penalidades archived_penalty, draft_penalty e premium_without_license_penalty em 1.0.
+- Pesos por dimensão e formato devem ficar entre 0 e 2. Boosts entre 0 e 1. Penalidades multiplicadoras entre 0 e 1 (exceto as bloqueadas em 1.0). repeat_within_days entre 0 e 365.
+- top_n entre 5 e 50, min_score entre 0 e 1, novelty_half_life_days entre 1 e 90, time_available_minutes entre 5 e 240.
+- diversity.max_per_format e max_per_category devem permanecer ≥ 1. Ao menos 1 categoria e 1 formato precisam ficar ativos.
+- Temperatura entre 0 e 1; max_tokens entre 512 e 12000.
+
+Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays (output_structure, model_config.categories, model_config.formats), devolva a lista COMPLETA ordenada, preservando ao menos 1 item ativo.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -168,7 +185,8 @@ Deno.serve(async (req) => {
       promptKey !== "organizational_dna" &&
       promptKey !== "weekly_insights" &&
       promptKey !== "action_plan" &&
-      promptKey !== "intelligent_ritual"
+      promptKey !== "intelligent_ritual" &&
+      promptKey !== "recommendation_engine"
     )
       return json({ error: "invalid_prompt_key" }, 400);
     const SYSTEM_PROMPT =
@@ -176,6 +194,7 @@ Deno.serve(async (req) => {
       promptKey === "weekly_insights" ? WEEKLY_SYSTEM_PROMPT :
       promptKey === "action_plan" ? ACTION_PLAN_SYSTEM_PROMPT :
       promptKey === "intelligent_ritual" ? RITUAL_SYSTEM_PROMPT :
+      promptKey === "recommendation_engine" ? RECOMMENDATION_SYSTEM_PROMPT :
       EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
@@ -227,6 +246,7 @@ Deno.serve(async (req) => {
       promptKey === "weekly_insights" ? ["title", "executive_summary", "key_changes", "confidence", "limitations"] :
       promptKey === "action_plan" ? ["title", "problem_statement", "objective", "due_date", "success_metrics", "tasks", "impact_measurement"] :
       promptKey === "intelligent_ritual" ? ["title","type","objective","problem","audience","duration","materials","facilitator","steps","questions","closing","variations","success_metrics","impact_measurement"] :
+      promptKey === "recommendation_engine" ? ["item_id","score","reason","factors","type","title","confidence"] :
       ["evidence", "confidence", "limitations"];
     const REQUIRED_DIMS = promptKey === "organizational_dna"
       ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
@@ -275,6 +295,44 @@ Deno.serve(async (req) => {
           if (typeof tc.questions.min === "number") tc.questions.min = Math.max(1, Math.min(10, tc.questions.min));
           if (typeof tc.questions.max === "number") tc.questions.max = Math.max(1, Math.min(10, tc.questions.max));
           if (typeof tc.questions.min === "number" && typeof tc.questions.max === "number" && tc.questions.min > tc.questions.max) tc.questions.max = tc.questions.min;
+        }
+      } else if (promptKey === "recommendation_engine") {
+        const tc = changes.tone_config;
+        const clamp = (n: any, lo: number, hi: number, def: number) => {
+          const x = Number(n);
+          return Number.isFinite(x) ? Math.max(lo, Math.min(hi, x)) : def;
+        };
+        const clampMap = (m: any, lo: number, hi: number) => {
+          if (!m || typeof m !== "object") return m;
+          const out: Record<string, number> = {};
+          for (const [k, v] of Object.entries(m)) out[k] = clamp(v, lo, hi, lo);
+          return out;
+        };
+        if (tc.dimension_weights) tc.dimension_weights = clampMap(tc.dimension_weights, 0, 2);
+        if (tc.format_weights) tc.format_weights = clampMap(tc.format_weights, 0, 2);
+        if (tc.boosts) tc.boosts = clampMap(tc.boosts, 0, 1);
+        if (tc.penalties && typeof tc.penalties === "object") {
+          const p: any = { ...tc.penalties };
+          if (typeof p.repeat_within_days === "number") p.repeat_within_days = clamp(p.repeat_within_days, 0, 365, 30);
+          for (const k of ["repeat_penalty","completed_penalty","dismissed_penalty"]) {
+            if (typeof p[k] === "number") p[k] = clamp(p[k], 0, 1, 0.5);
+          }
+          // Bloqueadas em 1.0
+          p.archived_penalty = 1.0;
+          p.draft_penalty = 1.0;
+          p.premium_without_license_penalty = 1.0;
+          tc.penalties = p;
+        }
+        if (typeof tc.top_n === "number") tc.top_n = clamp(tc.top_n, 5, 50, 20);
+        if (typeof tc.min_score === "number") tc.min_score = clamp(tc.min_score, 0, 1, 0.05);
+        if (typeof tc.novelty_half_life_days === "number") tc.novelty_half_life_days = clamp(tc.novelty_half_life_days, 1, 90, 14);
+        if (typeof tc.time_available_minutes === "number") tc.time_available_minutes = clamp(tc.time_available_minutes, 5, 240, 30);
+        if (tc.diversity && typeof tc.diversity === "object") {
+          if (typeof tc.diversity.max_per_format === "number") tc.diversity.max_per_format = Math.max(1, Math.min(20, tc.diversity.max_per_format));
+          if (typeof tc.diversity.max_per_category === "number") tc.diversity.max_per_category = Math.max(1, Math.min(20, tc.diversity.max_per_category));
+        }
+        if (tc.explanation && typeof tc.explanation === "object") {
+          if (typeof tc.explanation.max_length === "number") tc.explanation.max_length = Math.max(80, Math.min(400, tc.explanation.max_length));
         }
       } else {
         changes.tone_config.include_evidence = true;
@@ -327,6 +385,14 @@ Deno.serve(async (req) => {
       if (promptKey === "intelligent_ritual" && Array.isArray(mc.ritual_types)) {
         const anyActive = mc.ritual_types.some((t: any) => t?.active !== false);
         if (!anyActive && mc.ritual_types.length > 0) mc.ritual_types[0].active = true;
+      }
+      if (promptKey === "recommendation_engine") {
+        for (const listKey of ["categories", "formats"] as const) {
+          if (Array.isArray(mc[listKey])) {
+            const anyActive = mc[listKey].some((t: any) => t?.active !== false);
+            if (!anyActive && mc[listKey].length > 0) mc[listKey][0].active = true;
+          }
+        }
       }
     }
 
