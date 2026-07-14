@@ -256,7 +256,13 @@ Deno.serve(async (req) => {
 
     const cfg = await loadConfig(admin, configSource);
     const systemPrompt = buildSystemPrompt(cfg);
-    const userPrompt = `Contexto organizacional agregado (k-anonimato aplicado):\n${JSON.stringify(context, null, 2)}${extraPrompt ? `\n\nOrientação adicional:\n${extraPrompt}` : ""}`;
+    const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
+    const rag = await fetchKnowledgeContext({
+      query: `plano de ação ${sourceType} ${extraPrompt ?? ""}`.slice(0, 500),
+      organizationId: orgId,
+      aiModule: "generate-action-plan",
+    });
+    const userPrompt = `${rag.contextBlock ? rag.contextBlock + "\n\n" : ""}Contexto organizacional agregado (k-anonimato aplicado):\n${JSON.stringify(context, null, 2)}${extraPrompt ? `\n\nOrientação adicional:\n${extraPrompt}` : ""}`;
 
     const startedAt = Date.now();
     const primary = String(cfg.model_config?.primary_model ?? "google/gemini-2.5-pro");
