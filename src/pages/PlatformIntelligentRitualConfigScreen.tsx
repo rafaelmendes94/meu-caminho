@@ -7,6 +7,17 @@ import {
   MessageSquare, Cpu, FlaskConical, History, Layers, ListChecks, GaugeCircle,
 } from "lucide-react";
 
+const SCENARIOS: { key: string; label: string; description: string }[] = [
+  { key: "low_communication", label: "Queda de comunicação", description: "Comunicação em declínio, pulse abrindo pouco." },
+  { key: "low_energy", label: "Energia baixa", description: "Humor em queda, sobrecarga percebida." },
+  { key: "high_overload", label: "Alta sobrecarga", description: "Capacidade no vermelho, horas extras altas." },
+  { key: "low_engagement", label: "Baixo engajamento", description: "Participação e conclusão de rituais caindo." },
+  { key: "good_recovery", label: "Boa recuperação", description: "Humor e energia em recuperação positiva." },
+  { key: "high_participation", label: "Alta participação", description: "Participação e conclusão excelentes." },
+  { key: "low_score", label: "Score organizacional baixo", description: "Score < 50 com liderança e segurança fracos." },
+  { key: "high_score", label: "Score organizacional alto", description: "Score > 80 com engajamento e cultura fortes." },
+];
+
 type RitualType = { key: string; label: string; description?: string; active: boolean };
 type StepsCfg = { min: number; max: number; require_time_per_step: boolean; granularity: string };
 type QuestionsCfg = { min: number; max: number };
