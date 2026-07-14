@@ -846,7 +846,6 @@ function Chip({ label, tone = "slate" }: { label: string; tone?: "slate" | "emer
   return <span className={`px-2 py-0.5 rounded-full font-semibold ${map[tone]}`}>{label}</span>;
 }
 
-function HistoryTab({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
 function HistoryTab({ versions, currentVersion, onRestore }: {
   versions: VersionRow[];
   currentVersion: number;
