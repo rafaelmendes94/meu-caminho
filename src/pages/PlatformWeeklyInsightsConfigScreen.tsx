@@ -5,7 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, CalendarClock,
   MessageSquare, ListChecks, CalendarRange, Target, Cpu, FlaskConical, History,
-  Building2, Play, Coins, Timer, Hash, Sparkles,
+  Building2, Play, Coins, Timer, Hash, Sparkles, Wand2, GitCompare, RotateCcw, Check,
 } from "lucide-react";
 
 type Period = {
@@ -62,6 +62,7 @@ const TABS = [
   { id: "signals", label: "Sinais e Prioridades", icon: Target },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
   { id: "test", label: "Testar Geração", icon: FlaskConical },
+  { id: "ai_edit", label: "Editar por IA", icon: Wand2 },
   { id: "history", label: "Histórico", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
@@ -277,9 +278,10 @@ export default function PlatformWeeklyInsightsConfigScreen() {
         {tab === "signals" && <SignalsTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
         {tab === "test" && <TestTab />}
-        {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
+        {tab === "ai_edit" && <AiEditTab config={config} setConfig={setConfig} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
-        {(tab !== "test" && tab !== "history") && (
+        {(tab !== "test" && tab !== "history" && tab !== "ai_edit") && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: Ajustada janela para 7 dias e reduzido máximo de ações para 3." />
@@ -644,25 +646,239 @@ function ReportPreview({ report }: { report: any }) {
     </div>
   );
 }
-function HistoryPlaceholder({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
-  const rows = useMemo(() => versions, [versions]);
-  if (rows.length === 0) return <Card><p className="text-sm text-slate-500">Sem versões publicadas ainda.</p></Card>;
+const REQUIRED_DIMS_WI: string[] = []; // reservado para expansões futuras
+
+function enforceRequiredBlocks(cfg: WiConfig): WiConfig {
+  const blocks = [...(cfg.output_structure ?? [])];
+  for (const key of REQUIRED_BLOCKS) {
+    const b = blocks.find((x) => x.key === key);
+    if (b) { b.active = true; b.required = true; }
+  }
+  return { ...cfg, output_structure: blocks };
+}
+
+function enforceRequiredToggles(cfg: WiConfig): WiConfig {
+  const t = { ...cfg.tone_config };
+  t.include_confidence = true;
+  t.include_limitations = true;
+  t.period = { ...t.period, use_org_timezone: true, require_comparable_samples: true };
+  t.signals = { ...t.signals, require_evidence: true };
+  return { ...cfg, tone_config: t };
+}
+
+function AiEditTab({ config, setConfig }: { config: WiConfig; setConfig: React.Dispatch<React.SetStateAction<WiConfig | null>> }) {
+  const [instruction, setInstruction] = useState("");
+  const [running, setRunning] = useState(false);
+  const [suggestion, setSuggestion] = useState<{ summary: string; warnings: string[]; changes: any; metrics?: any } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!instruction.trim()) { toast.error("Descreva o que ajustar."); return; }
+    setRunning(true); setError(null); setSuggestion(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-prompt-suggest", {
+        body: {
+          prompt_key: "weekly_insights",
+          instruction,
+          current_config: {
+            system_instructions: config.system_instructions,
+            tone_config: config.tone_config,
+            output_structure: config.output_structure,
+            model_config: config.model_config,
+          },
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setSuggestion(data as any);
+    } catch (e: any) {
+      const msg = e?.message ?? "Falha na sugestão";
+      setError(msg);
+      if (/rate_limited/i.test(msg)) toast.error("Muitas solicitações. Aguarde alguns instantes.");
+      else if (/credits_exhausted/i.test(msg)) toast.error("Créditos de IA esgotados.");
+      else if (/forbidden/i.test(msg)) toast.error("Apenas Super Admin pode usar edição por IA.");
+      else toast.error("Falha: " + msg);
+    } finally { setRunning(false); }
+  }
+
+  function apply() {
+    if (!suggestion?.changes) return;
+    const c = suggestion.changes;
+    let next: WiConfig = { ...config };
+    if (typeof c.system_instructions === "string") next.system_instructions = c.system_instructions;
+    if (c.tone_config && typeof c.tone_config === "object") {
+      next.tone_config = {
+        ...next.tone_config, ...c.tone_config,
+        period: { ...next.tone_config.period, ...(c.tone_config.period ?? {}) },
+        signals: { ...next.tone_config.signals, ...(c.tone_config.signals ?? {}) },
+      };
+    }
+    if (Array.isArray(c.output_structure)) next.output_structure = c.output_structure;
+    if (c.model_config && typeof c.model_config === "object") next.model_config = { ...next.model_config, ...c.model_config };
+    next = enforceRequiredToggles(enforceRequiredBlocks(next));
+    setConfig(() => next);
+    setSuggestion(null); setInstruction("");
+    toast.success("Alterações aplicadas ao rascunho. Salve para persistir.");
+  }
+
+  const preview = suggestion?.changes ?? null;
   return (
-    <Card>
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Histórico de versões</h3>
-      <ul className="divide-y divide-slate-100">
-        {rows.map((v) => (
-          <li key={v.id} className="py-3 flex items-center justify-between gap-3">
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+          <Wand2 className="w-4 h-4 text-[#F88A2B]" /> Editar por IA
+        </h3>
+        <Label>Descreva o ajuste em linguagem natural</Label>
+        <Textarea rows={5} value={instruction} onChange={(e) => setInstruction(e.target.value)}
+          placeholder="Ex.: Torne o tom mais executivo, reduza para no máximo 3 ações prioritárias e enfatize adesão a rituais." />
+        <div className="mt-3 flex items-center gap-3">
+          <button onClick={submit} disabled={running}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+            <Sparkles className="w-4 h-4" /> {running ? "Gerando…" : "Gerar sugestão"}
+          </button>
+          <p className="text-xs text-slate-500">Guardrails obrigatórios são reforçados automaticamente antes da aplicação.</p>
+        </div>
+      </Card>
+
+      {error && (
+        <Card className="border-red-200 bg-red-50/40">
+          <p className="text-sm text-red-700 font-semibold">Falha</p>
+          <p className="text-xs text-red-600 mt-1 break-words">{error}</p>
+        </Card>
+      )}
+
+      {suggestion && (
+        <Card>
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <p className="text-sm font-semibold text-slate-800">v{v.version} {v.version === currentVersion && <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Atual</span>}</p>
-              <p className="text-xs text-slate-500">{new Date(v.created_at).toLocaleString("pt-BR")}</p>
-              {v.change_note && <p className="text-xs text-slate-600 mt-1">{v.change_note}</p>}
+              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-700">Sugestão da IA</h4>
+              {suggestion.summary && <p className="text-sm text-slate-700 mt-1">{suggestion.summary}</p>}
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase tracking-wide">snapshot</span>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-3 text-xs text-slate-500">Comparação A × B e restauro chegam na Sub-fase C.</p>
-    </Card>
+            <button onClick={apply}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shrink-0">
+              <Check className="w-4 h-4" /> Aplicar no rascunho
+            </button>
+          </div>
+          {suggestion.warnings?.length ? (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-1">Avisos</p>
+              <ul className="text-xs text-amber-800 space-y-0.5 list-disc pl-4">
+                {suggestion.warnings.map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            </div>
+          ) : null}
+          <DiffView
+            before={{
+              system_instructions: config.system_instructions,
+              tone_config: config.tone_config,
+              output_structure: config.output_structure,
+              model_config: config.model_config,
+            }}
+            after={preview}
+          />
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function DiffView({ before, after }: { before: any; after: any }) {
+  const keys = Object.keys(after ?? {});
+  if (keys.length === 0) return <p className="text-sm text-slate-500">Sem mudanças propostas.</p>;
+  return (
+    <div className="space-y-4">
+      {keys.map((k) => (
+        <div key={k} className="grid md:grid-cols-2 gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">{k} · atual</p>
+            <pre className="text-[11px] bg-slate-50 border border-slate-200 rounded-lg p-3 max-h-72 overflow-auto whitespace-pre-wrap">{JSON.stringify((before as any)?.[k] ?? null, null, 2)}</pre>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-emerald-600 font-semibold mb-1">{k} · proposto</p>
+            <pre className="text-[11px] bg-emerald-50 border border-emerald-200 rounded-lg p-3 max-h-72 overflow-auto whitespace-pre-wrap">{JSON.stringify((after as any)?.[k] ?? null, null, 2)}</pre>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HistoryTab({ versions, currentVersion, setConfig }: { versions: VersionRow[]; currentVersion: number; setConfig: React.Dispatch<React.SetStateAction<WiConfig | null>> }) {
+  const rows = useMemo(() => versions, [versions]);
+  const [selA, setSelA] = useState<string>("");
+  const [selB, setSelB] = useState<string>("");
+
+  if (rows.length === 0) return <Card><p className="text-sm text-slate-500">Sem versões publicadas ainda.</p></Card>;
+
+  const vA = rows.find((r) => r.id === selA);
+  const vB = rows.find((r) => r.id === selB);
+
+  function restore(v: VersionRow) {
+    const snap = v.snapshot;
+    if (!snap) { toast.error("Snapshot indisponível."); return; }
+    const rebuilt: WiConfig = {
+      ...(snap as any),
+      id: (snap as any).id,
+      version: currentVersion, // não muda a versão publicada — apenas carrega no rascunho
+      status: "draft",
+    };
+    const safe = enforceRequiredToggles(enforceRequiredBlocks(rebuilt));
+    setConfig(() => safe);
+    toast.success(`v${v.version} carregada no rascunho. Salve ou publique para persistir.`);
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Histórico de versões</h3>
+        <ul className="divide-y divide-slate-100">
+          {rows.map((v) => (
+            <li key={v.id} className="py-3 flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-slate-800">
+                  v{v.version}
+                  {v.version === currentVersion && <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Atual</span>}
+                </p>
+                <p className="text-xs text-slate-500">{new Date(v.created_at).toLocaleString("pt-BR")}</p>
+                {v.change_note && <p className="text-xs text-slate-600 mt-1">{v.change_note}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => setSelA(v.id)}
+                  className={`text-[10px] px-2 py-1 rounded font-semibold uppercase tracking-wide ${selA === v.id ? "bg-[#F88A2B] text-black" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>A</button>
+                <button onClick={() => setSelB(v.id)}
+                  className={`text-[10px] px-2 py-1 rounded font-semibold uppercase tracking-wide ${selB === v.id ? "bg-[#F88A2B] text-black" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>B</button>
+                <button onClick={() => restore(v)}
+                  className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded bg-slate-800 text-white font-semibold uppercase tracking-wide hover:bg-slate-900">
+                  <RotateCcw className="w-3 h-3" /> Restaurar
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-slate-500">Restaurar carrega o snapshot no rascunho — não publica automaticamente. Guardrails são reforçados.</p>
+      </Card>
+
+      {vA && vB && vA.id !== vB.id && (
+        <Card>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+            <GitCompare className="w-4 h-4 text-[#F88A2B]" /> Comparação v{vA.version} × v{vB.version}
+          </h3>
+          <DiffView
+            before={{
+              system_instructions: (vA.snapshot as any)?.system_instructions,
+              tone_config: (vA.snapshot as any)?.tone_config,
+              output_structure: (vA.snapshot as any)?.output_structure,
+              model_config: (vA.snapshot as any)?.model_config,
+            }}
+            after={{
+              system_instructions: (vB.snapshot as any)?.system_instructions,
+              tone_config: (vB.snapshot as any)?.tone_config,
+              output_structure: (vB.snapshot as any)?.output_structure,
+              model_config: (vB.snapshot as any)?.model_config,
+            }}
+          />
+        </Card>
+      )}
+    </div>
   );
 }

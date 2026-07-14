@@ -71,6 +71,23 @@ Retorne SOMENTE JSON válido no formato:
 
 Inclua em "changes" apenas as chaves que devem mudar. Quando enviar arrays (output_structure, dimensions_config, classifications_config), devolva a lista COMPLETA ordenada que deve substituir a atual, preservando itens obrigatórios ativos.`;
 
+const WEEKLY_SYSTEM_PROMPT = `Você é um assistente de configuração dos Insights Semanais IA™ (relatório semanal executivo).
+Recebe a configuração atual do rascunho e uma instrução em linguagem natural do Super Admin.
+Proponha alterações mínimas sem violar as regras de segurança obrigatórias.
+
+REGRAS INVIOLÁVEIS (jamais remova, contorne ou reduza):
+- Sempre usar exclusivamente dados agregados e respeitar k-anonimato.
+- Nunca identificar indivíduos, times minoritários ou denunciantes.
+- Nunca realizar diagnóstico clínico ou usar linguagem médica.
+- Nunca inventar números, participantes, tendências ou eventos.
+- Sempre manter blocos obrigatórios ativos: title, executive_summary, key_changes, confidence, limitations.
+- Sempre manter include_confidence e include_limitations como true.
+- Sempre manter use_org_timezone e require_comparable_samples como true.
+- Sempre exigir evidência para sinais (require_evidence = true).
+- Nunca alterar a janela mínima para menos de 7 dias e nunca aceitar amostras não comparáveis.
+
+Retorne SOMENTE JSON válido em "summary", "warnings" e "changes" com apenas as chaves que devem mudar (system_instructions, tone_config, output_structure, model_config). Quando enviar arrays, devolva a lista COMPLETA ordenada.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -111,9 +128,12 @@ Deno.serve(async (req) => {
     if (!instruction) return json({ error: "missing_instruction" }, 400);
     if (!currentConfig || typeof currentConfig !== "object")
       return json({ error: "missing_current_config" }, 400);
-    if (promptKey !== "executive_council" && promptKey !== "organizational_dna")
+    if (promptKey !== "executive_council" && promptKey !== "organizational_dna" && promptKey !== "weekly_insights")
       return json({ error: "invalid_prompt_key" }, 400);
-    const SYSTEM_PROMPT = promptKey === "organizational_dna" ? DNA_SYSTEM_PROMPT : EXEC_SYSTEM_PROMPT;
+    const SYSTEM_PROMPT =
+      promptKey === "organizational_dna" ? DNA_SYSTEM_PROMPT :
+      promptKey === "weekly_insights" ? WEEKLY_SYSTEM_PROMPT :
+      EXEC_SYSTEM_PROMPT;
 
     const userMessage = [
       "CONFIGURAÇÃO ATUAL DO RASCUNHO (JSON):",
@@ -159,16 +179,29 @@ Deno.serve(async (req) => {
 
     // Sanitização defensiva: força obrigatórios true e mantém blocos obrigatórios.
     const changes = parsed.changes || {};
-    const REQUIRED_BLOCKS = promptKey === "organizational_dna"
-      ? ["executive_summary", "dimensions", "confidence", "limitations"]
-      : ["evidence", "confidence", "limitations"];
+    const REQUIRED_BLOCKS =
+      promptKey === "organizational_dna" ? ["executive_summary", "dimensions", "confidence", "limitations"] :
+      promptKey === "weekly_insights" ? ["title", "executive_summary", "key_changes", "confidence", "limitations"] :
+      ["evidence", "confidence", "limitations"];
     const REQUIRED_DIMS = promptKey === "organizational_dna"
       ? ["leadership", "communication", "engagement", "energy", "recovery", "psychological_safety"]
       : [];
     if (changes.tone_config && typeof changes.tone_config === "object") {
-      changes.tone_config.include_evidence = true;
-      changes.tone_config.include_confidence = true;
-      changes.tone_config.include_limitations = true;
+      if (promptKey === "weekly_insights") {
+        changes.tone_config.include_confidence = true;
+        changes.tone_config.include_limitations = true;
+        if (changes.tone_config.period && typeof changes.tone_config.period === "object") {
+          changes.tone_config.period.use_org_timezone = true;
+          changes.tone_config.period.require_comparable_samples = true;
+        }
+        if (changes.tone_config.signals && typeof changes.tone_config.signals === "object") {
+          changes.tone_config.signals.require_evidence = true;
+        }
+      } else {
+        changes.tone_config.include_evidence = true;
+        changes.tone_config.include_confidence = true;
+        changes.tone_config.include_limitations = true;
+      }
     }
     if (Array.isArray(changes.output_structure)) {
       const keys = new Set(changes.output_structure.map((b: any) => b?.key));
