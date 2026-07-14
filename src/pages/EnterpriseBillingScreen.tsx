@@ -306,8 +306,8 @@ const EnterpriseBillingScreen = () => {
             <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Histórico de faturas</h3>
             <div className="bg-white rounded-[2.5rem] p-4 border border-zinc-100 shadow-sm space-y-2">
               {invoices.map((invoice, idx) => (
-                <div key={idx} className="p-5 rounded-2xl flex items-center justify-between hover:bg-zinc-50 transition-colors group">
-                  <div className="flex items-center gap-4">
+                <div key={idx} className="p-5 rounded-2xl flex items-center justify-between gap-3 flex-wrap hover:bg-zinc-50 transition-colors group">
+                  <div className="flex items-center gap-4 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-[#F7F4F2] flex items-center justify-center text-zinc-400 group-hover:text-[#0B0908] transition-colors">
                       <Receipt className="w-5 h-5" />
                     </div>
@@ -316,7 +316,7 @@ const EnterpriseBillingScreen = () => {
                       <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-widest">{invoice.plan}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
                     <span className="px-3 py-1 rounded-full bg-emerald-50 text-[9px] font-bold text-emerald-600 uppercase tracking-widest border border-emerald-100">
                       {invoice.status}
                     </span>
