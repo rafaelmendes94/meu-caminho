@@ -5,7 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, CalendarClock,
   MessageSquare, ListChecks, CalendarRange, Target, Cpu, FlaskConical, History,
-  Building2, Play, Coins, Timer, Hash, Sparkles,
+  Building2, Play, Coins, Timer, Hash, Sparkles, Wand2, GitCompare, RotateCcw, Check,
 } from "lucide-react";
 
 type Period = {
@@ -62,6 +62,7 @@ const TABS = [
   { id: "signals", label: "Sinais e Prioridades", icon: Target },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
   { id: "test", label: "Testar Geração", icon: FlaskConical },
+  { id: "ai_edit", label: "Editar por IA", icon: Wand2 },
   { id: "history", label: "Histórico", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
@@ -277,9 +278,10 @@ export default function PlatformWeeklyInsightsConfigScreen() {
         {tab === "signals" && <SignalsTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
         {tab === "test" && <TestTab />}
-        {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
+        {tab === "ai_edit" && <AiEditTab config={config} setConfig={setConfig} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
-        {(tab !== "test" && tab !== "history") && (
+        {(tab !== "test" && tab !== "history" && tab !== "ai_edit") && (
           <Card>
             <Label>Nota da alteração (opcional)</Label>
             <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: Ajustada janela para 7 dias e reduzido máximo de ações para 3." />
