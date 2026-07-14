@@ -175,7 +175,7 @@ export default function EnterpriseOrgChartScreen() {
     <EnterpriseRHLayout title="Organograma Vivo™">
       <div className="space-y-8 animate-fade-in">
         <section className="rounded-[32px] bg-white border border-black/5 p-8 md:p-10 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <span className="px-3 py-1 rounded-full bg-[#F88A2B]/10 text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] border border-[#F88A2B]/20">
                 Organograma Vivo™
