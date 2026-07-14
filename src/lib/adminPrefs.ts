@@ -1,5 +1,6 @@
 // Preferências locais do Super Admin: favoritos e recentes.
 // Armazenamento client-side (sem alterações no banco).
+import { useEffect, useState } from "react";
 
 const FAV_KEY = "admin:favorites:v1";
 const RECENT_KEY = "admin:recents:v1";
@@ -53,9 +54,6 @@ export function clearRecents() {
 }
 
 export function useAdminPrefsVersion() {
-  // Simple version bump hook to react to changes
-  // Kept minimal to avoid extra deps
-  const { useEffect, useState } = require("react");
   const [v, setV] = useState(0);
   useEffect(() => {
     const h = () => setV((x: number) => x + 1);
