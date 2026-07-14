@@ -99,6 +99,7 @@ const EnterpriseReportScreen = lazy(() => import("./components/EnterpriseReportS
 const EnterpriseRHAccessScreen = lazy(() => import("./components/EnterpriseRHAccessScreen.tsx"));
 const EnterpriseTeamManagementScreen = lazy(() => import("./components/EnterpriseTeamManagementScreen.tsx"));
 const EnterpriseCompanySettingsScreen = lazy(() => import("./components/EnterpriseCompanySettingsScreen.tsx"));
+const EnterpriseSettingsScreen = lazy(() => import("./pages/EnterpriseSettingsScreen.tsx"));
 const EnterpriseDepartmentDetailScreen = lazy(() => import("./components/EnterpriseDepartmentDetailScreen.tsx"));
 const EnterpriseActionPlanScreen = lazy(() => import("./components/EnterpriseActionPlanScreen.tsx"));
 const EnterpriseAdminIntegrationScreen = lazy(() => import("./components/EnterpriseAdminIntegrationScreen.tsx"));
@@ -404,7 +405,8 @@ const App = () => (
           <Route path="/enterprise/rh/dna-organizacional" element={<RH><EnterpriseOrganizationalDNAScreen /></RH>} />
           <Route path="/enterprise/rh/insights-semanais" element={<RH><EnterpriseWeeklyInsightsScreen /></RH>} />
           <Route path="/enterprise/rh/conselho-executivo" element={<RH><EnterpriseExecutiveCouncilScreen /></RH>} />
-          <Route path="/enterprise/rh/configuracoes" element={<RH><EnterpriseCompanySettingsScreen /></RH>} />
+          <Route path="/enterprise/rh/configuracoes" element={<RH><EnterpriseSettingsScreen /></RH>} />
+          <Route path="/enterprise/rh/configuracoes/legado" element={<RH><EnterpriseCompanySettingsScreen /></RH>} />
           <Route path="/enterprise/rh/dominio" element={<RH><EnterpriseDomainAccessScreen /></RH>} />
           <Route path="/enterprise/rh/departamento/:id" element={<RH><EnterpriseDepartmentDetailScreen /></RH>} />
           <Route path="/enterprise/rh/plano-acao" element={<RH><EnterpriseActionPlanScreen /></RH>} />
