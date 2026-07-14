@@ -186,6 +186,24 @@ export default function PlatformOrganizationalDNAConfigScreen() {
     return { ...config!.tone_config, recommendations: recCfg };
   }
 
+  function restoreFromSnapshot(snap: any) {
+    if (!snap || typeof snap !== "object") { toast.error("Snapshot inválido"); return; }
+    // Aplica apenas ao estado local (rascunho), sem publicar.
+    setConfig((c) => c ? {
+      ...c,
+      system_instructions: String(snap.system_instructions ?? c.system_instructions),
+      tone_config: { ...(c.tone_config), ...(snap.tone_config ?? {}),
+        include_evidence: true, include_confidence: true, include_limitations: true },
+      output_structure: enforceRequiredBlocks(Array.isArray(snap.output_structure) ? snap.output_structure : c.output_structure, c.output_structure),
+      dimensions_config: enforceRequiredDims(Array.isArray(snap.dimensions_config) ? snap.dimensions_config : c.dimensions_config, c.dimensions_config),
+      classifications_config: Array.isArray(snap.classifications_config) ? snap.classifications_config : c.classifications_config,
+      model_config: { ...c.model_config, ...(snap.model_config ?? {}) },
+    } : c);
+    const rec = snap?.tone_config?.recommendations;
+    if (rec && typeof rec === "object") setRecCfg((r) => ({ ...r, ...rec }));
+    toast.success("Snapshot carregado no rascunho (não publicado)");
+  }
+
   async function saveDraft() {
     if (!config) return;
     const err = validate(); if (err) { toast.error(err); return; }
