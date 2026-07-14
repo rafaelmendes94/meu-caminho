@@ -792,9 +792,7 @@ function ReportPreview({ report }: { report: any }) {
   );
 }
 
-function HistoryTab({ versions, currentVersion }: { versions: VersionRow[]; currentVersion: number }) {
-// Substituído mais abaixo por versão com compare + restore.
-function _HistoryTabLegacy(_: unknown) { return null; }
+// HistoryTab foi movido para o final do arquivo com compare A × B + restore.
 
 // --- Helpers de reforço de obrigatoriedade (usados por restore e Editar por IA) ---
 function enforceRequiredBlocks(next: StructureBlock[], fallback: StructureBlock[]): StructureBlock[] {
