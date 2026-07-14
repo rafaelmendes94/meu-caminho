@@ -1040,6 +1040,171 @@ export type Database = {
           },
         ]
       }
+      backup_jobs: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          created_by: string | null
+          destination: string | null
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          job_type: Database["public"]["Enums"]["backup_job_type"]
+          metadata: Json
+          schedule_id: string | null
+          size_bytes: number | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["backup_status"]
+          updated_at: string
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_type: Database["public"]["Enums"]["backup_job_type"]
+          metadata?: Json
+          schedule_id?: string | null
+          size_bytes?: number | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["backup_status"]
+          updated_at?: string
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_type?: Database["public"]["Enums"]["backup_job_type"]
+          metadata?: Json
+          schedule_id?: string | null
+          size_bytes?: number | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["backup_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      backup_logs: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          level: string
+          message: string | null
+          metadata: Json
+          ref_id: string | null
+          ref_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          level?: string
+          message?: string | null
+          metadata?: Json
+          ref_id?: string | null
+          ref_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          level?: string
+          message?: string | null
+          metadata?: Json
+          ref_id?: string | null
+          ref_type?: string | null
+        }
+        Relationships: []
+      }
+      backup_policies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      backup_schedules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          destination: string | null
+          enabled: boolean
+          frequency: Database["public"]["Enums"]["backup_frequency"]
+          id: string
+          last_run_at: string | null
+          metadata: Json
+          name: string
+          next_run_at: string | null
+          retention_days: number
+          scope: Database["public"]["Enums"]["backup_job_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          destination?: string | null
+          enabled?: boolean
+          frequency?: Database["public"]["Enums"]["backup_frequency"]
+          id?: string
+          last_run_at?: string | null
+          metadata?: Json
+          name: string
+          next_run_at?: string | null
+          retention_days?: number
+          scope?: Database["public"]["Enums"]["backup_job_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          destination?: string | null
+          enabled?: boolean
+          frequency?: Database["public"]["Enums"]["backup_frequency"]
+          id?: string
+          last_run_at?: string | null
+          metadata?: Json
+          name?: string
+          next_run_at?: string | null
+          retention_days?: number
+          scope?: Database["public"]["Enums"]["backup_job_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consent_events: {
         Row: {
           action: string
@@ -2008,6 +2173,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      health_checks: {
+        Row: {
+          checked_at: string
+          component: string
+          id: string
+          latency_ms: number | null
+          message: string | null
+          metadata: Json
+          status: Database["public"]["Enums"]["health_status"]
+        }
+        Insert: {
+          checked_at?: string
+          component: string
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          metadata?: Json
+          status?: Database["public"]["Enums"]["health_status"]
+        }
+        Update: {
+          checked_at?: string
+          component?: string
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          metadata?: Json
+          status?: Database["public"]["Enums"]["health_status"]
+        }
+        Relationships: []
       }
       impact_measurements: {
         Row: {
@@ -3970,6 +4165,65 @@ export type Database = {
           },
         ]
       }
+      restore_jobs: {
+        Row: {
+          affected_items: Json
+          backup_id: string | null
+          created_at: string
+          dry_run: boolean
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          reason: string | null
+          requested_by: string | null
+          result: Json
+          started_at: string | null
+          status: Database["public"]["Enums"]["backup_status"]
+          updated_at: string
+        }
+        Insert: {
+          affected_items?: Json
+          backup_id?: string | null
+          created_at?: string
+          dry_run?: boolean
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_by?: string | null
+          result?: Json
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["backup_status"]
+          updated_at?: string
+        }
+        Update: {
+          affected_items?: Json
+          backup_id?: string | null
+          created_at?: string
+          dry_run?: boolean
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_by?: string | null
+          result?: Json
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["backup_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restore_jobs_backup_id_fkey"
+            columns: ["backup_id"]
+            isOneToOne: false
+            referencedRelation: "backup_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ritual_participations: {
         Row: {
           completed_at: string | null
@@ -4605,6 +4859,16 @@ export type Database = {
         | "employee"
         | "b2c_user"
         | "platform_admin"
+      backup_frequency: "manual" | "hourly" | "daily" | "weekly" | "monthly"
+      backup_job_type:
+        | "database"
+        | "storage"
+        | "content"
+        | "settings"
+        | "ai"
+        | "knowledge"
+        | "full"
+      backup_status: "pending" | "running" | "success" | "failed" | "canceled"
       content_status: "draft" | "published" | "archived"
       content_type:
         | "book"
@@ -4614,6 +4878,7 @@ export type Database = {
         | "video"
         | "audio"
         | "material"
+      health_status: "healthy" | "warning" | "critical" | "unknown"
       lesson_type: "video" | "text" | "pdf" | "audio" | "exercise"
       subscription_status:
         | "trialing"
@@ -4757,6 +5022,17 @@ export const Constants = {
         "b2c_user",
         "platform_admin",
       ],
+      backup_frequency: ["manual", "hourly", "daily", "weekly", "monthly"],
+      backup_job_type: [
+        "database",
+        "storage",
+        "content",
+        "settings",
+        "ai",
+        "knowledge",
+        "full",
+      ],
+      backup_status: ["pending", "running", "success", "failed", "canceled"],
       content_status: ["draft", "published", "archived"],
       content_type: [
         "book",
@@ -4767,6 +5043,7 @@ export const Constants = {
         "audio",
         "material",
       ],
+      health_status: ["healthy", "warning", "critical", "unknown"],
       lesson_type: ["video", "text", "pdf", "audio", "exercise"],
       subscription_status: [
         "trialing",

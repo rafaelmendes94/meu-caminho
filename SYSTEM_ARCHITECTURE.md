@@ -82,3 +82,7 @@ Todas as IAs generativas (`executive-ai`, `generate-organizational-dna`, `genera
 ## Enterprise Settings
 
 Rota `/enterprise/rh/configuracoes` (Sub-fases A/B/C — Fase 18). 11 abas persistindo em `organizations`, `organization_settings` e bucket `org-branding`. Detalhes em `ENTERPRISE_SETTINGS.md`.
+
+## Backup & Disaster Recovery
+
+Rota `/admin/system/backup` (platform_admin). Tabelas: `backup_jobs`, `backup_schedules`, `restore_jobs`, `health_checks`, `backup_logs`, `backup_policies`. Ver [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md). Integrações externas (Supabase Backups, S3, GCS, Azure Blob) preparadas na arquitetura, ainda não conectadas.
