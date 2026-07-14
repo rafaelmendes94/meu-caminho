@@ -61,6 +61,19 @@ const isValidCnpj = (v: string) => {
   return calc(12) === Number(s[12]) && calc(13) === Number(s[13]);
 };
 
+// ---------- máscaras de input ----------
+const maskCnpj = (v: string) => v.replace(/\D/g, "").slice(0, 14)
+  .replace(/^(\d{2})(\d)/, "$1.$2")
+  .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+  .replace(/\.(\d{3})(\d)/, ".$1/$2")
+  .replace(/(\d{4})(\d)/, "$1-$2");
+const maskCep = (v: string) => v.replace(/\D/g, "").slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2");
+const maskPhone = (v: string) => {
+  const s = v.replace(/\D/g, "").slice(0, 11);
+  if (s.length <= 10) return s.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+  return s.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+};
+
 const ComingSoon = ({ label }: { label: string }) => (
   <Card>
     <CardContent className="py-16 flex flex-col items-center justify-center text-center gap-3">
