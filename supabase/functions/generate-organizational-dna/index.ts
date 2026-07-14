@@ -196,6 +196,13 @@ Deno.serve(async (req) => {
     const maxTokens = Number(cfg?.model_config?.max_tokens ?? 6000);
     const systemPrompt = cfg ? buildSystemPrompt(cfg) : FALLBACK_SYSTEM_PROMPT;
 
+    const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
+    const rag = await fetchKnowledgeContext({
+      query: `DNA organizacional cultura liderança engajamento clima ${orgId}`,
+      organizationId: orgId,
+      aiModule: "generate-organizational-dna",
+    });
+
     const started = Date.now();
     async function callModel(model: string) {
       return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -210,6 +217,7 @@ Deno.serve(async (req) => {
           max_tokens: maxTokens,
           messages: [
             { role: "system", content: systemPrompt },
+            ...(rag.contextBlock ? [{ role: "user" as const, content: rag.contextBlock }] : []),
             {
               role: "user",
               content:
