@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { enforceRateLimit } from "../_shared/rate_limit.ts";
+import { fetchKnowledgeContext } from "../_shared/knowledge_rag.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -208,6 +209,14 @@ Deno.serve(async (req) => {
         },
         { role: "user", content: question },
       ];
+      const ragTest = await fetchKnowledgeContext({
+        query: question,
+        organizationId: testOrgId,
+        aiModule: "executive-ai:test",
+      });
+      if (ragTest.contextBlock) {
+        messages.splice(messages.length - 1, 0, { role: "user", content: ragTest.contextBlock });
+      }
 
       const startedAt = Date.now();
       const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -334,6 +343,14 @@ Deno.serve(async (req) => {
       ...((history ?? []).map((m) => ({ role: m.role, content: m.content }))),
       { role: "user", content: question },
     ];
+    const rag = await fetchKnowledgeContext({
+      query: question,
+      organizationId: orgId,
+      aiModule: "executive-ai",
+    });
+    if (rag.contextBlock) {
+      messages.splice(messages.length - 1, 0, { role: "user", content: rag.contextBlock });
+    }
 
     // Persist user message
     await admin.from("executive_ai_messages").insert({
