@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ShieldCheck, Wand2, Sparkles,
   Sliders, Layers, ListChecks, GaugeCircle, Cpu,
+  FlaskConical, History, GitCompare, RotateCcw,
 } from "lucide-react";
 
 // ---------- Types ----------
@@ -44,6 +45,7 @@ type Cfg = {
   version: number; status: "draft" | "published" | "archived";
   published_at: string | null; updated_at: string;
 };
+type VersionRow = { id: string; version: number; change_note: string | null; created_at: string; snapshot?: any };
 
 // ---------- Constants ----------
 const DIMENSIONS: { key: string; label: string }[] = [
@@ -94,6 +96,9 @@ const TABS = [
   { id: "formats", label: "Formatos", icon: ListChecks },
   { id: "ranking", label: "Ranking", icon: GaugeCircle },
   { id: "model", label: "Modelo", icon: Cpu },
+  { id: "test", label: "Testar Ranking", icon: FlaskConical },
+  { id: "edit_ai", label: "Editar por IA", icon: Sparkles },
+  { id: "history", label: "Histórico", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -156,6 +161,7 @@ export default function PlatformRecommendationEngineConfigScreen() {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [config, setConfig] = useState<Cfg | null>(null);
+  const [versions, setVersions] = useState<VersionRow[]>([]);
   const [tab, setTab] = useState<TabId>("engine");
   const [changeNote, setChangeNote] = useState("");
 
@@ -164,6 +170,10 @@ export default function PlatformRecommendationEngineConfigScreen() {
     const { data, error } = await supabase.from("ai_prompt_configs").select("*").eq("key", "recommendation_engine").maybeSingle();
     if (error || !data) { toast.error("Falha ao carregar Motor de Recomendação"); setLoading(false); return; }
     setConfig(data as unknown as Cfg);
+    const { data: v } = await supabase.from("ai_prompt_versions")
+      .select("id, version, change_note, created_at, snapshot")
+      .eq("prompt_config_id", (data as any).id).order("version", { ascending: false }).limit(50);
+    setVersions((v ?? []) as VersionRow[]);
     setLoading(false);
   }
   useEffect(() => { void load(); }, []);
@@ -291,12 +301,17 @@ export default function PlatformRecommendationEngineConfigScreen() {
         {tab === "formats" && <FormatsTab config={config} setConfig={setConfig} />}
         {tab === "ranking" && <RankingTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
+        {tab === "test" && <TestTab />}
+        {tab === "edit_ai" && <EditByAITab config={config} setConfig={setConfig} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
+        {(tab !== "test" && tab !== "history" && tab !== "edit_ai") && (
         <Card>
           <Label>Nota da alteração (opcional)</Label>
           <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: mais peso em liderança e diversidade máxima por formato = 4." />
           <p className="mt-2 text-xs text-slate-500">A nota é registrada junto ao snapshot ao publicar uma nova versão.</p>
         </Card>
+        )}
       </div>
     </PlatformAdminLayout>
   );
