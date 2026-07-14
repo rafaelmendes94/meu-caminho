@@ -94,3 +94,7 @@ Rota `/admin/system/performance` (platform_admin). Tabelas: `perf_snapshots`, `p
 ## QA Center
 
 Rota `/admin/system/qa` (platform_admin). Tabelas: `qa_suites`, `qa_test_cases`, `qa_executions`, `qa_bugs`, `qa_checklists`, `qa_checklist_runs`, `qa_evidence`, `qa_go_live_snapshots`. Ver [QA_CENTER.md](./QA_CENTER.md). Preparado para integração futura com Playwright/Cypress/Vitest/Jest/GitHub Actions.
+
+
+## Fase 26 — Enterprise Gamification
+Ver [ENTERPRISE_GAMIFICATION.md](./ENTERPRISE_GAMIFICATION.md). Tabelas: gam_xp_rules, gam_levels, gam_badges, gam_missions, gam_achievements, gam_seasons, gam_events, gam_user_xp, gam_user_badges, gam_user_missions, gam_user_streaks, gam_org_settings. Rota admin: /admin/gamification.
