@@ -296,7 +296,14 @@ Deno.serve(async (req) => {
 
     const cfg = await loadConfig(admin);
     const systemPrompt = buildSystemPrompt(cfg);
+    const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
+    const rag = await fetchKnowledgeContext({
+      query: `ritual inteligente ${ritualTypeReq ?? ""} ${extraPrompt ?? ""}`.slice(0, 500),
+      organizationId: orgId,
+      aiModule: "generate-intelligent-ritual",
+    });
     const userPrompt = [
+      rag.contextBlock || "",
       `Contexto organizacional agregado (k-anonimato aplicado):`,
       JSON.stringify(context, null, 2),
       ritualTypeReq ? `\nTipo de ritual desejado: ${ritualTypeReq}` : "",
