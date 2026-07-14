@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ShieldCheck, Wand2, Sparkles,
   Sliders, Layers, ListChecks, GaugeCircle, Cpu,
+  FlaskConical, History, GitCompare, RotateCcw,
 } from "lucide-react";
 
 // ---------- Types ----------
@@ -44,6 +45,7 @@ type Cfg = {
   version: number; status: "draft" | "published" | "archived";
   published_at: string | null; updated_at: string;
 };
+type VersionRow = { id: string; version: number; change_note: string | null; created_at: string; snapshot?: any };
 
 // ---------- Constants ----------
 const DIMENSIONS: { key: string; label: string }[] = [
@@ -94,6 +96,9 @@ const TABS = [
   { id: "formats", label: "Formatos", icon: ListChecks },
   { id: "ranking", label: "Ranking", icon: GaugeCircle },
   { id: "model", label: "Modelo", icon: Cpu },
+  { id: "test", label: "Testar Ranking", icon: FlaskConical },
+  { id: "edit_ai", label: "Editar por IA", icon: Sparkles },
+  { id: "history", label: "Histórico", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -156,6 +161,7 @@ export default function PlatformRecommendationEngineConfigScreen() {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [config, setConfig] = useState<Cfg | null>(null);
+  const [versions, setVersions] = useState<VersionRow[]>([]);
   const [tab, setTab] = useState<TabId>("engine");
   const [changeNote, setChangeNote] = useState("");
 
@@ -164,6 +170,10 @@ export default function PlatformRecommendationEngineConfigScreen() {
     const { data, error } = await supabase.from("ai_prompt_configs").select("*").eq("key", "recommendation_engine").maybeSingle();
     if (error || !data) { toast.error("Falha ao carregar Motor de Recomendação"); setLoading(false); return; }
     setConfig(data as unknown as Cfg);
+    const { data: v } = await supabase.from("ai_prompt_versions")
+      .select("id, version, change_note, created_at, snapshot")
+      .eq("prompt_config_id", (data as any).id).order("version", { ascending: false }).limit(50);
+    setVersions((v ?? []) as VersionRow[]);
     setLoading(false);
   }
   useEffect(() => { void load(); }, []);
@@ -291,12 +301,17 @@ export default function PlatformRecommendationEngineConfigScreen() {
         {tab === "formats" && <FormatsTab config={config} setConfig={setConfig} />}
         {tab === "ranking" && <RankingTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
+        {tab === "test" && <TestTab />}
+        {tab === "edit_ai" && <EditByAITab config={config} setConfig={setConfig} />}
+        {tab === "history" && <HistoryTab versions={versions} currentVersion={config.version} setConfig={setConfig} />}
 
+        {(tab !== "test" && tab !== "history" && tab !== "edit_ai") && (
         <Card>
           <Label>Nota da alteração (opcional)</Label>
           <Input value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Ex.: mais peso em liderança e diversidade máxima por formato = 4." />
           <p className="mt-2 text-xs text-slate-500">A nota é registrada junto ao snapshot ao publicar uma nova versão.</p>
         </Card>
+        )}
       </div>
     </PlatformAdminLayout>
   );
@@ -525,6 +540,363 @@ function ModelTab({ config, setConfig }: { config: Cfg; setConfig: React.Dispatc
           <Row label="Retentativas JSON"><NumberField value={m.json_retries} min={0} max={3} step={1} onChange={(v) => upd({ json_retries: v })} /></Row>
           <Row label="Streaming"><Toggle checked={m.streaming} onChange={(v) => upd({ streaming: v })} /></Row>
         </div>
+      </Card>
+    </div>
+  );
+}
+
+// ---------- Test / Edit by AI / History ----------
+const EDITABLE_KEYS = ["system_instructions", "tone_config", "output_structure", "model_config"] as const;
+type EditableKey = (typeof EDITABLE_KEYS)[number];
+
+function DiffPane({ title, data, tone }: { title: string; data: unknown; tone: "current" | "proposed" }) {
+  const cls = tone === "current"
+    ? "bg-slate-50 border-slate-200 text-slate-700"
+    : "bg-emerald-50 border-emerald-200 text-emerald-900";
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 mb-1">{title}</p>
+      <pre className={`text-[11px] rounded-lg border p-3 overflow-auto max-h-72 whitespace-pre-wrap ${cls}`}>{
+        typeof data === "string" ? data : JSON.stringify(data ?? null, null, 2)
+      }</pre>
+    </div>
+  );
+}
+
+type EmployeeOpt = { user_id: string; label: string };
+
+function TestTab() {
+  const [employees, setEmployees] = useState<EmployeeOpt[]>([]);
+  const [userId, setUserId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      const opts: EmployeeOpt[] = ((data ?? []) as any[]).map((p) => ({
+        user_id: p.id,
+        label: `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.email || p.id.slice(0, 8),
+      }));
+      setEmployees(opts);
+      if (opts.length && !userId) setUserId(opts[0].user_id);
+    })();
+  }, []); // eslint-disable-line
+
+  async function run() {
+    if (!userId) { toast.error("Selecione um colaborador."); return; }
+    setLoading(true); setResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("recommend-content", {
+        body: { user_id: userId, test_mode: true, refresh: true },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setResult(data);
+    } catch (e: any) {
+      toast.error(`Falha ao rankear: ${String(e?.message ?? e)}`);
+    } finally { setLoading(false); }
+  }
+
+  const recs: any[] = Array.isArray(result?.recommendations) ? result.recommendations : [];
+  return (
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-2">
+          <FlaskConical className="w-4 h-4 text-[#F88A2B]" /> Simular ranking para um colaborador
+        </h3>
+        <div className="grid md:grid-cols-3 gap-3 items-end">
+          <div className="md:col-span-2">
+            <Label>Colaborador</Label>
+            <select value={userId} onChange={(e) => setUserId(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+              {employees.map((e) => <option key={e.user_id} value={e.user_id}>{e.label}</option>)}
+            </select>
+          </div>
+          <button onClick={run} disabled={loading}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+            <FlaskConical className="w-4 h-4" /> {loading ? "Rankeando…" : "Rodar Top-20"}
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-slate-500">Executa o motor no modo teste sem persistir cache do colaborador. Apenas Super Admin.</p>
+      </Card>
+
+      {result && (
+        <>
+          <Card>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+              <span>cache: <b>{result?.metrics?.cache ?? "miss"}</b></span>
+              <span>·</span>
+              <span>{result?.metrics?.elapsed_ms ?? 0} ms</span>
+              <span>·</span>
+              <span>candidatos: {result?.metrics?.candidates ?? "—"}</span>
+              <span>·</span>
+              <span>retornados: {recs.length}</span>
+              <span>·</span>
+              <span>config v{result?.metrics?.config_version ?? "—"}</span>
+            </div>
+          </Card>
+          <Card>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">Top {recs.length}</h3>
+            {recs.length === 0 && <p className="text-sm text-slate-500">Nenhum item passou no score mínimo.</p>}
+            <ol className="space-y-2">
+              {recs.map((r, i) => (
+                <li key={r.item_id} className="border border-slate-200 rounded-lg p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-800">
+                        {i + 1}. {r.title ?? r.item_id}
+                        <span className="ml-2 text-[10px] uppercase tracking-wide text-slate-500">{r.type}</span>
+                      </p>
+                      {r.subtitle && <p className="text-xs text-slate-500 mt-0.5">{r.subtitle}</p>}
+                      {r.reason && <p className="text-xs text-slate-700 mt-1">💬 {r.reason}</p>}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-slate-800">{(Number(r.score) * 100).toFixed(0)}</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wide">score</p>
+                      {r.confidence != null && <p className="text-[10px] text-slate-400 mt-1">conf {(Number(r.confidence) * 100).toFixed(0)}%</p>}
+                    </div>
+                  </div>
+                  {r.factors && typeof r.factors === "object" && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {Object.entries(r.factors).map(([k, v]) => (
+                        <span key={k} className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                          {k}: {typeof v === "number" ? (v as number).toFixed(2) : String(v)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+function EditByAITab({ config, setConfig }: { config: Cfg; setConfig: React.Dispatch<React.SetStateAction<Cfg | null>> }) {
+  const [instruction, setInstruction] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [changes, setChanges] = useState<Partial<Record<EditableKey, unknown>> | null>(null);
+  const [metrics, setMetrics] = useState<any>(null);
+
+  async function suggest() {
+    if (!instruction.trim()) { toast.error("Descreva a alteração desejada."); return; }
+    setLoading(true); setChanges(null); setSummary(""); setWarnings([]); setMetrics(null);
+    try {
+      const current = {
+        system_instructions: config.system_instructions,
+        tone_config: config.tone_config,
+        output_structure: config.output_structure,
+        model_config: config.model_config,
+      };
+      const { data, error } = await supabase.functions.invoke("ai-prompt-suggest", {
+        body: { prompt_key: "recommendation_engine", instruction, current_config: current },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setSummary(String((data as any).summary ?? ""));
+      setWarnings(Array.isArray((data as any).warnings) ? (data as any).warnings : []);
+      setChanges(((data as any).changes ?? {}) as any);
+      setMetrics((data as any).metrics ?? null);
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      if (msg.includes("rate_limited")) toast.error("Limite temporário atingido.");
+      else if (msg.includes("credits_exhausted")) toast.error("Créditos de IA esgotados.");
+      else if (msg.includes("forbidden")) toast.error("Sem permissão.");
+      else toast.error(`Falha ao sugerir: ${msg}`);
+    } finally { setLoading(false); }
+  }
+
+  function applyChanges() {
+    if (!changes) return;
+    setConfig((c) => {
+      if (!c) return c;
+      const next: Cfg = { ...c };
+      if (typeof changes.system_instructions === "string") next.system_instructions = changes.system_instructions;
+      if (changes.tone_config && typeof changes.tone_config === "object")
+        next.tone_config = { ...c.tone_config, ...(changes.tone_config as Partial<ToneCfg>) };
+      if (Array.isArray(changes.output_structure)) next.output_structure = changes.output_structure as OutBlock[];
+      if (changes.model_config && typeof changes.model_config === "object")
+        next.model_config = { ...c.model_config, ...(changes.model_config as Partial<ModelCfg>) };
+      next.status = "draft";
+      return next;
+    });
+    toast.success("Alterações aplicadas ao rascunho. Revise e salve.");
+    setChanges(null);
+  }
+
+  const currentSnapshot = {
+    system_instructions: config.system_instructions,
+    tone_config: config.tone_config,
+    output_structure: config.output_structure,
+    model_config: config.model_config,
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#F88A2B]" /> Peça uma alteração em linguagem natural
+        </h3>
+        <Textarea rows={4} value={instruction} onChange={(e) => setInstruction(e.target.value)}
+          placeholder="Ex.: aumentar peso de liderança para 1.3, reduzir top-N para 12 e permitir no máximo 3 itens do mesmo formato." />
+        <div className="mt-3 flex items-center gap-3">
+          <button onClick={suggest} disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-semibold hover:brightness-105 disabled:opacity-50">
+            <Sparkles className="w-4 h-4" /> {loading ? "Analisando…" : "Sugerir mudanças"}
+          </button>
+          {metrics && <span className="text-xs text-slate-500">{metrics.model} · {metrics.elapsed_ms} ms · {metrics.tokens_in}/{metrics.tokens_out} tokens</span>}
+        </div>
+        <p className="mt-2 text-xs text-slate-500">A IA respeita regras invioláveis: k-anonimato, penalidades bloqueadas em 1.0 e limites do ranking.</p>
+      </Card>
+
+      {summary && (
+        <Card>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-2">Resumo da proposta</h3>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap">{summary}</p>
+          {warnings.length > 0 && (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">Avisos</p>
+              <ul className="text-xs text-amber-900 list-disc list-inside space-y-0.5">{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {changes && (
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+              <GitCompare className="w-4 h-4 text-[#F88A2B]" /> Diff (atual × proposto)
+            </h3>
+            <div className="flex gap-2">
+              <button onClick={() => setChanges(null)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">Descartar</button>
+              <button onClick={applyChanges} className="px-3 py-1.5 rounded-lg bg-[#F88A2B] text-black text-xs font-semibold hover:brightness-105">Aplicar ao rascunho</button>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {EDITABLE_KEYS.map((k) => {
+              if (!(k in (changes ?? {}))) return null;
+              return (
+                <div key={k}>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{k}</p>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <DiffPane title="Atual" data={(currentSnapshot as any)[k]} tone="current" />
+                    <DiffPane title="Proposto" data={(changes as any)[k]} tone="proposed" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">Aplicar não publica — apenas atualiza o rascunho. Publique depois pela ação no topo.</p>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function HistoryTab({ versions, currentVersion, setConfig }: { versions: VersionRow[]; currentVersion: number; setConfig: React.Dispatch<React.SetStateAction<Cfg | null>> }) {
+  const rows = useMemo(() => versions, [versions]);
+  const [aId, setAId] = useState<string>("");
+  const [bId, setBId] = useState<string>("");
+
+  useEffect(() => {
+    if (rows.length && !aId) setAId(rows[0]?.id ?? "");
+    if (rows.length > 1 && !bId) setBId(rows[1]?.id ?? "");
+  }, [rows, aId, bId]);
+
+  if (rows.length === 0) return <Card><p className="text-sm text-slate-500">Sem versões publicadas ainda.</p></Card>;
+
+  const a = rows.find((v) => v.id === aId);
+  const b = rows.find((v) => v.id === bId);
+
+  function restore(v: VersionRow) {
+    if (!v.snapshot) { toast.error("Snapshot indisponível."); return; }
+    if (!confirm(`Restaurar v${v.version} no rascunho? Isso substituirá as configurações atuais em edição.`)) return;
+    setConfig((c) => {
+      if (!c) return c;
+      const s = v.snapshot as any;
+      return {
+        ...c,
+        system_instructions: s.system_instructions ?? c.system_instructions,
+        tone_config: s.tone_config ?? c.tone_config,
+        output_structure: s.output_structure ?? c.output_structure,
+        model_config: s.model_config ?? c.model_config,
+        status: "draft",
+      };
+    });
+    toast.success(`v${v.version} carregada no rascunho. Revise e salve.`);
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">Histórico de versões</h3>
+        <ul className="divide-y divide-slate-100">
+          {rows.map((v) => (
+            <li key={v.id} className="py-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800">v{v.version}
+                  {v.version === currentVersion && <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Atual</span>}
+                </p>
+                <p className="text-xs text-slate-500">{new Date(v.created_at).toLocaleString("pt-BR")}</p>
+                {v.change_note && <p className="text-xs text-slate-600 mt-1">{v.change_note}</p>}
+              </div>
+              <button onClick={() => restore(v)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                <RotateCcw className="w-3.5 h-3.5" /> Restaurar no rascunho
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+          <GitCompare className="w-4 h-4 text-[#F88A2B]" /> Comparar A × B
+        </h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label>Versão A</Label>
+            <select value={aId} onChange={(e) => setAId(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+              {rows.map((v) => <option key={v.id} value={v.id}>v{v.version} — {new Date(v.created_at).toLocaleDateString("pt-BR")}</option>)}
+            </select>
+          </div>
+          <div>
+            <Label>Versão B</Label>
+            <select value={bId} onChange={(e) => setBId(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+              {rows.map((v) => <option key={v.id} value={v.id}>v{v.version} — {new Date(v.created_at).toLocaleDateString("pt-BR")}</option>)}
+            </select>
+          </div>
+        </div>
+        {(a && b) && (
+          <div className="mt-4 space-y-4">
+            {EDITABLE_KEYS.map((k) => {
+              const va = (a.snapshot as any)?.[k];
+              const vb = (b.snapshot as any)?.[k];
+              const equal = JSON.stringify(va) === JSON.stringify(vb);
+              return (
+                <div key={k}>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-2">
+                    {k} {equal && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase tracking-wide">sem diferenças</span>}
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <DiffPane title={`v${a.version}`} data={va} tone="current" />
+                    <DiffPane title={`v${b.version}`} data={vb} tone="proposed" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
     </div>
   );
