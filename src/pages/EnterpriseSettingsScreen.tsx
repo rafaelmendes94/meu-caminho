@@ -1093,7 +1093,7 @@ export default function EnterpriseSettingsScreen() {
   }, [tab, setSearch]);
 
   useEffect(() => {
-    if (!loading && !hasAnyRole(["owner", "rh_admin"])) navigate("/enterprise/rh", { replace: true });
+    if (!loading && !hasAnyRole(["owner", "rh_admin", "platform_admin"])) navigate("/enterprise/rh", { replace: true });
   }, [loading, hasAnyRole, navigate]);
 
   const active = useMemo(() => TABS.find((t) => t.key === tab)!, [tab]);
@@ -1101,7 +1101,34 @@ export default function EnterpriseSettingsScreen() {
   return (
     <EnterpriseRHLayout title="Configurações da Empresa">
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
-        <aside className="space-y-1">
+        {/* Mobile: drawer */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full justify-start">
+                <Menu className="h-4 w-4 mr-2" /> {active.label}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-3">
+              <div className="space-y-1 mt-6">
+                {TABS.map((t) => {
+                  const Icon = t.icon;
+                  const isActive = t.key === tab;
+                  return (
+                    <button key={t.key} onClick={() => setTab(t.key)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition ${
+                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-accent text-foreground"
+                      }`}>
+                      <Icon className="h-4 w-4" /> {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+        {/* Desktop: aside */}
+        <aside className="space-y-1 hidden md:block">
           {TABS.map((t) => {
             const Icon = t.icon;
             const isActive = t.key === tab;
