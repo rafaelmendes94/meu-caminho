@@ -175,6 +175,7 @@ const PlatformPlansScreen = lazy(() => import("./pages/PlatformPlansScreen.tsx")
 const PlatformAIUsageScreen = lazy(() => import("./pages/PlatformAIUsageScreen.tsx"));
 const PlatformAnalyticsScreen = lazy(() => import("./pages/PlatformAnalyticsScreen.tsx"));
 const PlatformSystemHealthScreen = lazy(() => import("./pages/PlatformSystemHealthScreen.tsx"));
+const PlatformBackupRecoveryScreen = lazy(() => import("./pages/PlatformBackupRecoveryScreen.tsx"));
 const PlatformBillingScreen = lazy(() => import("./pages/PlatformBillingScreen.tsx"));
 const PlatformSupportScreen = lazy(() => import("./pages/PlatformSupportScreen.tsx"));
 const PlatformAuditScreen = lazy(() => import("./pages/PlatformAuditScreen.tsx"));
