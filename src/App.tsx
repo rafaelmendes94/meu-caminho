@@ -198,6 +198,7 @@ const PlatformContentMaterialsScreen = lazy(() => import("./pages/PlatformConten
 const PlatformContentCollectionsScreen = lazy(() => import("./pages/PlatformContentCollectionsScreen.tsx"));
 const PlatformContentCollectionBuilderScreen = lazy(() => import("./pages/PlatformContentCollectionBuilderScreen.tsx"));
 const PlatformContentLibraryScreen = lazy(() => import("./pages/PlatformContentLibraryScreen.tsx"));
+const PlatformCMSHubScreen = lazy(() => import("./pages/PlatformCMSHubScreen.tsx"));
 const PlatformExecutiveCouncilConfigScreen = lazy(() => import("./pages/PlatformExecutiveCouncilConfigScreen.tsx"));
 const PlatformOrganizationalDNAConfigScreen = lazy(() => import("./pages/PlatformOrganizationalDNAConfigScreen.tsx"));
 const PlatformWeeklyInsightsConfigScreen = lazy(() => import("./pages/PlatformWeeklyInsightsConfigScreen.tsx"));
@@ -490,6 +491,16 @@ const App = () => (
          <Route path="/admin/content/collections" element={<PlatformAdmin><PlatformContentCollectionsScreen /></PlatformAdmin>} />
          <Route path="/admin/content/collections/:id" element={<PlatformAdmin><PlatformContentCollectionBuilderScreen /></PlatformAdmin>} />
          <Route path="/admin/content/library" element={<PlatformAdmin><PlatformContentLibraryScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/hub" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/competencies" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/emotions" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/reflections" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/messages" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/quizzes" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/certificates" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/imports" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/versions" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
+         <Route path="/admin/content/analytics" element={<PlatformAdmin><PlatformCMSHubScreen /></PlatformAdmin>} />
 
          {/* Inteligência Artificial */}
          <Route path="/admin/ai" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Visão Geral" description="Painel consolidado dos módulos de IA será liberado em breve." /></PlatformAdmin>} />
