@@ -1,14 +1,14 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronDown, ChevronsLeft, ChevronsRight, Star, Clock, Command as CommandIcon,
+  ChevronDown, ChevronsLeft, ChevronsRight, Star, Command as CommandIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import logoMark from "@/assets/login-abstract.webp";
 import { adminNavGroups, flattenAdminNav } from "@/components/admin/adminNav";
 import {
-  getFavorites, getRecents, isFavorite, toggleFavorite, pushRecent, useAdminPrefsVersion,
+  getFavorites, isFavorite, toggleFavorite, pushRecent, useAdminPrefsVersion,
 } from "@/lib/adminPrefs";
 import CommandPalette from "@/components/admin/CommandPalette";
 
