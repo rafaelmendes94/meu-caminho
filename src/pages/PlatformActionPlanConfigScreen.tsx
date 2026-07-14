@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, ShieldCheck, ListChecks,
   MessageSquare, Target, Cpu, FlaskConical, History, LineChart, Layers, Flag,
+  Sparkles, RotateCcw, GitCompare,
 } from "lucide-react";
 
 type PrioItem = { key: string; label: string; description?: string };
@@ -55,6 +56,7 @@ const TABS = [
   { id: "prio", label: "Priorização", icon: Flag },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
   { id: "test", label: "Testar Geração", icon: FlaskConical },
+  { id: "edit_ai", label: "Editar por IA", icon: Sparkles },
   { id: "history", label: "Histórico", icon: History },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
