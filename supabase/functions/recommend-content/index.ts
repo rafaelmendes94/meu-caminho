@@ -372,6 +372,19 @@ Deno.serve(async (req) => {
 
     const cfg = await loadConfig(admin);
 
+    // Verificar consentimento da organização (organization_settings.ai_settings)
+    try {
+      const { data: prof } = await admin.from("profiles").select("organization_id").eq("id", targetUserId).maybeSingle();
+      const orgId = (prof as any)?.organization_id ?? null;
+      if (orgId) {
+        const { resolveOrgAiSettings } = await import("../_shared/org_ai_settings.ts");
+        const orgAi = await resolveOrgAiSettings(admin, orgId);
+        if (orgAi.participates === false || orgAi.allow_recommendations === false) {
+          return json({ ok: true, recommendations: [], user_vector: {}, metrics: { disabled: true, reason: "ai_disabled_for_organization" } });
+        }
+      }
+    } catch (_e) { /* não bloqueia */ }
+
     // Cache HIT?
     if (!refresh && !testMode) {
       const { data: cache } = await admin
