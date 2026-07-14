@@ -2204,6 +2204,27 @@ export type Database = {
         }
         Relationships: []
       }
+      health_score_history: {
+        Row: {
+          breakdown: Json
+          captured_at: string
+          id: string
+          score: number
+        }
+        Insert: {
+          breakdown?: Json
+          captured_at?: string
+          id?: string
+          score: number
+        }
+        Update: {
+          breakdown?: Json
+          captured_at?: string
+          id?: string
+          score?: number
+        }
+        Relationships: []
+      }
       impact_measurements: {
         Row: {
           baseline_score: number | null
@@ -2822,6 +2843,83 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      load_test_plans: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          profile_users: number
+          scenarios: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          profile_users?: number
+          scenarios?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          profile_users?: number
+          scenarios?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      load_test_runs: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          mode: string
+          plan_id: string | null
+          requested_by: string | null
+          results: Json
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          mode?: string
+          plan_id?: string | null
+          requested_by?: string | null
+          results?: Json
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          mode?: string
+          plan_id?: string | null
+          requested_by?: string | null
+          results?: Json
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "load_test_runs_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "load_test_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -3470,6 +3568,119 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      perf_alert_rules: {
+        Row: {
+          comparator: Database["public"]["Enums"]["perf_comparator"]
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          metric: string
+          name: string
+          severity: Database["public"]["Enums"]["perf_severity"]
+          threshold: number
+          updated_at: string
+        }
+        Insert: {
+          comparator?: Database["public"]["Enums"]["perf_comparator"]
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          metric: string
+          name: string
+          severity?: Database["public"]["Enums"]["perf_severity"]
+          threshold: number
+          updated_at?: string
+        }
+        Update: {
+          comparator?: Database["public"]["Enums"]["perf_comparator"]
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          metric?: string
+          name?: string
+          severity?: Database["public"]["Enums"]["perf_severity"]
+          threshold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      perf_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          metadata: Json
+          metric: string
+          resolved_at: string | null
+          rule_id: string | null
+          severity: Database["public"]["Enums"]["perf_severity"]
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          metric: string
+          resolved_at?: string | null
+          rule_id?: string | null
+          severity?: Database["public"]["Enums"]["perf_severity"]
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          metric?: string
+          resolved_at?: string | null
+          rule_id?: string | null
+          severity?: Database["public"]["Enums"]["perf_severity"]
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perf_alerts_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "perf_alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      perf_snapshots: {
+        Row: {
+          captured_at: string
+          category: string
+          id: string
+          metadata: Json
+          metric: string
+          unit: string | null
+          value_num: number | null
+        }
+        Insert: {
+          captured_at?: string
+          category: string
+          id?: string
+          metadata?: Json
+          metric: string
+          unit?: string | null
+          value_num?: number | null
+        }
+        Update: {
+          captured_at?: string
+          category?: string
+          id?: string
+          metadata?: Json
+          metric?: string
+          unit?: string | null
+          value_num?: number | null
         }
         Relationships: []
       }
@@ -4880,6 +5091,8 @@ export type Database = {
         | "material"
       health_status: "healthy" | "warning" | "critical" | "unknown"
       lesson_type: "video" | "text" | "pdf" | "audio" | "exercise"
+      perf_comparator: "gt" | "gte" | "lt" | "lte" | "eq"
+      perf_severity: "info" | "warning" | "critical"
       subscription_status:
         | "trialing"
         | "active"
@@ -5045,6 +5258,8 @@ export const Constants = {
       ],
       health_status: ["healthy", "warning", "critical", "unknown"],
       lesson_type: ["video", "text", "pdf", "audio", "exercise"],
+      perf_comparator: ["gt", "gte", "lt", "lte", "eq"],
+      perf_severity: ["info", "warning", "critical"],
       subscription_status: [
         "trialing",
         "active",
