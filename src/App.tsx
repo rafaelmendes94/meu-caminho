@@ -193,6 +193,7 @@ const PlatformContentCollectionBuilderScreen = lazy(() => import("./pages/Platfo
 const PlatformContentLibraryScreen = lazy(() => import("./pages/PlatformContentLibraryScreen.tsx"));
 const PlatformExecutiveCouncilConfigScreen = lazy(() => import("./pages/PlatformExecutiveCouncilConfigScreen.tsx"));
 const PlatformOrganizationalDNAConfigScreen = lazy(() => import("./pages/PlatformOrganizationalDNAConfigScreen.tsx"));
+const PlatformWeeklyInsightsConfigScreen = lazy(() => import("./pages/PlatformWeeklyInsightsConfigScreen.tsx"));
 const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSoonScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
@@ -474,7 +475,7 @@ const App = () => (
          <Route path="/admin/ai" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Visão Geral" description="Painel consolidado dos módulos de IA será liberado em breve." /></PlatformAdmin>} />
          <Route path="/admin/ai/conselho-executivo" element={<PlatformAdmin><PlatformExecutiveCouncilConfigScreen /></PlatformAdmin>} />
         <Route path="/admin/ai/dna-organizacional" element={<PlatformAdmin><PlatformOrganizationalDNAConfigScreen /></PlatformAdmin>} />
-         <Route path="/admin/ai/insights-semanais" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Insights Semanais" /></PlatformAdmin>} />
+        <Route path="/admin/ai/insights-semanais" element={<PlatformAdmin><PlatformWeeklyInsightsConfigScreen /></PlatformAdmin>} />
          <Route path="/admin/ai/planos-acao" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Planos de Ação" /></PlatformAdmin>} />
          <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Rituais Inteligentes" /></PlatformAdmin>} />
          <Route path="/admin/ai/recomendacoes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Recomendações" /></PlatformAdmin>} />
