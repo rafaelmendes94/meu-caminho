@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import RouteFallback from "./components/RouteFallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -245,7 +246,7 @@ const App = () => (
         <OrgBrandingProvider>
         <OrgLocaleProvider>
         <OrganizationWorkScheduleProvider>
-        <Suspense fallback={null}><Routes>
+        <Suspense fallback={<RouteFallback />}><Routes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Auth><HomeScreen /></Auth>} />
           <Route path="/login" element={<Index />} />
