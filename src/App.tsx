@@ -200,6 +200,7 @@ const PlatformRecommendationEngineConfigScreen = lazy(() => import("./pages/Plat
 const PlatformOrchestratorConfigScreen = lazy(() => import("./pages/PlatformOrchestratorConfigScreen.tsx"));
 const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSoonScreen.tsx"));
 const PlatformKnowledgeHubScreen = lazy(() => import("./pages/PlatformKnowledgeHubScreen.tsx"));
+const PlatformAILabScreen = lazy(() => import("./pages/PlatformAILabScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
 
