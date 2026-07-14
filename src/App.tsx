@@ -197,6 +197,7 @@ const PlatformWeeklyInsightsConfigScreen = lazy(() => import("./pages/PlatformWe
 const PlatformActionPlanConfigScreen = lazy(() => import("./pages/PlatformActionPlanConfigScreen.tsx"));
 const PlatformIntelligentRitualConfigScreen = lazy(() => import("./pages/PlatformIntelligentRitualConfigScreen.tsx"));
 const PlatformRecommendationEngineConfigScreen = lazy(() => import("./pages/PlatformRecommendationEngineConfigScreen.tsx"));
+const PlatformOrchestratorConfigScreen = lazy(() => import("./pages/PlatformOrchestratorConfigScreen.tsx"));
 const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSoonScreen.tsx"));
 import ContactUsScreen from "./components/ContactUsScreen.tsx";
 import ReadingSettingsScreen from "./components/settings/ReadingSettingsScreen.tsx";
