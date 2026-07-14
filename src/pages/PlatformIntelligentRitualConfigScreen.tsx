@@ -271,7 +271,7 @@ export default function PlatformIntelligentRitualConfigScreen() {
         {tab === "structure" && <StructureTab config={config} setConfig={setConfig} />}
         {tab === "steps" && <StepsTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
-        {tab === "test" && <TestPlaceholder />}
+        {tab === "test" && <TestTab config={config} />}
         {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
 
         {(tab !== "test" && tab !== "history") && (
