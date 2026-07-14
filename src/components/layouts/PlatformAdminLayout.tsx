@@ -1,109 +1,44 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, BarChart3, Building2, CreditCard, Wallet, Sparkles,
-  Activity, LifeBuoy, ShieldCheck, FolderKanban, Library, BookOpen, GraduationCap, DatabaseBackup, Gauge, ClipboardCheck,
-  Route, Podcast, Video, Music, FileText, Tags, Users, Layers, Import, Settings, Package,
-  ChevronDown, ChevronsLeft, ChevronsRight, Brain, MessageSquare, Dna, CalendarClock, ListChecks, Wand2, FlaskConical,
+  ChevronDown, ChevronsLeft, ChevronsRight, Star, Clock, Command as CommandIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import logoMark from "@/assets/login-abstract.webp";
+import { adminNavGroups, flattenAdminNav } from "@/components/admin/adminNav";
+import {
+  getFavorites, getRecents, isFavorite, toggleFavorite, pushRecent, useAdminPrefsVersion,
+} from "@/lib/adminPrefs";
+import CommandPalette from "@/components/admin/CommandPalette";
 
-type NavItem = { to: string; label: string; icon: any };
-type NavGroup = { key: string; label: string; icon?: any; collapsible?: boolean; items: NavItem[] };
-
-const groups: NavGroup[] = [
-  {
-    key: "overview",
-    label: "Visão Geral",
-    items: [
-      { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-    ],
-  },
-  {
-    key: "platform",
-    label: "Plataforma",
-    items: [
-      { to: "/admin/organizations", label: "Empresas", icon: Building2 },
-      { to: "/admin/plans", label: "Planos", icon: Package },
-      { to: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
-      { to: "/admin/billing", label: "Financeiro", icon: Wallet },
-      { to: "/admin/ai-usage", label: "IA", icon: Sparkles },
-      { to: "/admin/system", label: "System Health", icon: Activity },
-      { to: "/admin/system/backup", label: "Backup & Recovery", icon: DatabaseBackup },
-      { to: "/admin/system/performance", label: "Performance", icon: Gauge },
-      { to: "/admin/system/qa", label: "QA Center", icon: ClipboardCheck },
-      { to: "/admin/support", label: "Suporte", icon: LifeBuoy },
-      { to: "/admin/audit", label: "Auditoria", icon: ShieldCheck },
-    ],
-  },
-  {
-    key: "content",
-    label: "Content Studio",
-    icon: FolderKanban,
-    collapsible: true,
-    items: [
-      { to: "/admin/content", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/admin/content/library", label: "Biblioteca", icon: Library },
-      { to: "/admin/content/books", label: "Livros", icon: BookOpen },
-      { to: "/admin/content/courses", label: "Cursos", icon: GraduationCap },
-      { to: "/admin/content/tracks", label: "Trilhas", icon: Route },
-      { to: "/admin/content/podcasts", label: "Podcasts", icon: Podcast },
-      { to: "/admin/content/videos", label: "Vídeos", icon: Video },
-      { to: "/admin/content/audios", label: "Áudios", icon: Music },
-      { to: "/admin/content/materials", label: "Materiais", icon: FileText },
-      { to: "/admin/content/categories", label: "Categorias", icon: Tags },
-      { to: "/admin/content/authors", label: "Autores", icon: Users },
-      { to: "/admin/content/collections", label: "Coleções", icon: Layers },
-      { to: "/admin/content/tags", label: "Tags", icon: Tags },
-      { to: "/admin/content/imports", label: "Importações", icon: Import },
-    ],
-  },
-  {
-    key: "ai",
-    label: "Inteligência Artificial",
-    icon: Brain,
-    collapsible: true,
-    items: [
-      { to: "/admin/ai", label: "Visão Geral", icon: LayoutDashboard },
-      { to: "/admin/ai/conselho-executivo", label: "Conselho Executivo", icon: MessageSquare },
-      { to: "/admin/ai/dna-organizacional", label: "DNA Organizacional", icon: Dna },
-      { to: "/admin/ai/insights-semanais", label: "Insights Semanais", icon: CalendarClock },
-      { to: "/admin/ai/planos-acao", label: "Planos de Ação", icon: ListChecks },
-      { to: "/admin/ai/rituais-inteligentes", label: "Rituais Inteligentes", icon: Sparkles },
-      { to: "/admin/ai/recomendacoes", label: "Recomendações", icon: Wand2 },
-      { to: "/admin/ai/orchestrator", label: "Orchestrator", icon: Brain },
-      { to: "/admin/knowledge", label: "Knowledge Hub", icon: FileText },
-      { to: "/admin/ai/lab", label: "AI Lab", icon: FlaskConical },
-    ],
-  },
-  {
-    key: "settings",
-    label: "Configurações",
-    icon: Settings,
-    collapsible: true,
-    items: [
-      { to: "/admin/settings", label: "Geral", icon: Settings },
-      { to: "/admin/settings/ai", label: "IA", icon: Sparkles },
-      { to: "/admin/settings/billing", label: "Billing", icon: CreditCard },
-      { to: "/admin/settings/oauth", label: "OAuth", icon: ShieldCheck },
-      { to: "/admin/settings/resend", label: "Resend", icon: FileText },
-      { to: "/admin/settings/lgpd", label: "LGPD", icon: ShieldCheck },
-      { to: "/admin/settings/rate-limits", label: "Rate Limits", icon: Activity },
-      { to: "/admin/settings/flags", label: "Feature Flags", icon: Layers },
-      { to: "/admin/settings/env", label: "Variáveis", icon: FileText },
-      { to: "/admin/settings/maintenance", label: "Manutenção", icon: Settings },
-    ],
-  },
-];
+const groups = adminNavGroups;
 
 export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  useAdminPrefsVersion();
+
+  // Track recents from current pathname
+  useEffect(() => {
+    const match = flattenAdminNav().find((i) => pathname === i.to || pathname.startsWith(i.to + "/"));
+    if (match) pushRecent({ to: match.to, label: match.label });
+  }, [pathname]);
+
+  // ⌘K / Ctrl+K
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, []);
 
   const initiallyOpen = useMemo(() => {
     const set: Record<string, boolean> = {};
@@ -117,6 +52,9 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initiallyOpen);
 
   void profile;
+
+  const favorites = getFavorites();
+  const recents = getRecents().slice(0, 4);
 
   return (
     <div className="min-h-[100dvh] flex bg-[#F6F7FB] font-montserrat text-[#0F172A]">
@@ -141,6 +79,71 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+          {!collapsed && (favorites.length > 0 || recents.length > 0) && (
+            <div className="space-y-3">
+              {favorites.length > 0 && (
+                <div>
+                  <p className="px-3 pb-1 text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold flex items-center gap-1.5">
+                    <Star className="w-3 h-3" /> Favoritos
+                  </p>
+                  <ul className="space-y-0.5">
+                    {favorites.map((f) => (
+                      <li key={`fav-${f.to}`}>
+                        <NavLink
+                          to={f.to}
+                          className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-colors ${
+                              isActive ? "bg-[#F88A2B] text-black" : "text-slate-300 hover:bg-white/5 hover:text-white"
+                            }`
+                          }
+                        >
+                          <Star className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+                          <span className="truncate">{f.label}</span>
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {recents.length > 0 && (
+                <div>
+                  <p className="px-3 pb-1 text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold flex items-center gap-1.5">
+                    <Clock className="w-3 h-3" /> Recentes
+                  </p>
+                  <ul className="space-y-0.5">
+                    {recents.map((r) => (
+                      <li key={`rec-${r.to}`}>
+                        <NavLink
+                          to={r.to}
+                          className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-colors ${
+                              isActive ? "bg-[#F88A2B] text-black" : "text-slate-300 hover:bg-white/5 hover:text-white"
+                            }`
+                          }
+                        >
+                          <Clock className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+                          <span className="truncate">{r.label}</span>
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="h-px bg-white/5 mx-2" />
+            </div>
+          )}
+
+          {!collapsed && (
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="mx-2 w-[calc(100%-1rem)] flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[12px] font-medium transition-colors"
+            >
+              <CommandIcon className="w-3.5 h-3.5" />
+              <span className="flex-1 text-left">Pesquisa rápida</span>
+              <span className="text-[10px] text-slate-500 font-mono">⌘K</span>
+            </button>
+          )}
+
           {groups.map((g) => {
             const isOpen = g.collapsible ? openGroups[g.key] ?? false : true;
             return (
@@ -177,7 +180,7 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
                 {isOpen && (
                   <ul className={`mt-1 space-y-0.5 ${g.collapsible && !collapsed ? "pl-2" : ""}`}>
                     {g.items.map((i) => (
-                      <li key={i.to}>
+                      <li key={i.to} className="group/nav relative">
                         <NavLink
                           to={i.to}
                           end
@@ -191,7 +194,18 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
                           }
                         >
                           <i.icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="truncate">{i.label}</span>}
+                          {!collapsed && <span className="truncate flex-1">{i.label}</span>}
+                          {!collapsed && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite({ to: i.to, label: i.label }); }}
+                              className="opacity-0 group-hover/nav:opacity-100 transition-opacity p-0.5 -mr-1 rounded hover:bg-white/10"
+                              title={isFavorite(i.to) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                              aria-label="Favoritar item"
+                            >
+                              <Star className={`w-3.5 h-3.5 ${isFavorite(i.to) ? "fill-amber-300 text-amber-300 opacity-100" : "text-slate-400"}`} />
+                            </button>
+                          )}
                         </NavLink>
                       </li>
                     ))}
@@ -223,6 +237,8 @@ export const PlatformAdminLayout = ({ children }: { children: ReactNode }) => {
           <div className="admin-surface p-8 max-w-[1440px] mx-auto">{children}</div>
         </main>
       </div>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   );
 };
