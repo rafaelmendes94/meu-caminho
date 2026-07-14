@@ -634,6 +634,7 @@ export type Database = {
           media_url: string | null
           metadata: Json
           published_at: string | null
+          recommendation_weights: Json
           short_description: string | null
           slug: string
           status: Database["public"]["Enums"]["content_status"]
@@ -659,6 +660,7 @@ export type Database = {
           media_url?: string | null
           metadata?: Json
           published_at?: string | null
+          recommendation_weights?: Json
           short_description?: string | null
           slug: string
           status?: Database["public"]["Enums"]["content_status"]
@@ -684,6 +686,7 @@ export type Database = {
           media_url?: string | null
           metadata?: Json
           published_at?: string | null
+          recommendation_weights?: Json
           short_description?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["content_status"]
@@ -2580,6 +2583,66 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendation_events: {
+        Row: {
+          config_version: number | null
+          context: Json
+          created_at: string
+          event_type: string
+          factors: Json
+          id: string
+          item_id: string | null
+          item_type: string | null
+          organization_id: string | null
+          reason: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          config_version?: number | null
+          context?: Json
+          created_at?: string
+          event_type: string
+          factors?: Json
+          id?: string
+          item_id?: string | null
+          item_type?: string | null
+          organization_id?: string | null
+          reason?: string | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          config_version?: number | null
+          context?: Json
+          created_at?: string
+          event_type?: string
+          factors?: Json
+          id?: string
+          item_id?: string | null
+          item_type?: string | null
+          organization_id?: string | null
+          reason?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendation_events_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_messages: {
         Row: {
           author_role: string
@@ -2916,6 +2979,53 @@ export type Database = {
           },
         ]
       }
+      user_recommendation_cache: {
+        Row: {
+          config_version: number | null
+          expires_at: string
+          generated_at: string
+          invalidation_reason: string | null
+          is_stale: boolean
+          organization_id: string | null
+          recommendations: Json
+          updated_at: string
+          user_id: string
+          user_vector: Json
+        }
+        Insert: {
+          config_version?: number | null
+          expires_at?: string
+          generated_at?: string
+          invalidation_reason?: string | null
+          is_stale?: boolean
+          organization_id?: string | null
+          recommendations?: Json
+          updated_at?: string
+          user_id: string
+          user_vector?: Json
+        }
+        Update: {
+          config_version?: number | null
+          expires_at?: string
+          generated_at?: string
+          invalidation_reason?: string | null
+          is_stale?: boolean
+          organization_id?: string | null
+          recommendations?: Json
+          updated_at?: string
+          user_id?: string
+          user_vector?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_recommendation_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -3213,6 +3323,14 @@ export type Database = {
         Returns: boolean
       }
       health_check: { Args: never; Returns: Json }
+      invalidate_rec_cache_all: {
+        Args: { _reason: string }
+        Returns: undefined
+      }
+      invalidate_rec_cache_user: {
+        Args: { _reason: string; _user_id: string }
+        Returns: undefined
+      }
       is_platform_admin: { Args: never; Returns: boolean }
       measure_impact: {
         Args: {
