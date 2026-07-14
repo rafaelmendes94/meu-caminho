@@ -5,6 +5,7 @@ import {
   Sparkles, Wand2, FileText, FlaskConical, Activity, Settings, ShieldCheck,
   DatabaseBackup, Gauge, ClipboardCheck, BarChart3, LifeBuoy, Layers, Import, Music,
   Award, HelpCircle, History, Heart, Sparkle, MessageCircle,
+  Trophy,
 } from "lucide-react";
 
 export type AdminNavItem = {
@@ -91,6 +92,23 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: "/admin/knowledge", label: "Knowledge Hub", icon: FileText },
       { to: "/admin/ai-usage", label: "Observability", icon: Activity, keywords: "observability tokens uso" },
       { to: "/admin/ai/lab", label: "AI Lab", icon: FlaskConical },
+    ],
+  },
+  {
+    key: "sistema",
+    label: "Gamification",
+    icon: Trophy,
+    collapsible: true,
+    items: [
+      { to: "/admin/gamification", label: "Dashboard", icon: LayoutDashboard, keywords: "gamificação xp missões" },
+      { to: "/admin/gamification/xp", label: "XP", icon: Star ?? Trophy, keywords: "xp regras" },
+      { to: "/admin/gamification/levels", label: "Níveis", icon: Trophy },
+      { to: "/admin/gamification/badges", label: "Badges", icon: Award },
+      { to: "/admin/gamification/missions", label: "Missões", icon: ListChecks },
+      { to: "/admin/gamification/achievements", label: "Conquistas", icon: Sparkles },
+      { to: "/admin/gamification/seasons", label: "Temporadas", icon: CalendarClock },
+      { to: "/admin/gamification/events", label: "Eventos", icon: Sparkle },
+      { to: "/admin/gamification/settings", label: "Configurações", icon: Settings },
     ],
   },
   {
