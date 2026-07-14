@@ -91,11 +91,13 @@ function EmpresaTab() {
   const { organization, refresh } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
+  const empty = {
     name: "", legal_name: "", cnpj: "", segment: "", employee_count: 0,
     website: "", email: "", phone: "", address: "", city: "", state: "",
     country: "", postal_code: "", description: "",
-  });
+  };
+  const [form, setForm] = useState(empty);
+  const [snapshot, setSnapshot] = useState(empty);
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -104,25 +106,30 @@ function EmpresaTab() {
       const { data } = await supabase.from("organizations").select(
         "name,legal_name,cnpj,segment,employee_count,website,email,phone,address,city,state,country,postal_code,description"
       ).eq("id", organization.id).maybeSingle();
-      if (data) setForm({
-        name: data.name ?? "", legal_name: data.legal_name ?? "",
-        cnpj: data.cnpj ?? "", segment: data.segment ?? "",
-        employee_count: data.employee_count ?? 0, website: data.website ?? "",
-        email: data.email ?? "", phone: data.phone ?? "",
-        address: data.address ?? "", city: data.city ?? "",
-        state: data.state ?? "", country: data.country ?? "Brasil",
-        postal_code: data.postal_code ?? "", description: data.description ?? "",
-      });
+      if (data) {
+        const next = {
+          name: data.name ?? "", legal_name: data.legal_name ?? "",
+          cnpj: data.cnpj ?? "", segment: data.segment ?? "",
+          employee_count: data.employee_count ?? 0, website: data.website ?? "",
+          email: data.email ?? "", phone: data.phone ?? "",
+          address: data.address ?? "", city: data.city ?? "",
+          state: data.state ?? "", country: data.country ?? "Brasil",
+          postal_code: data.postal_code ?? "", description: data.description ?? "",
+        };
+        setForm(next); setSnapshot(next);
+      }
       setLoading(false);
     })();
   }, [organization?.id]);
 
   const handleSave = async () => {
     if (!organization?.id) return;
+    if (!form.name.trim()) return toast.error("Nome fantasia é obrigatório.");
     if (form.cnpj && !isValidCnpj(form.cnpj)) return toast.error("CNPJ inválido.");
     if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("E-mail inválido.");
     setSaving(true);
     const { error } = await supabase.from("organizations").update({
+      name: form.name,
       legal_name: form.legal_name || null,
       cnpj: form.cnpj || null,
       segment: form.segment || null,
@@ -139,6 +146,7 @@ function EmpresaTab() {
     }).eq("id", organization.id);
     setSaving(false);
     if (error) return toast.error(error.message);
+    setSnapshot(form);
     toast.success("Dados da empresa atualizados.");
     void refresh();
   };
@@ -155,9 +163,9 @@ function EmpresaTab() {
         <CardDescription>Informações institucionais visíveis para RH e integrações.</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Nome fantasia"><Input value={form.name} readOnly /></Field>
+        <Field label="Nome fantasia"><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
         <Field label="Razão social"><Input value={form.legal_name} onChange={(e) => set("legal_name", e.target.value)} /></Field>
-        <Field label="CNPJ"><Input value={form.cnpj} onChange={(e) => set("cnpj", e.target.value)} placeholder="00.000.000/0000-00" /></Field>
+        <Field label="CNPJ"><Input value={form.cnpj} onChange={(e) => set("cnpj", maskCnpj(e.target.value))} placeholder="00.000.000/0000-00" /></Field>
         <Field label="Segmento"><Input value={form.segment} onChange={(e) => set("segment", e.target.value)} /></Field>
         <Field label="Nº de colaboradores">
           <Input type="number" min={0} value={form.employee_count}
@@ -165,17 +173,17 @@ function EmpresaTab() {
         </Field>
         <Field label="Site"><Input value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" /></Field>
         <Field label="E-mail institucional"><Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} /></Field>
-        <Field label="Telefone"><Input value={form.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
+        <Field label="Telefone"><Input value={form.phone} onChange={(e) => set("phone", maskPhone(e.target.value))} placeholder="(00) 00000-0000" /></Field>
         <Field label="Endereço" className="md:col-span-2"><Input value={form.address} onChange={(e) => set("address", e.target.value)} /></Field>
         <Field label="Cidade"><Input value={form.city} onChange={(e) => set("city", e.target.value)} /></Field>
         <Field label="Estado"><Input value={form.state} onChange={(e) => set("state", e.target.value)} /></Field>
         <Field label="País"><Input value={form.country} onChange={(e) => set("country", e.target.value)} /></Field>
-        <Field label="CEP"><Input value={form.postal_code} onChange={(e) => set("postal_code", e.target.value)} /></Field>
+        <Field label="CEP"><Input value={form.postal_code} onChange={(e) => set("postal_code", maskCep(e.target.value))} placeholder="00000-000" /></Field>
         <Field label="Descrição" className="md:col-span-2">
           <Textarea rows={4} value={form.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
         <div className="md:col-span-2 flex gap-2 justify-end pt-2">
-          <Button variant="outline" onClick={() => window.location.reload()}>Cancelar</Button>
+          <Button variant="outline" onClick={() => setForm(snapshot)}>Cancelar</Button>
           <Button onClick={handleSave} disabled={saving}>
             <Save className="h-4 w-4 mr-2" /> {saving ? "Salvando…" : "Salvar"}
           </Button>
