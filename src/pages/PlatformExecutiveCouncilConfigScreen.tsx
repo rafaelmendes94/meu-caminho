@@ -5,6 +5,7 @@ import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
   Lock, Save, Send, Plus, Trash2, ArrowUp, ArrowDown, Sparkles,
   ShieldCheck, MessageSquare, ListChecks, FlaskConical, Cpu, History, Bot,
+  Wand2, RotateCcw, GitCompare, Check, X,
 } from "lucide-react";
 
 type ToneConfig = {
@@ -74,6 +75,7 @@ const TABS = [
   { id: "questions", label: "Perguntas Sugeridas", icon: Sparkles },
   { id: "examples", label: "Exemplos", icon: FlaskConical },
   { id: "model", label: "Modelo e Limites", icon: Cpu },
+  { id: "ai_edit", label: "Editar por IA", icon: Wand2 },
   { id: "chat", label: "Testar no Chat", icon: Bot },
   { id: "history", label: "Histórico de Versões", icon: History },
 ] as const;
