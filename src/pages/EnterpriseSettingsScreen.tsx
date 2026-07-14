@@ -12,10 +12,13 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Building2, Palette, Users, KeyRound, Globe, Clock, CalendarDays, Plug, Bell,
   ShieldCheck, Sparkles, ScrollText, Save, ArrowUpRight, Construction,
+  Upload, Trash2, Plus, Image as ImageIcon,
 } from "lucide-react";
 
 type TabKey =
