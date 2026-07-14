@@ -37,3 +37,5 @@ npm run dev
 ## Configurações da Empresa
 
 Painel completo em `/enterprise/rh/configuracoes` (Owner/RH Admin). Ver `ENTERPRISE_SETTINGS.md`.
+
+- **Backup & Recovery**: `/admin/system/backup` — dashboard, jobs, restore com dry-run, agendamentos, health check, logs, políticas. Ver `BACKUP_RECOVERY.md`.
