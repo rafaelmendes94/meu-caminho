@@ -261,7 +261,7 @@ export default function PlatformActionPlanConfigScreen() {
         {tab === "metrics" && <MetricsTab config={config} setConfig={setConfig} />}
         {tab === "prio" && <PrioritizationTab config={config} setConfig={setConfig} />}
         {tab === "model" && <ModelTab config={config} setConfig={setConfig} />}
-        {tab === "test" && <TestPlaceholder />}
+        {tab === "test" && <TestTab config={config} />}
         {tab === "history" && <HistoryPlaceholder versions={versions} currentVersion={config.version} />}
 
         {(tab !== "test" && tab !== "history") && (
