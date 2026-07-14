@@ -1635,6 +1635,460 @@ export type Database = {
           },
         ]
       }
+      knowledge_cache: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          organization_id: string | null
+          query_hash: string
+          query_text: string | null
+          top_chunks: Json
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          organization_id?: string | null
+          query_hash: string
+          query_text?: string | null
+          top_chunks?: Json
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          organization_id?: string | null
+          query_hash?: string
+          query_text?: string | null
+          top_chunks?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string | null
+          parent_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+          parent_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+          parent_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          id: string
+          metadata: Json
+          organization_id: string | null
+          tokens: number | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          tokens?: number | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_chunks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_collections: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string | null
+          priority: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id?: string | null
+          priority?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string | null
+          priority?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_collections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_documents: {
+        Row: {
+          ai_summary: string | null
+          author: string | null
+          category_id: string | null
+          chunk_count: number | null
+          chunk_overlap: number | null
+          chunk_size: number | null
+          collection_id: string | null
+          completeness: number | null
+          confidence: number | null
+          content_hash: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          doc_type: string
+          embedding_model: string | null
+          error_message: string | null
+          freshness_at: string | null
+          id: string
+          is_published: boolean
+          keywords: string[] | null
+          language: string | null
+          license: string | null
+          organization_id: string | null
+          page_count: number | null
+          priority: number
+          quality_score: number | null
+          source: string | null
+          source_url: string | null
+          status: string
+          storage_bucket: string | null
+          storage_path: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          ai_summary?: string | null
+          author?: string | null
+          category_id?: string | null
+          chunk_count?: number | null
+          chunk_overlap?: number | null
+          chunk_size?: number | null
+          collection_id?: string | null
+          completeness?: number | null
+          confidence?: number | null
+          content_hash?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          doc_type?: string
+          embedding_model?: string | null
+          error_message?: string | null
+          freshness_at?: string | null
+          id?: string
+          is_published?: boolean
+          keywords?: string[] | null
+          language?: string | null
+          license?: string | null
+          organization_id?: string | null
+          page_count?: number | null
+          priority?: number
+          quality_score?: number | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          storage_bucket?: string | null
+          storage_path?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          ai_summary?: string | null
+          author?: string | null
+          category_id?: string | null
+          chunk_count?: number | null
+          chunk_overlap?: number | null
+          chunk_size?: number | null
+          collection_id?: string | null
+          completeness?: number | null
+          confidence?: number | null
+          content_hash?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          doc_type?: string
+          embedding_model?: string | null
+          error_message?: string | null
+          freshness_at?: string | null
+          id?: string
+          is_published?: boolean
+          keywords?: string[] | null
+          language?: string | null
+          license?: string | null
+          organization_id?: string | null
+          page_count?: number | null
+          priority?: number
+          quality_score?: number | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          storage_bucket?: string | null
+          storage_path?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_documents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_documents_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          ai_module: string | null
+          created_at: string
+          document_id: string | null
+          id: string
+          meta: Json
+          organization_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          ai_module?: string | null
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          meta?: Json
+          organization_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          ai_module?: string | null
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          meta?: Json
+          organization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_usage: {
+        Row: {
+          ai_module: string
+          chunk_ids: string[] | null
+          confidence: number | null
+          document_id: string | null
+          id: string
+          organization_id: string | null
+          used_at: string
+        }
+        Insert: {
+          ai_module: string
+          chunk_ids?: string[] | null
+          confidence?: number | null
+          document_id?: string | null
+          id?: string
+          organization_id?: string | null
+          used_at?: string
+        }
+        Update: {
+          ai_module?: string
+          chunk_ids?: string[] | null
+          confidence?: number | null
+          document_id?: string | null
+          id?: string
+          organization_id?: string | null
+          used_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_usage_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_versions: {
+        Row: {
+          change_note: string | null
+          created_at: string
+          created_by: string | null
+          document_id: string
+          id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          id?: string
+          snapshot?: Json
+          version: number
+        }
+        Update: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -3516,6 +3970,24 @@ export type Database = {
         Returns: undefined
       }
       is_platform_admin: { Args: never; Returns: boolean }
+      match_knowledge_chunks: {
+        Args: {
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+          target_org_id?: string
+        }
+        Returns: {
+          chunk_id: string
+          chunk_index: number
+          collection_id: string
+          content: string
+          document_id: string
+          document_title: string
+          organization_id: string
+          similarity: number
+        }[]
+      }
       measure_impact: {
         Args: {
           _organization_id: string
