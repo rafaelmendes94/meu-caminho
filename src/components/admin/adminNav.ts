@@ -101,7 +101,7 @@ export const adminNavGroups: AdminNavGroup[] = [
     collapsible: true,
     items: [
       { to: "/admin/gamification", label: "Dashboard", icon: LayoutDashboard, keywords: "gamificação xp missões" },
-      { to: "/admin/gamification/xp", label: "XP", icon: Star ?? Trophy, keywords: "xp regras" },
+      { to: "/admin/gamification/xp", label: "XP", icon: Sparkles, keywords: "xp regras" },
       { to: "/admin/gamification/levels", label: "Níveis", icon: Trophy },
       { to: "/admin/gamification/badges", label: "Badges", icon: Award },
       { to: "/admin/gamification/missions", label: "Missões", icon: ListChecks },
