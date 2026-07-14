@@ -82,6 +82,14 @@ Deno.serve(async (req) => {
 
     const userContext = { mood, interest, preferred_type: preferredType, limit };
 
+    const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
+    const { data: profile } = await admin.from("profiles").select("organization_id").eq("id", userData.user.id).maybeSingle();
+    const rag = await fetchKnowledgeContext({
+      query: `${mood} ${interest} ${preferredType}`.trim() || "recomendação de conteúdo bem-estar",
+      organizationId: (profile as any)?.organization_id ?? null,
+      aiModule: "cms-recommend",
+    });
+
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
@@ -89,6 +97,7 @@ Deno.serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
+          ...(rag.contextBlock ? [{ role: "user", content: rag.contextBlock }] : []),
           { role: "user", content: `Contexto do usuário:\n${JSON.stringify(userContext)}\n\nCatálogo disponível:\n${JSON.stringify(pool)}` },
         ],
         response_format: { type: "json_object" },
