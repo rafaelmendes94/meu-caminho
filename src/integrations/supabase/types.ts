@@ -3121,6 +3121,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address: string | null
           archived_at: string | null
           city: string | null
           cnpj: string | null
@@ -3131,11 +3132,15 @@ export type Database = {
           current_period_end: string | null
           customer_success_owner: string | null
           deleted_at: string | null
+          description: string | null
           domain: string | null
+          email: string | null
+          employee_count: number | null
           grace_period_ends_at: string | null
           id: string
           internal_notes: string | null
           internal_status: string | null
+          legal_name: string | null
           licenses_total: number | null
           licenses_used: number | null
           logo_url: string | null
@@ -3145,7 +3150,9 @@ export type Database = {
           onboarding_data: Json
           onboarding_status: string | null
           onboarding_step: number
+          phone: string | null
           plan: string | null
+          postal_code: string | null
           responsible_email: string | null
           responsible_name: string | null
           responsible_phone: string | null
@@ -3163,8 +3170,10 @@ export type Database = {
           suspension_until: string | null
           trial_ends_at: string | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
+          address?: string | null
           archived_at?: string | null
           city?: string | null
           cnpj?: string | null
@@ -3175,11 +3184,15 @@ export type Database = {
           current_period_end?: string | null
           customer_success_owner?: string | null
           deleted_at?: string | null
+          description?: string | null
           domain?: string | null
+          email?: string | null
+          employee_count?: number | null
           grace_period_ends_at?: string | null
           id?: string
           internal_notes?: string | null
           internal_status?: string | null
+          legal_name?: string | null
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
@@ -3189,7 +3202,9 @@ export type Database = {
           onboarding_data?: Json
           onboarding_status?: string | null
           onboarding_step?: number
+          phone?: string | null
           plan?: string | null
+          postal_code?: string | null
           responsible_email?: string | null
           responsible_name?: string | null
           responsible_phone?: string | null
@@ -3207,8 +3222,10 @@ export type Database = {
           suspension_until?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
+          address?: string | null
           archived_at?: string | null
           city?: string | null
           cnpj?: string | null
@@ -3219,11 +3236,15 @@ export type Database = {
           current_period_end?: string | null
           customer_success_owner?: string | null
           deleted_at?: string | null
+          description?: string | null
           domain?: string | null
+          email?: string | null
+          employee_count?: number | null
           grace_period_ends_at?: string | null
           id?: string
           internal_notes?: string | null
           internal_status?: string | null
+          legal_name?: string | null
           licenses_total?: number | null
           licenses_used?: number | null
           logo_url?: string | null
@@ -3233,7 +3254,9 @@ export type Database = {
           onboarding_data?: Json
           onboarding_status?: string | null
           onboarding_step?: number
+          phone?: string | null
           plan?: string | null
+          postal_code?: string | null
           responsible_email?: string | null
           responsible_name?: string | null
           responsible_phone?: string | null
@@ -3251,6 +3274,7 @@ export type Database = {
           suspension_until?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -4354,6 +4378,10 @@ export type Database = {
         Returns: Json
       }
       current_organization_id: { Args: never; Returns: string }
+      enterprise_settings_upsert: {
+        Args: { _key: string; _value: Json }
+        Returns: Json
+      }
       generate_report_protocol: { Args: never; Returns: string }
       get_ai_costs: {
         Args: { _days?: number }
