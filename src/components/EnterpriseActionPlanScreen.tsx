@@ -395,18 +395,18 @@ export default function EnterpriseActionPlanScreen() {
         {/* Criar manual */}
         <section className="rounded-3xl bg-white p-6 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-3">Criar plano manual</h3>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               value={manualTitle}
               onChange={(e) => setManualTitle(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") createManual(); }}
               placeholder="Título do plano de ação…"
-              className="flex-1 text-[14px] rounded-2xl border border-zinc-200 px-4 py-3 bg-white focus:outline-none focus:border-[#F88A2B]"
+              className="flex-1 min-w-0 text-[14px] rounded-2xl border border-zinc-200 px-4 py-3 bg-white focus:outline-none focus:border-[#F88A2B]"
             />
             <button
               onClick={createManual}
               disabled={creating || !manualTitle.trim()}
-              className="px-5 rounded-2xl bg-[#0B0908] text-white text-[12px] font-bold inline-flex items-center gap-2 hover:opacity-90 disabled:opacity-40"
+              className="px-5 py-3 sm:py-0 rounded-2xl bg-[#0B0908] text-white text-[12px] font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-40 shrink-0"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Criar
             </button>
