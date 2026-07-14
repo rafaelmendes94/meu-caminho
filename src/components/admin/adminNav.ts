@@ -4,6 +4,7 @@ import {
   Tags, Users, FolderKanban, Brain, MessageSquare, Dna, CalendarClock,
   Sparkles, Wand2, FileText, FlaskConical, Activity, Settings, ShieldCheck,
   DatabaseBackup, Gauge, ClipboardCheck, BarChart3, LifeBuoy, Layers, Import, Music,
+  Award, HelpCircle, History, Heart, Sparkle, MessageCircle,
 } from "lucide-react";
 
 export type AdminNavItem = {
@@ -61,6 +62,15 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: "/admin/content/collections", label: "Coleções", icon: Layers },
       { to: "/admin/content/tags", label: "Tags", icon: Tags },
       { to: "/admin/content/library", label: "Biblioteca", icon: FolderKanban },
+      { to: "/admin/content/hub", label: "CMS Hub", icon: FolderKanban, keywords: "cms enterprise conteúdo hub" },
+      { to: "/admin/content/competencies", label: "Competências", icon: Sparkle },
+      { to: "/admin/content/emotions", label: "Emoções", icon: Heart },
+      { to: "/admin/content/reflections", label: "Reflexões", icon: MessageCircle },
+      { to: "/admin/content/messages", label: "Mensagens", icon: MessageSquare },
+      { to: "/admin/content/quizzes", label: "Quizzes", icon: HelpCircle },
+      { to: "/admin/content/certificates", label: "Certificados", icon: Award },
+      { to: "/admin/content/versions", label: "Versionamento", icon: History },
+      { to: "/admin/content/analytics", label: "Analytics", icon: BarChart3 },
       { to: "/admin/content/imports", label: "Importações", icon: Import },
     ],
   },
