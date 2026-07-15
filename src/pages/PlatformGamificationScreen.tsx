@@ -238,11 +238,13 @@ export default function PlatformGamificationScreen() {
         </p>
       </div>
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="flex flex-wrap gap-1">
-          {tabs.map((t) => (
-            <TabsTrigger key={t.v} value={t.v}>{t.label}</TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-none">
+          <TabsList className="inline-flex h-auto w-max gap-1 px-4 sm:px-1 py-1">
+            {tabs.map((t) => (
+              <TabsTrigger key={t.v} value={t.v} className="whitespace-nowrap">{t.label}</TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <TabsContent value="dashboard" className="mt-4"><DashboardTab /></TabsContent>
 
