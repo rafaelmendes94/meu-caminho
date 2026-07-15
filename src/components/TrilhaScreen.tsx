@@ -316,7 +316,27 @@ const TrilhaScreen = () => {
   const isEnterprise = location.pathname.startsWith('/enterprise');
   const [menuOpen, setMenuOpen] = useState(false);
   const [params] = useSearchParams();
-  const slug = params.get("slug");
+  const slugParam = params.get("slug");
+  const { profile } = useAuth();
+  const [orgSlug, setOrgSlug] = useState<string | null>(null);
+  useEffect(() => {
+    if (slugParam || !profile?.organization_id) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("organization_settings")
+        .select("value")
+        .eq("organization_id", profile.organization_id)
+        .eq("key", "default_track_slug")
+        .maybeSingle();
+      if (!alive) return;
+      const v = data?.value;
+      const s = typeof v === "string" ? v : (v as { value?: string } | null)?.value ?? null;
+      setOrgSlug(s ?? null);
+    })();
+    return () => { alive = false; };
+  }, [slugParam, profile?.organization_id]);
+  const slug = slugParam ?? orgSlug;
   const { track, items: trackItems } = useCmsTrack(slug);
 
   const stageImgs = [etapa1Img, prova1Img, etapa2Img, prova2Img, etapa3Img, diagImg];
