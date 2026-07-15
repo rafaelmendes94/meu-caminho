@@ -48,6 +48,7 @@ import {
   Plug,
   ChevronsLeft,
   ChevronsRight,
+  Briefcase,
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.webp";
 import AdminTopbar from "@/components/admin/AdminTopbar";
