@@ -290,7 +290,7 @@ const EnterpriseEmployeeAdminScreen = () => {
                 </Field>
                 <Field label="Gestor">
                   <select value={form.manager_id} onChange={(e) => setForm({ ...form, manager_id: e.target.value })} className="admin-input">
-                    <option value="">—</option>
+                    <option value="">— (apenas RH/Owner)</option>
                     {managers.map((m) => <option key={m.id} value={m.id}>{m.full_name ?? m.id}</option>)}
                   </select>
                 </Field>
