@@ -258,3 +258,93 @@ main > div:not([data-fullbleed]) {
   .admin-surface th,
   .admin-surface td { padding-left: 0.75rem; padding-right: 0.75rem; }
 }
+
+/* ============================================================
+   Clean-mode global overrides
+   Remap painéis "dark" hardcoded (fundo preto + texto branco)
+   para o padrão clean (fundo claro + texto escuro) em TODAS as
+   telas do app, exceto onde o dark é branding intencional.
+   Opt-out: adicione a classe `keep-dark` num wrapper para
+   preservar o estilo original.
+   ============================================================ */
+html:not(.dark) body :is(
+  .bg-\[\#0B0908\],
+  .bg-\[\#0b0908\],
+  .bg-\[\#111\],
+  .bg-\[\#141414\],
+  .bg-\[\#15110E\],
+  .bg-\[\#1a1a1a\],
+  .bg-black,
+  .bg-neutral-900,
+  .bg-neutral-950,
+  .bg-zinc-900,
+  .bg-zinc-950,
+  .bg-gray-900,
+  .bg-gray-950,
+  .bg-slate-900,
+  .bg-slate-950
+):not(.keep-dark):not(.keep-dark *) {
+  background-color: #FBF9F7 !important;
+  color: #0B0908 !important;
+  border-color: #E9E4DF !important;
+}
+
+html:not(.dark) body :is(
+  .bg-\[\#0B0908\],
+  .bg-\[\#0b0908\],
+  .bg-\[\#111\],
+  .bg-\[\#141414\],
+  .bg-\[\#15110E\],
+  .bg-\[\#1a1a1a\],
+  .bg-black,
+  .bg-neutral-900,
+  .bg-neutral-950,
+  .bg-zinc-900,
+  .bg-zinc-950,
+  .bg-gray-900,
+  .bg-gray-950,
+  .bg-slate-900,
+  .bg-slate-950
+):not(.keep-dark):not(.keep-dark *) :is(
+  .text-white,
+  .text-white\/90,
+  .text-white\/80,
+  .text-white\/70,
+  .text-white\/60,
+  .text-white\/50,
+  .text-white\/40,
+  .text-white\/30,
+  .text-neutral-100,
+  .text-neutral-200,
+  .text-neutral-300,
+  .text-zinc-100,
+  .text-zinc-200,
+  .text-zinc-300,
+  .text-gray-100,
+  .text-gray-200,
+  .text-gray-300,
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300
+) {
+  color: #0B0908 !important;
+}
+
+html:not(.dark) body :is(
+  .bg-\[\#0B0908\],
+  .bg-\[\#0b0908\],
+  .bg-\[\#15110E\],
+  .bg-black,
+  .bg-neutral-900,
+  .bg-zinc-900,
+  .bg-gray-900,
+  .bg-slate-900
+):not(.keep-dark):not(.keep-dark *) :is(
+  .border-white,
+  .border-white\/5,
+  .border-white\/10,
+  .border-white\/20,
+  .border-white\/30
+) {
+  border-color: #E9E4DF !important;
+}
