@@ -44,6 +44,7 @@ const EnterpriseInviteEmployeesScreen = () => {
   });
   const [depts, setDepts] = useState<Array<{ id: string; name: string }>>([]);
   const [units, setUnits] = useState<Array<{ id: string; name: string }>>([]);
+  const [positions, setPositions] = useState<Array<{ id: string; name: string }>>([]);
   const [managers, setManagers] = useState<Array<{ id: string; full_name: string | null; email: string | null }>>([]);
   const [sending, setSending] = useState(false);
   const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
@@ -62,6 +63,12 @@ const EnterpriseInviteEmployeesScreen = () => {
       ]);
       setDepts((d.data as typeof depts) ?? []);
       setUnits((u.data as typeof units) ?? []);
+      const { data: pos } = await supabase
+        .from("job_positions")
+        .select("id,name")
+        .eq("organization_id", organization.id)
+        .order("name");
+      setPositions((pos as typeof positions) ?? []);
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, full_name")
