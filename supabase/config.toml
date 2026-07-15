@@ -2,3 +2,5 @@ project_id = "txhaizbihxlalznkplaa"
 
 [functions.cms-recommend]
 verify_jwt = true
+[functions.qa-reset-password]
+verify_jwt = false
