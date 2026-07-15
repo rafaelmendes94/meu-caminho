@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     // License precheck
     const { data: org } = await admin
       .from("organizations")
-      .select("licenses_total, licenses_used")
+      .select("name, logo_url, licenses_total, licenses_used")
       .eq("id", orgId)
       .maybeSingle();
     const total = org?.licenses_total ?? 0;
@@ -126,6 +126,49 @@ Deno.serve(async (req) => {
     const baseUrl = origin ? new URL(origin).origin : "";
     const invite_link = `${baseUrl}/enterprise/convite/${token}`;
 
+    // Contexto extra do convite (nome do RH e nomes de departamento/unidade/gestor)
+    const { data: inviter } = await admin
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .maybeSingle();
+    const inviterName = inviter?.full_name ?? null;
+
+    const [{ data: deptRow }, { data: unitRow }, { data: mgrRow }] = await Promise.all([
+      department_id
+        ? admin.from("departments").select("name").eq("id", department_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      unit_id
+        ? admin.from("units").select("name").eq("id", unit_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      manager_id
+        ? admin.from("profiles").select("full_name").eq("id", manager_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const orgName = org?.name ?? "sua empresa";
+    const orgLogo = (org as { logo_url?: string | null } | null)?.logo_url ?? null;
+    const deptName = department ?? (deptRow as { name?: string } | null)?.name ?? null;
+    const unitName = (unitRow as { name?: string } | null)?.name ?? null;
+    const mgrName = (mgrRow as { full_name?: string } | null)?.full_name ?? null;
+    const roleLabel =
+      finalRole === "rh_admin" ? "RH / Administrador"
+      : finalRole === "leader" ? "Liderança"
+      : "Colaborador";
+
+    const emailHtml = buildInviteEmail({
+      recipientName: full_name ?? null,
+      orgName,
+      orgLogo,
+      inviterName,
+      roleLabel,
+      jobTitle: job_title ?? null,
+      deptName,
+      unitName,
+      mgrName,
+      inviteLink: invite_link,
+    });
+
     let emailSent = false;
     if (RESEND_API_KEY && LOVABLE_API_KEY) {
       try {
@@ -139,8 +182,8 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: RESEND_FROM,
             to: [email],
-            subject: "Convite para o Meu Caminho Enterprise",
-            html: `<p>Olá${full_name ? " " + full_name : ""},</p><p>Você foi convidado para o Meu Caminho Enterprise.</p><p><a href="${invite_link}">Aceitar convite</a></p>`,
+            subject: `${orgName} convidou você para o Meu Caminho Enterprise`,
+            html: emailHtml,
           }),
         });
         emailSent = r.ok;
@@ -161,4 +204,116 @@ function json(payload: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function esc(s: string | null | undefined) {
+  if (!s) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildInviteEmail(p: {
+  recipientName: string | null;
+  orgName: string;
+  orgLogo: string | null;
+  inviterName: string | null;
+  roleLabel: string;
+  jobTitle: string | null;
+  deptName: string | null;
+  unitName: string | null;
+  mgrName: string | null;
+  inviteLink: string;
+}) {
+  const greeting = p.recipientName ? `Olá, ${esc(p.recipientName.split(" ")[0])}` : "Olá";
+  const rows: Array<[string, string | null]> = [
+    ["Empresa", p.orgName],
+    ["Papel", p.roleLabel],
+    ["Cargo", p.jobTitle],
+    ["Departamento", p.deptName],
+    ["Unidade", p.unitName],
+    ["Gestor imediato", p.mgrName],
+  ];
+  const detailRows = rows
+    .filter(([, v]) => v)
+    .map(
+      ([k, v]) => `
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #EFEAE4;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8A827B;font-weight:700;width:44%;">${esc(k)}</td>
+        <td style="padding:10px 0;border-bottom:1px solid #EFEAE4;font-size:14px;color:#0B0908;font-weight:600;">${esc(v)}</td>
+      </tr>`,
+    )
+    .join("");
+  const logoBlock = p.orgLogo
+    ? `<img src="${esc(p.orgLogo)}" alt="${esc(p.orgName)}" width="56" height="56" style="border-radius:14px;display:block;margin:0 auto 16px;object-fit:cover;background:#fff;" />`
+    : `<div style="width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:#F88A2B;color:#0B0908;font-weight:800;font-size:22px;line-height:56px;text-align:center;font-family:Arial,sans-serif;">${esc(p.orgName.charAt(0).toUpperCase())}</div>`;
+  const invitedBy = p.inviterName
+    ? `<p style="margin:0 0 20px;color:#5C544D;font-size:14px;line-height:1.6;">${esc(p.inviterName)}, do RH de <strong style="color:#0B0908;">${esc(p.orgName)}</strong>, convidou você para participar do Meu Caminho Enterprise — a plataforma que cuida da sua jornada emocional e profissional dentro da empresa.</p>`
+    : `<p style="margin:0 0 20px;color:#5C544D;font-size:14px;line-height:1.6;"><strong style="color:#0B0908;">${esc(p.orgName)}</strong> convidou você para participar do Meu Caminho Enterprise — a plataforma que cuida da sua jornada emocional e profissional dentro da empresa.</p>`;
+
+  return `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Convite ${esc(p.orgName)}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#F7F4F2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#0B0908;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F4F2;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#FFFFFF;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(11,9,8,0.06);">
+            <tr>
+              <td style="background:#0B0908;padding:28px 32px;text-align:center;">
+                <div style="display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(248,138,43,0.12);color:#F88A2B;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Convite Enterprise</div>
+                <h1 style="margin:14px 0 0;color:#FFFFFF;font-size:22px;font-weight:800;letter-spacing:-0.3px;">Meu Caminho Enterprise</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px 8px;text-align:center;">
+                ${logoBlock}
+                <p style="margin:0;color:#8A827B;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${esc(p.orgName)}</p>
+                <h2 style="margin:8px 0 0;color:#0B0908;font-size:26px;font-weight:800;line-height:1.25;">${greeting},<br/>bem-vindo à sua jornada.</h2>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px 8px;">
+                ${invitedBy}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 32px 8px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F6;border:1px solid #EFEAE4;border-radius:16px;padding:8px 20px;">
+                  ${detailRows}
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px 8px;text-align:center;">
+                <a href="${esc(p.inviteLink)}" style="display:inline-block;padding:16px 32px;background:#F88A2B;color:#0B0908;font-weight:800;font-size:15px;letter-spacing:0.3px;border-radius:14px;text-decoration:none;">Aceitar convite e ativar acesso</a>
+                <p style="margin:16px 0 0;color:#8A827B;font-size:12px;line-height:1.5;">Ou copie e cole este link no navegador:<br/><span style="color:#0B0908;word-break:break-all;">${esc(p.inviteLink)}</span></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px 8px;">
+                <div style="border-top:1px solid #EFEAE4;padding-top:20px;">
+                  <p style="margin:0 0 8px;color:#0B0908;font-size:13px;font-weight:700;">🔒 Sua experiência é privada</p>
+                  <p style="margin:0;color:#5C544D;font-size:12px;line-height:1.6;">Seus check-ins, conversas e reflexões individuais são confidenciais. Sua empresa vê apenas indicadores agregados e anonimizados, nunca respostas pessoais.</p>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 32px 32px;text-align:center;">
+                <p style="margin:0;color:#8A827B;font-size:11px;line-height:1.5;">Este convite foi enviado para você por ${esc(p.orgName)} via Meu Caminho Enterprise.<br/>Se você não esperava este e-mail, pode ignorá-lo com segurança.</p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:16px 0 0;color:#B5ADA6;font-size:11px;">© Meu Caminho Enterprise</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
 }
