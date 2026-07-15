@@ -224,19 +224,19 @@ export default function EnterpriseOrganizationalDNAScreen() {
         {report && (
           <>
             {/* Score geral */}
-            <section className="rounded-[2.5rem] bg-gradient-to-br from-[#0B0908] to-[#1a1614] text-white p-10 md:p-14 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#F88A2B]/20 blur-[120px] rounded-full -mr-40 -mt-40" />
+            <section className="rounded-[2.5rem] bg-white text-[#0B0908] p-10 md:p-14 border border-[#E9E4DF] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.10)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#F88A2B]/10 blur-[120px] rounded-full -mr-40 -mt-40" />
               <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-8 justify-between">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] mb-3">Score geral organizacional</div>
                   <div className="flex items-end gap-3">
-                    <div className="text-[72px] md:text-[96px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <div className="text-[72px] md:text-[96px] font-bold leading-none text-[#0B0908]" style={{ fontFamily: "'Playfair Display', serif" }}>
                       {fmt(report.overall_score)}
                     </div>
-                    <div className="text-[16px] text-white/60 pb-4 font-bold">/100</div>
+                    <div className="text-[16px] text-[#999] pb-4 font-bold">/100</div>
                   </div>
                 </div>
-                <div className="max-w-md text-[13px] text-white/70 leading-relaxed">
+                <div className="max-w-md text-[13px] text-[#444] leading-relaxed">
                   Síntese executiva do comportamento coletivo agregado nos últimos {report.period_start ? Math.round((new Date(report.period_end ?? "").getTime() - new Date(report.period_start).getTime()) / 86_400_000) : 90} dias.
                 </div>
               </div>

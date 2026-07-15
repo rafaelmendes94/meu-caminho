@@ -293,10 +293,10 @@ export default function EnterpriseRHDashboardScreen() {
 
         {/* 1. HERO EXECUTIVO */}
         <section>
-          <div className="rounded-2xl bg-gradient-to-br from-[#0B0908] via-[#141010] to-[#1F1712] text-white p-6 md:p-8 relative overflow-hidden border border-[#F88A2B]/20 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.35)]">
+          <div className="rounded-2xl bg-white text-[#0B0908] p-6 md:p-8 relative overflow-hidden border border-[#E9E4DF] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.12)]">
             <div className="flex flex-col lg:flex-row lg:items-center gap-6">
               <div className="flex items-center gap-4 min-w-0 flex-1">
-                <div className="h-14 w-14 rounded-xl bg-white/95 grid place-items-center shrink-0 ring-1 ring-white/10 overflow-hidden">
+                <div className="h-14 w-14 rounded-xl bg-[#FFF6EC] grid place-items-center shrink-0 ring-1 ring-[#F88A2B]/20 overflow-hidden">
                   {orgLogo
                     ? <img src={orgLogo} alt={orgName} className="h-full w-full object-cover" />
                     : <Building2 className="h-6 w-6 text-[#F88A2B]" />}
@@ -304,11 +304,11 @@ export default function EnterpriseRHDashboardScreen() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="px-2 py-0.5 rounded-full bg-[#F88A2B]/15 text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] border border-[#F88A2B]/25">Executive Cockpit</span>
-                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/70">{plan}</span>
-                    {seats && <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/70">{team.employees}/{seats} licenças</span>}
+                    <span className="px-2 py-0.5 rounded-full bg-[#F5F1EC] text-[10px] font-semibold uppercase tracking-wider text-[#666]">{plan}</span>
+                    {seats && <span className="px-2 py-0.5 rounded-full bg-[#F5F1EC] text-[10px] font-semibold uppercase tracking-wider text-[#666]">{team.employees}/{seats} licenças</span>}
                   </div>
-                  <h1 className="text-[26px] md:text-[32px] font-bold leading-tight truncate" style={{ fontFamily: "'Playfair Display', serif" }}>{orgName}</h1>
-                  <p className="text-[12px] text-white/60 mt-1">
+                  <h1 className="text-[26px] md:text-[32px] font-bold leading-tight truncate text-[#0B0908]" style={{ fontFamily: "'Playfair Display', serif" }}>{orgName}</h1>
+                  <p className="text-[12px] text-[#666] mt-1">
                     {dna?.generated_at && <>DNA: {new Date(dna.generated_at).toLocaleDateString("pt-BR")} · </>}
                     {weeklyInsights.top && <>Insight: {weeklyInsights.top.title.slice(0, 40)}{weeklyInsights.top.title.length > 40 ? "…" : ""} · </>}
                     Atualizado agora
@@ -319,18 +319,18 @@ export default function EnterpriseRHDashboardScreen() {
               {/* Score inline */}
               <button
                 onClick={() => navigate('/enterprise/rh/score-organizacional')}
-                className="flex items-center gap-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-4 transition-colors"
+                className="flex items-center gap-4 rounded-xl bg-[#FAF7F3] hover:bg-[#F5F1EC] border border-[#E9E4DF] px-5 py-4 transition-colors"
                 aria-label="Abrir Score Organizacional"
               >
                 <div className="text-right">
                   <div className="text-[9px] font-bold uppercase tracking-widest text-[#F88A2B]">Score</div>
-                  <div className="text-[36px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <div className="text-[36px] font-bold leading-none text-[#0B0908]" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {orgScore?.overall != null ? Math.round(Number(orgScore.overall)) : "•••"}
-                    <span className="text-[12px] text-white/50 font-bold">/100</span>
+                    <span className="text-[12px] text-[#999] font-bold">/100</span>
                   </div>
-                  <div className="text-[10px] text-white/60 mt-1">
+                  <div className="text-[10px] text-[#666] mt-1">
                     {scoreDelta != null && (
-                      <span className={scoreDelta >= 0 ? "text-emerald-400" : "text-red-400"}>
+                      <span className={scoreDelta >= 0 ? "text-emerald-600" : "text-red-600"}>
                         {scoreDelta >= 0 ? "+" : ""}{scoreDelta}
                       </span>
                     )}
@@ -353,7 +353,7 @@ export default function EnterpriseRHDashboardScreen() {
                 <button
                   key={a.to}
                   onClick={() => navigate(a.to)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-[#0B0908] text-[12px] font-semibold hover:bg-[#F88A2B] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F5F1EC] text-[#0B0908] text-[12px] font-semibold hover:bg-[#F88A2B] hover:text-white transition-colors border border-[#E9E4DF]"
                 >
                   <a.icon className="h-3.5 w-3.5" /> {a.label}
                 </button>
