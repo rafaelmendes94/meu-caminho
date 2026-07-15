@@ -6849,6 +6849,10 @@ export type Database = {
         | "video"
         | "audio"
         | "material"
+        | "reflection"
+        | "exercise"
+        | "ritual"
+        | "message"
       health_status: "healthy" | "warning" | "critical" | "unknown"
       lesson_type: "video" | "text" | "pdf" | "audio" | "exercise"
       perf_comparator: "gt" | "gte" | "lt" | "lte" | "eq"
@@ -7038,6 +7042,10 @@ export const Constants = {
         "video",
         "audio",
         "material",
+        "reflection",
+        "exercise",
+        "ritual",
+        "message",
       ],
       health_status: ["healthy", "warning", "critical", "unknown"],
       lesson_type: ["video", "text", "pdf", "audio", "exercise"],
