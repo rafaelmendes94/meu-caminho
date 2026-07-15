@@ -4,10 +4,11 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
-const MODEL = "google/gemini-2.5-pro";
+const DEFAULT_MODEL = "google/gemini-2.5-pro";
 
-const SYSTEM = `Você é um analista que gera um Perfil Inteligente a partir de uma entrevista conversacional do colaborador. Baseie-se ESTRITAMENTE no que foi dito. Nunca faça diagnóstico clínico. Nunca use linguagem médica ou psicológica. Se não houver evidência para um campo, deixe vazio e use confidence "low". Responda APENAS com um JSON válido, sem texto adicional, no formato exato abaixo:
+const DEFAULT_SYSTEM = `Você é um analista que gera um Perfil Inteligente a partir de uma entrevista conversacional do colaborador. Baseie-se ESTRITAMENTE no que foi dito. Nunca faça diagnóstico clínico. Nunca use linguagem médica ou psicológica. Se não houver evidência para um campo, deixe vazio e use confidence "low". Responda APENAS com um JSON válido, sem texto adicional.`;
 
+const OUTPUT_SHAPE = `Formato de saída obrigatório:
 {
   "profile_professional": { "work_style": "", "experience_level": "", "strengths": [], "growth_areas": [] },
   "profile_development": { "learning_style": "", "current_focus": "", "aspirations": [] },
@@ -18,6 +19,26 @@ const SYSTEM = `Você é um analista que gera um Perfil Inteligente a partir de 
   "summary": "",
   "confidence": "low"
 }`;
+
+async function loadProfileConfig(admin: any): Promise<{ system: string; model: string }> {
+  try {
+    const { data } = await admin
+      .from("ai_prompt_configs")
+      .select("tone_config, model_config, status")
+      .eq("key", "onboarding")
+      .maybeSingle();
+    if (!data || data.status !== "published") throw new Error("no_config");
+    const tc = (data.tone_config ?? {}) as any;
+    const mc = (data.model_config ?? {}) as any;
+    const base = (typeof tc.profile_prompt === "string" && tc.profile_prompt.trim()) ? tc.profile_prompt : DEFAULT_SYSTEM;
+    return {
+      system: `${base}\n\n${OUTPUT_SHAPE}`,
+      model: mc.profile_model || DEFAULT_MODEL,
+    };
+  } catch {
+    return { system: `${DEFAULT_SYSTEM}\n\n${OUTPUT_SHAPE}`, model: DEFAULT_MODEL };
+  }
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -62,6 +83,8 @@ Deno.serve(async (req) => {
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join("\n");
 
+    const cfg = await loadProfileConfig(admin);
+
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -69,9 +92,9 @@ Deno.serve(async (req) => {
         "Authorization": `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: cfg.model,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: cfg.system },
           { role: "user", content: `Transcrição da entrevista:\n\n${transcript}\n\nGere o JSON do Perfil Inteligente.` },
         ],
         response_format: { type: "json_object" },
@@ -97,7 +120,7 @@ Deno.serve(async (req) => {
       profile_engagement: parsed.profile_engagement ?? {},
       summary: typeof parsed.summary === "string" ? parsed.summary : "",
       confidence: ["low","medium","high"].includes(parsed.confidence) ? parsed.confidence : "low",
-      generated_by_model: MODEL,
+      generated_by_model: cfg.model,
       generated_at: new Date().toISOString(),
     };
 

@@ -206,6 +206,7 @@ const PlatformActionPlanConfigScreen = lazy(() => import("./pages/PlatformAction
 const PlatformIntelligentRitualConfigScreen = lazy(() => import("./pages/PlatformIntelligentRitualConfigScreen.tsx"));
 const PlatformRecommendationEngineConfigScreen = lazy(() => import("./pages/PlatformRecommendationEngineConfigScreen.tsx"));
 const PlatformOrchestratorConfigScreen = lazy(() => import("./pages/PlatformOrchestratorConfigScreen.tsx"));
+const PlatformOnboardingConfigScreen = lazy(() => import("./pages/PlatformOnboardingConfigScreen.tsx"));
 const PlatformAIComingSoonScreen = lazy(() => import("./pages/PlatformAIComingSoonScreen.tsx"));
 const PlatformKnowledgeHubScreen = lazy(() => import("./pages/PlatformKnowledgeHubScreen.tsx"));
 const PlatformAILabScreen = lazy(() => import("./pages/PlatformAILabScreen.tsx"));
@@ -538,6 +539,7 @@ const App = () => (
          <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Rituais Inteligentes" /></PlatformAdmin>} />
          <Route path="/admin/ai/recomendacoes" element={<PlatformAdmin><PlatformRecommendationEngineConfigScreen /></PlatformAdmin>} />
         <Route path="/admin/ai/orchestrator" element={<PlatformAdmin><PlatformOrchestratorConfigScreen /></PlatformAdmin>} />
+        <Route path="/admin/ai/onboarding" element={<PlatformAdmin><PlatformOnboardingConfigScreen /></PlatformAdmin>} />
          <Route path="/admin/knowledge" element={<PlatformAdmin><PlatformKnowledgeHubScreen /></PlatformAdmin>} />
           <Route path="/admin/ai/lab" element={<PlatformAdmin><PlatformAILabScreen /></PlatformAdmin>} />
 

@@ -5,11 +5,36 @@ import { enforceRateLimit } from "../_shared/rate_limit.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
-const MODEL = "google/gemini-2.5-flash";
+const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
-const SYSTEM_PROMPT = `Você é o guia do Meu Caminho Enterprise. Conduza uma entrevista conversacional, acolhedora e breve em português do Brasil. Seu objetivo é compreender contexto profissional, rotina, relação com liderança, percepção do ambiente, objetivos, comunicação, energia, engajamento e desafios atuais. Faça uma pergunta por vez. Nunca faça diagnóstico clínico. Nunca use linguagem médica. Nunca diga que está avaliando saúde mental. Ao perceber que já possui informações suficientes, convide o usuário a finalizar e gerar seu Perfil Inteligente.
+const DEFAULT_SYSTEM_PROMPT = `Você é o guia do Meu Caminho Enterprise. Conduza uma entrevista conversacional, acolhedora e breve em português do Brasil. Seu objetivo é compreender contexto profissional, rotina, relação com liderança, percepção do ambiente, objetivos, comunicação, energia, engajamento e desafios atuais. Faça uma pergunta por vez. Nunca faça diagnóstico clínico. Nunca use linguagem médica. Nunca diga que está avaliando saúde mental. Ao perceber que já possui informações suficientes, convide o usuário a finalizar e gerar seu Perfil Inteligente.
 
 Regras: 1 pergunta por resposta. Tom humano, respeitoso e breve. Máximo 180 palavras. Nunca cite RH. Nunca diga que as respostas serão vistas pela empresa. Reforce privacidade quando fizer sentido.`;
+
+async function loadOnboardingConfig(admin: any): Promise<{ system: string; model: string; temperature: number; maxTokens: number; guardrails: string[] }> {
+  try {
+    const { data } = await admin
+      .from("ai_prompt_configs")
+      .select("system_instructions, model_config, guardrails, status")
+      .eq("key", "onboarding")
+      .maybeSingle();
+    if (!data || data.status !== "published") throw new Error("no_config");
+    const mc = (data.model_config ?? {}) as any;
+    const guardrails = Array.isArray(data.guardrails) ? (data.guardrails as string[]) : [];
+    const system = guardrails.length
+      ? `${data.system_instructions}\n\nGuardrails:\n- ${guardrails.join("\n- ")}`
+      : (data.system_instructions as string);
+    return {
+      system: system || DEFAULT_SYSTEM_PROMPT,
+      model: mc.chat_model || DEFAULT_MODEL,
+      temperature: typeof mc.temperature === "number" ? mc.temperature : 0.7,
+      maxTokens: typeof mc.max_tokens === "number" ? mc.max_tokens : 800,
+      guardrails,
+    };
+  } catch {
+    return { system: DEFAULT_SYSTEM_PROMPT, model: DEFAULT_MODEL, temperature: 0.7, maxTokens: 800, guardrails: [] };
+  }
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -45,6 +70,8 @@ Deno.serve(async (req) => {
       .from("profiles").select("organization_id").eq("id", user.id).maybeSingle();
     const organization_id = profile?.organization_id ?? null;
 
+    const cfg = await loadOnboardingConfig(admin);
+
     // Get or create interview
     let interviewId: string | null = interview_id ?? null;
     if (interviewId) {
@@ -54,7 +81,7 @@ Deno.serve(async (req) => {
     } else {
       const { data: created, error: cErr } = await admin
         .from("onboarding_interviews")
-        .insert({ user_id: user.id, organization_id, model_used: MODEL })
+        .insert({ user_id: user.id, organization_id, model_used: cfg.model })
         .select("id").single();
       if (cErr) return json({ error: cErr.message }, 500);
       interviewId = created.id;
@@ -74,7 +101,7 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: true });
 
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: cfg.system },
       ...(history ?? []).map((m) => ({ role: m.role, content: m.content })),
     ];
     if (finish) {
@@ -90,7 +117,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${LOVABLE_API_KEY}`,
       },
-      body: JSON.stringify({ model: MODEL, messages }),
+      body: JSON.stringify({ model: cfg.model, messages, temperature: cfg.temperature, max_tokens: cfg.maxTokens }),
     });
     if (aiRes.status === 429) return json({ error: "rate_limited" }, 429);
     if (aiRes.status === 402) return json({ error: "credits_exhausted" }, 402);
