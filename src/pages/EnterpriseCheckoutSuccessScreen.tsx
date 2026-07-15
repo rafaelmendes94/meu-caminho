@@ -34,7 +34,7 @@ const EnterpriseCheckoutSuccessScreen = () => {
 
   return (
     <EnterpriseCheckoutLayout currentStep="acesso">
-      <div className="animate-fade-in max-w-[1200px] mx-auto text-[#0B0908]">
+      <div className="keep-dark animate-fade-in max-w-[1200px] mx-auto text-[#0B0908]">
         {/* Cinema Hero Card - Centralized Premium */}
         <section className="bg-[#0B0908] rounded-[3rem] p-10 md:p-20 relative overflow-hidden mb-12 shadow-2xl text-center">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full lg:w-[800px] h-[500px] bg-[#F88A2B]/20 blur-[120px] rounded-full -mt-60 animate-pulse pointer-events-none"></div>

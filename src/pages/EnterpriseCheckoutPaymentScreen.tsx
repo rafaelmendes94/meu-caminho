@@ -49,7 +49,7 @@ const EnterpriseCheckoutPaymentScreen = () => {
 
   return (
     <EnterpriseCheckoutLayout currentStep="pagamento">
-      <div className="animate-fade-in max-w-[1200px] mx-auto">
+      <div className="keep-dark animate-fade-in max-w-[1200px] mx-auto">
         <div className="grid lg:grid-cols-12 gap-8 items-start">
           
           {/* Main Column: Payment & Billing */}

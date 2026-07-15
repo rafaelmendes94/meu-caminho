@@ -55,7 +55,7 @@ const EnterpriseCheckoutCompanyDataScreen = () => {
 
   return (
     <EnterpriseCheckoutLayout currentStep="empresa">
-      <div className="animate-fade-in max-w-[1200px] mx-auto">
+      <div className="keep-dark animate-fade-in max-w-[1200px] mx-auto">
         {/* Grid Layout: Form (7) | Summary (5) */}
         <div className="grid lg:grid-cols-12 gap-8 items-start">
           
