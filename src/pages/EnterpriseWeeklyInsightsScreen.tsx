@@ -34,6 +34,45 @@ const severityColor = (s: string | null) => {
 const toList = (v: unknown): string[] =>
   Array.isArray(v) ? v.map((x) => (typeof x === "string" ? x : JSON.stringify(x))) : [];
 
+const EVIDENCE_LABELS: Record<string, string> = {
+  window_days: "Janela analisada",
+  participants: "Participantes",
+  total_profiles: "Perfis totais",
+  pulse_participants: "Pulsos respondidos",
+  checkin_participants: "Check-ins realizados",
+  avg_energy: "Energia média",
+  avg_engagement: "Engajamento médio",
+  avg_communication: "Comunicação média",
+  avg_equilibrium: "Equilíbrio médio",
+  avg_recovery: "Recuperação média",
+  base_score: "Score base",
+  overall_score: "Score geral",
+  risk_penalty: "Penalidade de risco",
+  confidence: "Confiança",
+  unit: "Unidade",
+  unit_name: "Unidade",
+  trend: "Tendência",
+  delta: "Variação",
+  variation: "Variação",
+};
+
+const humanizeKey = (k: string) =>
+  EVIDENCE_LABELS[k] ??
+  k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+const formatEvidenceValue = (k: string, v: unknown): string => {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "number") {
+    if (k === "window_days") return `${v} dias`;
+    if (k === "confidence" || (v > 0 && v < 1 && k.startsWith("avg_"))) {
+      return `${Math.round(v * 100)}%`;
+    }
+    return Number.isInteger(v) ? String(v) : v.toFixed(1);
+  }
+  if (typeof v === "boolean") return v ? "Sim" : "Não";
+  if (typeof v === "string") return v;
+  return JSON.stringify(v);
+};
 export default function EnterpriseWeeklyInsightsScreen() {
   const { organization } = useAuth();
   const { toast } = useToast();
@@ -228,19 +267,31 @@ export default function EnterpriseWeeklyInsightsScreen() {
                   </header>
                   {i.summary && <p className="text-[13px] text-[#555] leading-relaxed">{i.summary}</p>}
                   {evidenceKeys.length > 0 && (
-                    <div className="rounded-2xl bg-[#F7F4F2] p-3 border border-[#E5E0DA]">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-2 flex items-center gap-1.5">
-                        <AlertCircle className="w-3 h-3" /> Evidências
+                    <div className="rounded-2xl bg-gradient-to-br from-[#FBF8F5] to-[#F7F4F2] p-4 border border-[#E5E0DA]">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-3 flex items-center gap-1.5">
+                        <AlertCircle className="w-3 h-3 text-[#F88A2B]" /> Evidências
                       </p>
-                      <div className="space-y-1">
-                        {evidenceKeys.slice(0, 6).map((k) => (
-                          <div key={k} className="flex items-center justify-between text-[11px] text-[#555]">
-                            <span className="font-medium truncate mr-2">{k}</span>
-                            <span className="text-[#999] truncate max-w-[60%] text-right">
-                              {String((i.evidence as any)?.[k]).slice(0, 60)}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="grid grid-cols-2 gap-2">
+                        {evidenceKeys.slice(0, 6).map((k) => {
+                          const raw = (i.evidence as any)?.[k];
+                          const isPrimitive =
+                            raw === null ||
+                            ["string", "number", "boolean"].includes(typeof raw);
+                          if (!isPrimitive) return null;
+                          return (
+                            <div
+                              key={k}
+                              className="rounded-xl bg-white border border-[#EFE9E3] px-3 py-2 flex flex-col gap-0.5"
+                            >
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-[#999] truncate">
+                                {humanizeKey(k)}
+                              </span>
+                              <span className="text-[14px] font-bold text-[#111] leading-tight tabular-nums">
+                                {formatEvidenceValue(k, raw)}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
