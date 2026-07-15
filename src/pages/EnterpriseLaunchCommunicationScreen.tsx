@@ -22,10 +22,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const EnterpriseLaunchCommunicationScreen = () => {
   const navigate = useNavigate();
+  const { hasAnyRole } = useAuth();
+  const canSend = hasAnyRole(["owner", "rh_admin", "platform_admin"]);
   const [tone, setTone] = useState("Acolhedor");
+  const [title, setTitle] = useState("Uma nova jornada emocional começa agora");
+  const [sending, setSending] = useState(false);
   const [message, setMessage] = useState(
     "Estamos iniciando uma nova jornada coletiva de cuidado emocional.\n\nO Meu Caminho Enterprise foi criado para apoiar equilíbrio emocional, clareza mental e inteligência emocional — sempre com total privacidade individual."
   );
@@ -49,10 +55,35 @@ const EnterpriseLaunchCommunicationScreen = () => {
     { name: "Link privado", icon: Link2, status: "Gerado" },
   ];
 
-  const handlePrepare = () => {
-    toast.success("Comunicação pronta para lançamento.", {
-      className: "bg-[#0B0908] text-white border-none rounded-2xl p-4 font-montserrat",
-    });
+  const handleSend = async () => {
+    if (!canSend) {
+      toast.error("Você não tem permissão para enviar comunicados.");
+      return;
+    }
+    if (!title.trim() || !message.trim()) {
+      toast.error("Preencha o título e a mensagem.");
+      return;
+    }
+    const ok = window.confirm(
+      "Enviar este comunicado como notificação in-app para todos os colaboradores da organização?"
+    );
+    if (!ok) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "broadcast-org-announcement",
+        { body: { title: title.trim(), message: message.trim(), tone } }
+      );
+      if (error) throw error;
+      const count = (data as any)?.recipients ?? 0;
+      toast.success(`Comunicado enviado para ${count} colaborador${count === 1 ? "" : "es"}.`, {
+        className: "bg-[#0B0908] text-white border-none rounded-2xl p-4 font-montserrat",
+      });
+    } catch (e: any) {
+      toast.error(`Falha ao enviar: ${e?.message ?? "erro desconhecido"}`);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -113,6 +144,13 @@ const EnterpriseLaunchCommunicationScreen = () => {
                 <Type className="w-5 h-5 text-[#0B0908]/20" />
               </div>
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-[#0B0908]/5 focus-within:border-[#F88A2B]/30 transition-all">
+                <input
+                  className="w-full mb-4 pb-3 border-b border-[#0B0908]/10 bg-transparent text-[#0B0908] font-bold text-lg focus:outline-none focus:border-[#F88A2B]"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Título do comunicado"
+                  maxLength={160}
+                />
                 <textarea 
                   className="w-full h-48 bg-transparent text-[#0B0908]/80 leading-relaxed font-light resize-none focus:outline-none"
                   value={message}
@@ -290,12 +328,18 @@ const EnterpriseLaunchCommunicationScreen = () => {
         {/* Final Actions */}
         <section className="flex flex-col items-center gap-8 py-12">
           <button 
-            onClick={handlePrepare}
-            className="w-full max-w-md bg-[#F88A2B] text-white py-6 rounded-full font-bold text-xl shadow-2xl shadow-[#F88A2B]/30 hover:bg-[#e07b25] transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group"
+            onClick={handleSend}
+            disabled={sending || !canSend}
+            className="w-full max-w-md bg-[#F88A2B] text-white py-6 rounded-full font-bold text-xl shadow-2xl shadow-[#F88A2B]/30 hover:bg-[#e07b25] transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            Preparar comunicação
+            {sending ? "Enviando..." : "Enviar comunicado agora"}
           </button>
+          {!canSend && (
+            <p className="text-xs text-[#0B0908]/50 -mt-6">
+              Apenas owner ou RH Admin podem disparar o comunicado.
+            </p>
+          )}
           
           <button 
             onClick={() => navigate("/enterprise/rh/onboarding")}
