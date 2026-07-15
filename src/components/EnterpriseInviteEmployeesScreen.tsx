@@ -308,18 +308,27 @@ const EnterpriseInviteEmployeesScreen = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Gestor imediato (opcional)</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">
+                  Gestor imediato {form.role === "rh_admin" ? "(opcional para RH/Admin)" : <span className="text-[#F88A2B]">*</span>}
+                </label>
                 <Select value={form.manager_id || "__none"} onValueChange={(v) => setForm((f) => ({ ...f, manager_id: v === "__none" ? "" : v }))}>
                   <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
                     <SelectValue placeholder="Selecione um líder..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-black/5 max-h-72">
-                    <SelectItem value="__none">Sem gestor</SelectItem>
+                    <SelectItem value="__none" disabled={form.role !== "rh_admin"}>
+                      Sem gestor {form.role !== "rh_admin" ? "(indisponível)" : ""}
+                    </SelectItem>
                     {managers.map((m) => (
                       <SelectItem key={m.id} value={m.id}>{m.full_name ?? "(sem nome)"}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {form.role !== "rh_admin" && (
+                  <p className="text-[10px] text-[#0B0908]/40 ml-1">
+                    Obrigatório. O organograma usa esse vínculo para montar a hierarquia automaticamente.
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Papel na plataforma</label>
