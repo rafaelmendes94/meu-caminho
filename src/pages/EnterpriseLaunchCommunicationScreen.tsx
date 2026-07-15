@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -25,9 +25,18 @@ import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+interface AnnouncementBatch {
+  batch_id: string;
+  title: string;
+  body: string | null;
+  created_at: string;
+  total_recipients: number;
+  read_count: number;
+}
+
 const EnterpriseLaunchCommunicationScreen = () => {
   const navigate = useNavigate();
-  const { hasAnyRole } = useAuth();
+  const { hasAnyRole, organization } = useAuth();
   const canSend = hasAnyRole(["owner", "rh_admin", "platform_admin"]);
   const [tone, setTone] = useState("Acolhedor");
   const [title, setTitle] = useState("Uma nova jornada emocional começa agora");
@@ -35,6 +44,42 @@ const EnterpriseLaunchCommunicationScreen = () => {
   const [message, setMessage] = useState(
     "Estamos iniciando uma nova jornada coletiva de cuidado emocional.\n\nO Meu Caminho Enterprise foi criado para apoiar equilíbrio emocional, clareza mental e inteligência emocional — sempre com total privacidade individual."
   );
+  const [history, setHistory] = useState<AnnouncementBatch[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const loadHistory = useCallback(async () => {
+    if (!organization?.id || !canSend) return;
+    setHistoryLoading(true);
+    const { data, error } = await (supabase as any).rpc("get_org_announcement_history", {
+      _organization_id: organization.id,
+    });
+    if (!error) setHistory((data ?? []) as AnnouncementBatch[]);
+    setHistoryLoading(false);
+  }, [organization?.id, canSend]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  useEffect(() => {
+    if (!organization?.id || !canSend) return;
+    const channel = supabase
+      .channel(`org-notifications-${organization.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `organization_id=eq.${organization.id}`,
+        },
+        () => loadHistory()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [organization?.id, canSend, loadHistory]);
 
   const tones = ["Acolhedor", "Inspirador", "Institucional leve", "Executivo humano"];
   
@@ -79,6 +124,7 @@ const EnterpriseLaunchCommunicationScreen = () => {
       toast.success(`Comunicado enviado para ${count} colaborador${count === 1 ? "" : "es"}.`, {
         className: "bg-[#0B0908] text-white border-none rounded-2xl p-4 font-montserrat",
       });
+      loadHistory();
     } catch (e: any) {
       toast.error(`Falha ao enviar: ${e?.message ?? "erro desconhecido"}`);
     } finally {
