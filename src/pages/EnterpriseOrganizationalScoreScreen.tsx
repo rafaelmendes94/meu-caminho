@@ -126,30 +126,30 @@ export default function EnterpriseOrganizationalScoreScreen() {
 
         {latest && (
           <>
-            <section className="rounded-[2.5rem] bg-gradient-to-br from-[#0B0908] to-[#1a1614] text-white p-10 md:p-14 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#F88A2B]/20 blur-[120px] rounded-full -mr-40 -mt-40" />
+            <section className="rounded-[2.5rem] bg-white text-[#0B0908] p-10 md:p-14 border border-[#E9E4DF] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.10)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#F88A2B]/10 blur-[120px] rounded-full -mr-40 -mt-40" />
               <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-8 justify-between">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#F88A2B] mb-3">Score atual</div>
                   <div className="flex items-end gap-3">
-                    <div className="text-[72px] md:text-[96px] font-bold leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <div className="text-[72px] md:text-[96px] font-bold leading-none text-[#0B0908]" style={{ fontFamily: "'Playfair Display', serif" }}>
                       {fmt(latest.overall_score)}
                     </div>
-                    <div className="text-[16px] text-white/60 pb-4 font-bold">/100</div>
+                    <div className="text-[16px] text-[#999] pb-4 font-bold">/100</div>
                   </div>
                   {delta !== null && (
-                    <div className={`mt-3 inline-flex items-center gap-1.5 text-[12px] font-bold ${delta > 0 ? "text-emerald-400" : delta < 0 ? "text-red-400" : "text-white/60"}`}>
+                    <div className={`mt-3 inline-flex items-center gap-1.5 text-[12px] font-bold ${delta > 0 ? "text-emerald-600" : delta < 0 ? "text-red-600" : "text-[#666]"}`}>
                       {delta > 0 ? <TrendingUp className="w-4 h-4" /> : delta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
                       {delta > 0 ? "+" : ""}{Math.round(delta)} vs score anterior
                     </div>
                   )}
                 </div>
-                <div className="max-w-md text-[13px] text-white/70 leading-relaxed space-y-2">
-                  <div><span className="text-white/50">Confiança:</span> <b>{latest.confidence != null ? `${Math.round(Number(latest.confidence) * 100)}%` : "•••"}</b></div>
-                  <div><span className="text-white/50">Penalidade de risco:</span> <b>-{Math.round(Number(latest.risk_penalty ?? 0))}</b></div>
-                  <div><span className="text-white/50">Data:</span> <b>{new Date(latest.score_date).toLocaleDateString("pt-BR")}</b></div>
+                <div className="max-w-md text-[13px] text-[#444] leading-relaxed space-y-2">
+                  <div><span className="text-[#999]">Confiança:</span> <b className="text-[#0B0908]">{latest.confidence != null ? `${Math.round(Number(latest.confidence) * 100)}%` : "•••"}</b></div>
+                  <div><span className="text-[#999]">Penalidade de risco:</span> <b className="text-[#0B0908]">-{Math.round(Number(latest.risk_penalty ?? 0))}</b></div>
+                  <div><span className="text-[#999]">Data:</span> <b className="text-[#0B0908]">{new Date(latest.score_date).toLocaleDateString("pt-BR")}</b></div>
                   {insufficient && (
-                    <div className="text-amber-300 mt-2">Amostra insuficiente para gerar score confiável.</div>
+                    <div className="text-amber-600 mt-2">Amostra insuficiente para gerar score confiável.</div>
                   )}
                 </div>
               </div>
