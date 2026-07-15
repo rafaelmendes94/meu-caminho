@@ -11,6 +11,8 @@ import diagImg from"@/assets/trilha/diagnostico.jpg";
 import heroImg from"@/assets/trilha/hero.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
 import { useCmsTrack } from "@/hooks/use-cms-items";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const ink900 ="#111111";
 const ink500 ="#666666";
