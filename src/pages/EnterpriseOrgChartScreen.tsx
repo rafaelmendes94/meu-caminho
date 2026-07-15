@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { EnterpriseRHLayout } from "@/components/EnterpriseRHNavigation";
-import { ChevronRight, ChevronDown, Users, RefreshCw, ShieldCheck, BarChart3 } from "lucide-react";
+import { ChevronRight, ChevronDown, Users, RefreshCw, ShieldCheck, BarChart3, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useOrgMinGroupSize } from "@/hooks/useOrgMinGroupSize";
 import { useRealtime } from "@/hooks/useRealtime";
 
@@ -116,6 +117,7 @@ function NodeRow({
 export default function EnterpriseOrgChartScreen() {
   const { organization } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const minGroup = useOrgMinGroupSize();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(false);
@@ -148,6 +150,16 @@ export default function EnterpriseOrgChartScreen() {
   );
 
   const tree = useMemo(() => buildTree(nodes), [nodes]);
+  const orphans = useMemo(
+    () =>
+      nodes.filter(
+        (n) =>
+          !n.manager_id &&
+          n.status !== "inactive" &&
+          n.direct_reports_count === 0,
+      ),
+    [nodes],
+  );
   const selectedNode = useMemo(() => nodes.find((n) => n.profile_id === selectedId) ?? null, [nodes, selectedId]);
 
   const loadIndicators = async (id: string) => {
@@ -208,6 +220,39 @@ export default function EnterpriseOrgChartScreen() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <section className="lg:col-span-2 space-y-2">
+            {orphans.length > 0 && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3 mb-3">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-amber-900">
+                    {orphans.length} colaborador{orphans.length > 1 ? "es" : ""} sem gestor definido
+                  </p>
+                  <p className="text-[11px] text-amber-800 mt-0.5">
+                    Aparecem como raízes soltas na árvore. Defina um gestor imediato para cada um em Administração de colaboradores para que a hierarquia fique consistente.
+                  </p>
+                  <details className="mt-2">
+                    <summary className="text-[11px] font-bold text-amber-900 cursor-pointer hover:underline">
+                      Ver lista
+                    </summary>
+                    <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                      {orphans.map((o) => (
+                        <li key={o.profile_id} className="text-[12px] text-amber-900 flex items-center justify-between gap-2">
+                          <span className="truncate">
+                            {o.full_name ?? "Sem nome"} · {o.job_title ?? "—"}
+                          </span>
+                          <button
+                            onClick={() => navigate(`/enterprise/rh/equipe/${o.profile_id}`)}
+                            className="text-[10px] font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 shrink-0"
+                          >
+                            Corrigir
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                </div>
+              </div>
+            )}
             <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] px-1">Hierarquia</h3>
             {tree.length === 0 && !loading && (
               <div className="rounded-3xl bg-white border border-black/5 p-10 text-center text-[#666]">

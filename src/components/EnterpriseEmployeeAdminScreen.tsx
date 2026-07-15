@@ -105,6 +105,19 @@ const EnterpriseEmployeeAdminScreen = () => {
 
   const save = async () => {
     if (!id) return;
+    const isAdmin = rolesList.some((r) => r === "rh_admin" || r === "owner");
+    if (!isAdmin && !form.manager_id) {
+      toast({
+        title: "Gestor imediato é obrigatório",
+        description: "Selecione um gestor. Só RH/Owner pode ficar sem gestor (topo da organização).",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (form.manager_id && form.manager_id === id) {
+      toast({ title: "Um colaborador não pode ser gestor de si mesmo", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("profiles").update({
       full_name: form.full_name || null,
@@ -277,7 +290,7 @@ const EnterpriseEmployeeAdminScreen = () => {
                 </Field>
                 <Field label="Gestor">
                   <select value={form.manager_id} onChange={(e) => setForm({ ...form, manager_id: e.target.value })} className="admin-input">
-                    <option value="">—</option>
+                    <option value="">— (apenas RH/Owner)</option>
                     {managers.map((m) => <option key={m.id} value={m.id}>{m.full_name ?? m.id}</option>)}
                   </select>
                 </Field>
