@@ -48,7 +48,7 @@ const EnterpriseWelcomeJourneyScreen = () => {
 
   return (
     <EnterpriseUserLayout>
-    <div className="animate-fade-in space-y-8 lg:space-y-12 pb-20">
+    <div className="keep-dark animate-fade-in space-y-8 lg:space-y-12 pb-20">
       <main className="max-w-6xl mx-auto space-y-12">
         
         {/* Hero Section */}

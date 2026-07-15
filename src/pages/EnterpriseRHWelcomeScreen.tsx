@@ -21,7 +21,7 @@ const EnterpriseRHWelcomeScreen = () => {
 
   return (
     <EnterpriseCheckoutLayout>
-      <div className="animate-fade-in max-w-[1200px] mx-auto text-[#0B0908]">
+      <div className="keep-dark animate-fade-in max-w-[1200px] mx-auto text-[#0B0908]">
         {/* Cinema Hero Card - Full Width on Desktop */}
         <section className="bg-[#0B0908] rounded-[3rem] p-10 md:p-16 lg:p-20 relative overflow-hidden mb-12 shadow-2xl text-white">
           <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-[#F88A2B]/20 blur-[120px] rounded-full -mr-32 -mt-32 animate-pulse pointer-events-none"></div>

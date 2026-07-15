@@ -88,7 +88,7 @@ const EnterpriseCheckoutPlanScreen = () => {
 
   return (
     <EnterpriseCheckoutLayout currentStep="plano">
-      <div className="animate-fade-in max-w-[1200px] mx-auto">
+      <div className="keep-dark animate-fade-in max-w-[1200px] mx-auto">
         {/* Hero Card */}
         <section className="bg-[#0B0908] rounded-[2rem] p-8 md:p-12 lg:p-16 relative overflow-hidden mb-16 shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#F88A2B]/20 blur-[100px] rounded-full -mr-20 -mt-20 animate-pulse"></div>

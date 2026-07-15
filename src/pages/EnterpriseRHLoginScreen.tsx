@@ -52,7 +52,7 @@ const EnterpriseRHLoginScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F7] flex items-center justify-center p-6 font-montserrat">
+    <div className="keep-dark min-h-screen bg-[#FBF9F7] flex items-center justify-center p-6 font-montserrat">
       <div className="animate-fade-in max-w-[1200px] w-full text-[#0B0908]">
         <div className="grid lg:grid-cols-12 gap-8 items-stretch min-h-[600px]">
           
