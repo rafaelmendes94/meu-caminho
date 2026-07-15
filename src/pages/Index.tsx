@@ -232,17 +232,17 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="mt-12 text-center">
-              <p className="text-[15px] text-[#666]">
-                {mode === "signup" ? "Já tem uma conta?" : "Ainda não tem uma conta?"}
-              </p>
-              <button
-                onClick={() => setMode(mode === "signup" ? "email" : "signup")}
-                className="mt-2 text-[#F88A2B] font-bold text-lg hover:underline inline-flex items-center gap-1"
-              >
-                {mode === "signup" ? "Entrar" : "Criar conta"} <ChevronRight color="#F88A2B" />
-              </button>
-            </div>
+            {mode === "signup" && (
+              <div className="mt-12 text-center">
+                <p className="text-[15px] text-[#666]">Já tem uma conta?</p>
+                <button
+                  onClick={() => setMode("email")}
+                  className="mt-2 text-[#F88A2B] font-bold text-lg hover:underline inline-flex items-center gap-1"
+                >
+                  Entrar <ChevronRight color="#F88A2B" />
+                </button>
+              </div>
+            )}
           </div>
         </section>
       </main>
@@ -303,14 +303,14 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="mt-auto pt-4 pb-6 text-center">
-            <p className="text-[14px] text-[#666]">
-              {mode === "signup" ? "Já tem uma conta?" : "Ainda não tem uma conta?"}
-            </p>
-            <button onClick={() => setMode(mode === "signup" ? "email" : "signup")} className="mt-1 text-[#F88A2B] font-semibold inline-flex items-center gap-0.5">
-              {mode === "signup" ? "Entrar" : "Criar conta"} <ChevronRight color="#F88A2B" />
-            </button>
-          </div>
+          {mode === "signup" && (
+            <div className="mt-auto pt-4 pb-6 text-center">
+              <p className="text-[14px] text-[#666]">Já tem uma conta?</p>
+              <button onClick={() => setMode("email")} className="mt-1 text-[#F88A2B] font-semibold inline-flex items-center gap-0.5">
+                Entrar <ChevronRight color="#F88A2B" />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="relative z-10 flex justify-center pb-4 shrink-0 lg:hidden">
