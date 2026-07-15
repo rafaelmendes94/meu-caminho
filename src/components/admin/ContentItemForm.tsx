@@ -120,58 +120,58 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-[#2A2320] border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-xl font-black text-white mb-4">{form.id ? "Editar" : "Novo"} {form.type}</h2>
+      <div className="bg-white border border-black/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-xl font-black text-[#0F172A] mb-4">{form.id ? "Editar" : "Novo"} {form.type}</h2>
         <div className="grid grid-cols-2 gap-3">
-          <label className="col-span-2 block"><span className="text-xs text-white/50">Título *</span><input value={form.title} onChange={(e) => set("title", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="col-span-2 block"><span className="text-xs text-white/50">Subtítulo</span><input value={form.subtitle ?? ""} onChange={(e) => set("subtitle", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="col-span-2 block"><span className="text-xs text-white/50">Slug (auto se vazio)</span><input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Status</span>
-            <select value={form.status} onChange={(e) => set("status", e.target.value as any)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
+          <label className="col-span-2 block"><span className="text-xs text-[#64748B]">Título *</span><input value={form.title} onChange={(e) => set("title", e.target.value)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
+          <label className="col-span-2 block"><span className="text-xs text-[#64748B]">Subtítulo</span><input value={form.subtitle ?? ""} onChange={(e) => set("subtitle", e.target.value)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
+          <label className="col-span-2 block"><span className="text-xs text-[#64748B]">Slug (auto se vazio)</span><input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
+          <label className="block"><span className="text-xs text-[#64748B]">Status</span>
+            <select value={form.status} onChange={(e) => set("status", e.target.value as any)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm">
               <option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option>
             </select>
           </label>
-          <label className="block"><span className="text-xs text-white/50">Categoria</span>
-            <select value={form.category_id ?? ""} onChange={(e) => set("category_id", e.target.value || null)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
+          <label className="block"><span className="text-xs text-[#64748B]">Categoria</span>
+            <select value={form.category_id ?? ""} onChange={(e) => set("category_id", e.target.value || null)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm">
               <option value="">—</option>
               {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </label>
-          <label className="block"><span className="text-xs text-white/50">Idioma</span><input value={form.language ?? ""} onChange={(e) => set("language", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Nível</span><input value={form.level ?? ""} onChange={(e) => set("level", e.target.value)} placeholder="iniciante / intermediário / avançado" className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="block"><span className="text-xs text-white/50">Duração (min)</span><input type="number" value={form.duration_minutes ?? ""} onChange={(e) => set("duration_minutes", e.target.value ? Number(e.target.value) : null)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
+          <label className="block"><span className="text-xs text-[#64748B]">Idioma</span><input value={form.language ?? ""} onChange={(e) => set("language", e.target.value)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
+          <label className="block"><span className="text-xs text-[#64748B]">Nível</span><input value={form.level ?? ""} onChange={(e) => set("level", e.target.value)} placeholder="iniciante / intermediário / avançado" className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
+          <label className="block"><span className="text-xs text-[#64748B]">Duração (min)</span><input type="number" value={form.duration_minutes ?? ""} onChange={(e) => set("duration_minutes", e.target.value ? Number(e.target.value) : null)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
           <StorageUpload bucket="content-images" value={form.cover_url ?? null} onChange={(v) => set("cover_url", v)} label="Capa" />
           <StorageUpload bucket="content-images" value={form.banner_url ?? null} onChange={(v) => set("banner_url", v)} label="Banner" />
           <StorageUpload bucket="content-pdf" value={form.file_url ?? null} onChange={(v) => set("file_url", v)} label="Arquivo (PDF/ePub)" />
           <StorageUpload bucket={form.type === "video" ? "content-video" : "content-audio"} value={form.media_url ?? null} onChange={(v) => set("media_url", v)} label="Mídia (áudio/vídeo) — ou cole URL YouTube/Vimeo" />
-          <label className="col-span-2 block"><span className="text-xs text-white/50">Descrição curta</span><textarea value={form.short_description ?? ""} onChange={(e) => set("short_description", e.target.value)} rows={2} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
-          <label className="col-span-2 block"><span className="text-xs text-white/50">Descrição completa</span><textarea value={form.long_description ?? ""} onChange={(e) => set("long_description", e.target.value)} rows={5} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
+          <label className="col-span-2 block"><span className="text-xs text-[#64748B]">Descrição curta</span><textarea value={form.short_description ?? ""} onChange={(e) => set("short_description", e.target.value)} rows={2} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
+          <label className="col-span-2 block"><span className="text-xs text-[#64748B]">Descrição completa</span><textarea value={form.long_description ?? ""} onChange={(e) => set("long_description", e.target.value)} rows={5} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
           <div className="col-span-2">
-            <span className="text-xs text-white/50">Autores</span>
-            <div className="mt-1 flex flex-wrap gap-1.5 p-2 bg-white/5 border border-white/10 rounded-lg max-h-32 overflow-y-auto">
-              {authors.length === 0 && <span className="text-xs text-white/40">Cadastre autores primeiro.</span>}
+            <span className="text-xs text-[#64748B]">Autores</span>
+            <div className="mt-1 flex flex-wrap gap-1.5 p-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg max-h-32 overflow-y-auto">
+              {authors.length === 0 && <span className="text-xs text-[#94A3B8]">Cadastre autores primeiro.</span>}
               {authors.map((a) => (
-                <button type="button" key={a.id} onClick={() => toggle(selAuthors, setSelAuthors, a.id)} className={`text-xs px-2 py-1 rounded-full border ${selAuthors.includes(a.id) ? "bg-[#F88A2B] text-black border-[#F88A2B]" : "bg-white/5 text-white/70 border-white/10"}`}>{a.name}</button>
+                <button type="button" key={a.id} onClick={() => toggle(selAuthors, setSelAuthors, a.id)} className={`text-xs px-2 py-1 rounded-full border ${selAuthors.includes(a.id) ? "bg-[#F88A2B] text-black border-[#F88A2B]" : "bg-white text-[#334155] border-[#E2E8F0]"}`}>{a.name}</button>
               ))}
             </div>
           </div>
           <div className="col-span-2">
-            <span className="text-xs text-white/50">Tags</span>
-            <div className="mt-1 flex flex-wrap gap-1.5 p-2 bg-white/5 border border-white/10 rounded-lg max-h-32 overflow-y-auto">
+            <span className="text-xs text-[#64748B]">Tags</span>
+            <div className="mt-1 flex flex-wrap gap-1.5 p-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg max-h-32 overflow-y-auto">
               {tags.map((t) => (
-                <button type="button" key={t.id} onClick={() => toggle(selTags, setSelTags, t.id)} className={`text-xs px-2 py-1 rounded-full border ${selTags.includes(t.id) ? "bg-[#F88A2B] text-black border-[#F88A2B]" : "bg-white/5 text-white/70 border-white/10"}`}>{t.name}</button>
+                <button type="button" key={t.id} onClick={() => toggle(selTags, setSelTags, t.id)} className={`text-xs px-2 py-1 rounded-full border ${selTags.includes(t.id) ? "bg-[#F88A2B] text-black border-[#F88A2B]" : "bg-white text-[#334155] border-[#E2E8F0]"}`}>{t.name}</button>
               ))}
             </div>
             <div className="mt-2 flex gap-2">
-              <input value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void createTag(); } }} placeholder="Nova tag…" className="flex-1 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs" />
-              <button type="button" onClick={createTag} className="px-3 py-1.5 bg-white/10 text-white text-xs rounded-lg hover:bg-white/20">+ Criar</button>
+              <input value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void createTag(); } }} placeholder="Nova tag…" className="flex-1 px-3 py-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs" />
+              <button type="button" onClick={createTag} className="px-3 py-1.5 bg-[#0F172A] text-white text-xs rounded-lg hover:bg-[#1E293B]">+ Criar</button>
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-white/70"><input type="checkbox" checked={form.is_premium} onChange={(e) => set("is_premium", e.target.checked)} />Premium</label>
-          <label className="flex items-center gap-2 text-sm text-white/70"><input type="checkbox" checked={form.is_featured} onChange={(e) => set("is_featured", e.target.checked)} />Destaque</label>
+          <label className="flex items-center gap-2 text-sm text-[#334155]"><input type="checkbox" checked={form.is_premium} onChange={(e) => set("is_premium", e.target.checked)} />Premium</label>
+          <label className="flex items-center gap-2 text-sm text-[#334155]"><input type="checkbox" checked={form.is_featured} onChange={(e) => set("is_featured", e.target.checked)} />Destaque</label>
         </div>
         <div className="flex justify-end gap-2 mt-6">
-          <button onClick={onClose} className="px-4 py-2 text-white/60 text-sm">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 text-[#64748B] text-sm">Cancelar</button>
           <button onClick={save} disabled={saving} className="px-4 py-2 bg-[#F88A2B] text-black rounded-lg text-sm font-bold disabled:opacity-50">{saving ? "Salvando…" : "Salvar"}</button>
         </div>
       </div>
