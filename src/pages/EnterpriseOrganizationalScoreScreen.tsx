@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Gauge, RefreshCw, ShieldCheck, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Gauge, RefreshCw, ShieldCheck, TrendingUp, TrendingDown, Minus, AlertTriangle, AlertCircle, Activity, Users, UserCheck, ClipboardCheck } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "@/components/EnterpriseRHNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -181,12 +181,7 @@ export default function EnterpriseOrganizationalScoreScreen() {
               </section>
             )}
 
-            <section className="rounded-[2rem] bg-white p-8 border border-[#E5E0DA]">
-              <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-4">Evidências</h3>
-              <pre className="text-[11px] text-[#333] leading-relaxed whitespace-pre-wrap font-mono bg-[#F7F4F2] p-4 rounded-xl overflow-auto">
-                {JSON.stringify(evidence, null, 2)}
-              </pre>
-            </section>
+            <EvidenceSection evidence={evidence} />
           </>
         )}
 
@@ -198,5 +193,181 @@ export default function EnterpriseOrganizationalScoreScreen() {
         </div>
       </div>
     </EnterpriseRHLayout>
+  );
+}
+
+function EvidenceSection({ evidence }: { evidence: any }) {
+  const penalties = evidence?.penalties ?? {};
+  const pulseCounts = evidence?.pulse_counts ?? {};
+  const totalProfiles = Number(evidence?.total_profiles ?? 0);
+  const pulseParticipants = Number(evidence?.pulse_participants ?? 0);
+  const checkinParticipants = Number(evidence?.checkin_participants ?? 0);
+  const baseScore = evidence?.base_score;
+
+  const pct = (n: number, total: number) =>
+    total > 0 ? Math.round((n / total) * 100) : 0;
+
+  const pulseItems: { key: string; label: string }[] = [
+    { key: "energy", label: "Energia" },
+    { key: "recovery", label: "Recuperação" },
+    { key: "engagement", label: "Engajamento" },
+    { key: "equilibrium", label: "Equilíbrio" },
+    { key: "communication", label: "Comunicação" },
+  ];
+
+  const alertItems = [
+    { key: "warning_alerts", label: "Alertas de atenção", icon: AlertTriangle, tone: "amber" as const },
+    { key: "critical_alerts", label: "Alertas críticos", icon: AlertCircle, tone: "red" as const },
+    { key: "warning_signals", label: "Sinais de atenção", icon: Activity, tone: "amber" as const },
+    { key: "critical_signals", label: "Sinais críticos", icon: AlertCircle, tone: "red" as const },
+  ];
+
+  const toneClasses = {
+    amber: "text-amber-600 bg-amber-50 border-amber-100",
+    red: "text-red-600 bg-red-50 border-red-100",
+  };
+
+  return (
+    <section className="rounded-[2rem] bg-white p-8 border border-[#E5E0DA] space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999]">Evidências</h3>
+        {baseScore != null && (
+          <div className="text-[12px] text-[#666]">
+            Score base:{" "}
+            <b className="text-[#0B0908]">{Math.round(Number(baseScore))}</b>
+            <span className="text-[#999]">/100</span>
+          </div>
+        )}
+      </div>
+
+      {/* Participação */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <MetricCard
+          icon={Users}
+          label="Perfis totais"
+          value={totalProfiles}
+        />
+        <MetricCard
+          icon={UserCheck}
+          label="Participantes do pulso"
+          value={pulseParticipants}
+          hint={`${pct(pulseParticipants, totalProfiles)}% dos perfis`}
+          progress={pct(pulseParticipants, totalProfiles)}
+        />
+        <MetricCard
+          icon={ClipboardCheck}
+          label="Participantes do check-in"
+          value={checkinParticipants}
+          hint={`${pct(checkinParticipants, totalProfiles)}% dos perfis`}
+          progress={pct(checkinParticipants, totalProfiles)}
+        />
+      </div>
+
+      {/* Pulse counts */}
+      <div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-3">
+          Respostas por dimensão
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {pulseItems.map((p) => {
+            const val = Number(pulseCounts?.[p.key] ?? 0);
+            const perc = pct(val, pulseParticipants || totalProfiles);
+            return (
+              <div key={p.key} className="rounded-2xl border border-[#E5E0DA] bg-[#FAF8F6] p-4">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#999]">
+                  {p.label}
+                </div>
+                <div className="mt-2 flex items-end gap-1">
+                  <div className="text-[22px] font-bold text-[#111] leading-none">{val}</div>
+                  <div className="text-[11px] text-[#999] font-bold pb-1">respostas</div>
+                </div>
+                <div className="mt-3 h-1.5 bg-white rounded-full overflow-hidden border border-[#EFE9E3]">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.min(100, perc)}%`,
+                      background: "linear-gradient(90deg, #F88A2B 0%, #FFB870 100%)",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Penalidades */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[#999]">
+            Penalidades aplicadas
+          </div>
+          <div className="text-[12px] text-[#666]">
+            Total:{" "}
+            <b className="text-[#0B0908]">
+              -{Math.round(Number(penalties?.total ?? 0))}
+            </b>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {alertItems.map((a) => {
+            const val = Number(penalties?.[a.key] ?? 0);
+            const Icon = a.icon;
+            return (
+              <div
+                key={a.key}
+                className={`rounded-2xl border p-4 flex items-center gap-3 ${
+                  val > 0 ? toneClasses[a.tone] : "border-[#E5E0DA] bg-[#FAF8F6] text-[#999]"
+                }`}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-widest opacity-80 truncate">
+                    {a.label}
+                  </div>
+                  <div className="text-[20px] font-bold leading-none mt-1">{val}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  progress,
+}: {
+  icon: any;
+  label: string;
+  value: number;
+  hint?: string;
+  progress?: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#E5E0DA] bg-[#FAF8F6] p-5">
+      <div className="flex items-center gap-2 text-[#F88A2B]">
+        <Icon className="w-4 h-4" />
+        <div className="text-[10px] font-bold uppercase tracking-widest">{label}</div>
+      </div>
+      <div className="mt-3 text-[28px] font-bold text-[#111] leading-none">{value}</div>
+      {hint && <div className="text-[11px] text-[#666] mt-2">{hint}</div>}
+      {progress != null && (
+        <div className="mt-3 h-1.5 bg-white rounded-full overflow-hidden border border-[#EFE9E3]">
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${Math.min(100, progress)}%`,
+              background: "linear-gradient(90deg, #F88A2B 0%, #FFB870 100%)",
+            }}
+          />
+        </div>
+      )}
+    </div>
   );
 }
