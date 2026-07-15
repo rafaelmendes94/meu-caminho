@@ -229,6 +229,13 @@ main > div:not([data-fullbleed]) {
 .admin-surface .text-sky-300,
 .admin-surface .text-sky-400 { color: #075985 !important; }
 
+/* Textos "orange-50" foram usados como texto branco em heros escuros
+   mobile; no admin surface (fundo claro) ficam ilegíveis. Remapeia. */
+.admin-surface .text-orange-50,
+.admin-surface .text-orange-50\/70,
+.admin-surface .text-orange-50\/80,
+.admin-surface .text-orange-50\/90 { color: #475569 !important; }
+
 /* ============================================================
    Mobile: tabelas do admin/RH devem rolar horizontalmente
    sem clipar quando estão dentro de containers com
@@ -347,4 +354,132 @@ html:not(.dark) body :is(
   .border-white\/30
 ) {
   border-color: #E9E4DF !important;
+}
+
+/* ============================================================
+   Enterprise/RH — Desktop density pass (lg+ only)
+   Muitas telas Enterprise/RH foram desenhadas mobile-first
+   (max-w-3xl, hero rosé 5xl, botão pill full-width, cards
+   arredondados demais). Em lg+ dentro do .admin-surface,
+   afrouxamos a coluna, encolhemos tipografia Playfair,
+   apertamos padding, reduzimos raios e neutralizamos o botão
+   pill full-width para ficar mais próximo do padrão Super Admin.
+   NÃO afeta mobile — todas as regras estão em @media (min-width: 1024px).
+   Opt-out: `data-desktop-raw` num wrapper ancestral.
+   ============================================================ */
+@media (min-width: 1024px) {
+  .admin-surface [class*="max-w-3xl"]:not([data-desktop-raw] *):not([data-desktop-raw]) {
+    max-width: 100% !important;
+  }
+  .admin-surface [class*="max-w-2xl"]:not([data-desktop-raw] *):not([data-desktop-raw]) {
+    max-width: 100% !important;
+  }
+
+  /* Reduz raios excessivos que soam mobile no desktop */
+  .admin-surface .rounded-\[2\.5rem\]:not([data-desktop-raw] *) { border-radius: 1rem !important; }
+  .admin-surface .rounded-\[2rem\]:not([data-desktop-raw] *)  { border-radius: 0.875rem !important; }
+  .admin-surface .rounded-3xl:not([data-desktop-raw] *)       { border-radius: 0.875rem !important; }
+
+  /* Encolhe títulos Playfair oversize dentro do admin */
+  .admin-surface h1.text-6xl,
+  .admin-surface h2.text-6xl,
+  .admin-surface .text-6xl,
+  .admin-surface .lg\:text-6xl,
+  .admin-surface .md\:text-6xl { font-size: 1.875rem !important; line-height: 1.1 !important; }
+  .admin-surface h1.text-5xl,
+  .admin-surface h2.text-5xl,
+  .admin-surface .text-5xl,
+  .admin-surface .lg\:text-5xl,
+  .admin-surface .md\:text-5xl { font-size: 1.75rem !important; line-height: 1.15 !important; }
+  .admin-surface h1.text-4xl,
+  .admin-surface h2.text-4xl,
+  .admin-surface .text-4xl,
+  .admin-surface .lg\:text-4xl,
+  .admin-surface .md\:text-4xl { font-size: 1.5rem !important;  line-height: 1.2 !important; }
+  .admin-surface h2.text-3xl,
+  .admin-surface h1.text-3xl,
+  .admin-surface .md\:text-3xl,
+  .admin-surface .lg\:text-3xl { font-size: 1.375rem !important; line-height: 1.25 !important; }
+  /* text-2xl é usado tanto em títulos quanto em KPIs numéricos.
+     Só encolhe quando combinado com font-playfair OU quando é h1/h2. */
+  .admin-surface h1.text-2xl,
+  .admin-surface h2.text-2xl,
+  .admin-surface .font-playfair.text-2xl:not(.font-bold),
+  .admin-surface [class*="font-['Playfair_Display']"].text-2xl:not(.font-bold) { font-size: 1.125rem !important; line-height: 1.3 !important; }
+  .admin-surface h3.text-xl,
+  .admin-surface h2.text-xl { font-size: 1rem !important;   line-height: 1.35 !important; }
+
+  /* Reduz padding de heróis/cards com p-8..p-16 */
+  .admin-surface .p-16 { padding: 1.5rem !important; }
+  .admin-surface .p-12 { padding: 1.5rem !important; }
+  .admin-surface .md\:p-16 { padding: 1.5rem !important; }
+  .admin-surface .md\:p-12 { padding: 1.5rem !important; }
+  .admin-surface .p-10 { padding: 1.25rem !important; }
+  .admin-surface .p-8  { padding: 1.25rem !important; }
+
+  /* Botões "pill" full-width laranja (padrão mobile) viram
+     botões compactos alinhados à direita, no estilo SA */
+  .admin-surface button.w-full.bg-\[\#F88A2B\],
+  .admin-surface a.w-full.bg-\[\#F88A2B\] {
+    width: auto !important;
+    align-self: flex-end;
+    padding: 0.625rem 1.25rem !important;
+    border-radius: 0.625rem !important;
+    font-size: 0.8125rem !important;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.08) !important;
+  }
+  /* Wrapper sections que empilhavam esses botões viram flex à direita */
+  .admin-surface section:has(> button.w-full.bg-\[\#F88A2B\]) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  /* Sombras oversized "shadow-2xl" nas heros ficam mais discretas */
+  .admin-surface .shadow-2xl { box-shadow: 0 8px 24px -12px rgba(15,23,42,0.15) !important; }
+  .admin-surface .shadow-xl  { box-shadow: 0 6px 18px -10px rgba(15,23,42,0.12) !important; }
+
+  /* Blurs decorativos gigantes atrás dos heros — reduz visual weight */
+  .admin-surface .blur-\[120px\],
+  .admin-surface .blur-\[100px\],
+  .admin-surface .blur-\[80px\] { filter: blur(40px) !important; opacity: 0.6; }
+
+  /* Grid KPIs — evita cards muito altos */
+  .admin-surface .rounded-3xl.p-5,
+  .admin-surface .rounded-3xl.p-6 { padding: 1rem !important; }
+
+  /* Tipografia de KPIs oversize (mobile 2xl playfair) fica mais dashboard */
+  .admin-surface .text-2xl.font-playfair.font-bold { font-size: 1.5rem !important; }
+  .admin-surface .text-3xl.font-playfair.font-bold { font-size: 1.75rem !important; }
+
+  /* "Voltar" com seta em círculo grande vira botão compacto */
+  .admin-surface header button.w-10.h-10.rounded-full { width: 2rem !important; height: 2rem !important; }
+
+  /* Header sticky rosé — remove backdrop pesado; o AdminTopbar já cobre */
+  .admin-surface header.sticky.top-0.bg-\[\#F7F4F2\]\/80 {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 0 1rem 0 !important;
+  }
+
+  /* Container principal de páginas Enterprise com bg rosé fica transparente
+     para herdar o fundo #F6F7FB do admin surface (padrão SA) */
+  .admin-surface .bg-\[\#F7F4F2\].min-h-screen,
+  .admin-surface .bg-\[\#F7F4F2\].min-h-\[100dvh\] {
+    background-color: transparent !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Heros com gradient rosé viram cards brancos limpos */
+  .admin-surface .bg-gradient-to-br.from-\[\#F7F4F2\].to-\[\#EFEAE5\] {
+    background: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+  }
+
+  /* Espaçamento vertical entre seções — mobile usa space-y-12; desktop
+     fica mais denso */
+  .admin-surface main .space-y-12 > * + * { margin-top: 1.5rem !important; }
+  .admin-surface main .space-y-10 > * + * { margin-top: 1.5rem !important; }
 }
