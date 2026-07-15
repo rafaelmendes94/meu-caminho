@@ -228,3 +228,33 @@ main > div:not([data-fullbleed]) {
 .admin-surface .text-green-400 { color: #065F46 !important; }
 .admin-surface .text-sky-300,
 .admin-surface .text-sky-400 { color: #075985 !important; }
+
+/* ============================================================
+   Mobile: tabelas do admin/RH devem rolar horizontalmente
+   sem clipar quando estão dentro de containers com
+   overflow-hidden. Aplica só até 1024px para não afetar
+   desktop.
+   ============================================================ */
+@media (max-width: 1023.98px) {
+  .admin-surface table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-surface table > thead,
+  .admin-surface table > tbody,
+  .admin-surface table > tfoot {
+    display: table;
+    width: 100%;
+    min-width: max-content;
+  }
+  .admin-surface th,
+  .admin-surface td {
+    white-space: nowrap;
+  }
+  /* Reduz padding das células no mobile para caber mais coluna visível */
+  .admin-surface th,
+  .admin-surface td { padding-left: 0.75rem; padding-right: 0.75rem; }
+}
