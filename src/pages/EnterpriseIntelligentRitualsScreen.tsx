@@ -52,6 +52,18 @@ export default function EnterpriseIntelligentRitualsScreen() {
   const [generating, setGenerating] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [manual, setManual] = useState({ title: "", description: "", ritual_type: "custom", duration_minutes: 15, expected_outcome: "" });
+
+  const RITUAL_TYPES: { value: string; label: string; hint: string }[] = [
+    { value: "custom", label: "Personalizado", hint: "Ritual sob medida para um contexto específico" },
+    { value: "energy", label: "Energia", hint: "Restaura vitalidade e reduz cansaço da equipe" },
+    { value: "communication", label: "Comunicação", hint: "Melhora a clareza e a escuta entre pessoas" },
+    { value: "recovery", label: "Recuperação", hint: "Momentos de pausa e regulação após sobrecarga" },
+    { value: "leadership", label: "Liderança", hint: "Fortalece presença, direção e exemplo de líderes" },
+    { value: "engagement", label: "Engajamento", hint: "Reconecta o time ao propósito e ao trabalho" },
+    { value: "collaboration", label: "Colaboração", hint: "Estimula cooperação e trabalho conjunto" },
+    { value: "reflection", label: "Reflexão", hint: "Pausa para pensar, aprender e ajustar rota" },
+  ];
+  const currentTypeHint = RITUAL_TYPES.find((t) => t.value === manual.ritual_type)?.hint ?? "";
   const [impactBySource, setImpactBySource] = useState<Record<string, number>>({});
   const [measuringId, setMeasuringId] = useState<string | null>(null);
 
@@ -278,49 +290,79 @@ export default function EnterpriseIntelligentRitualsScreen() {
 
         {showManual && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowManual(false)}>
-            <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-[18px] font-bold text-[#111]">Criar ritual manual</h3>
-              <input
-                value={manual.title}
-                onChange={(e) => setManual({ ...manual, title: e.target.value })}
-                placeholder="Título"
-                className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
-              />
-              <textarea
-                value={manual.description}
-                onChange={(e) => setManual({ ...manual, description: e.target.value })}
-                placeholder="Descrição"
-                rows={3}
-                className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={manual.ritual_type}
-                  onChange={(e) => setManual({ ...manual, ritual_type: e.target.value })}
-                  className="rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
-                >
-                  {["custom","energy","communication","recovery","leadership","engagement","collaboration","reflection"].map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min={5} max={60}
-                  value={manual.duration_minutes}
-                  onChange={(e) => setManual({ ...manual, duration_minutes: Number(e.target.value) })}
-                  className="rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
-                />
+            <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="space-y-1">
+                <h3 className="text-[20px] font-bold text-[#111]">Criar ritual manual</h3>
+                <p className="text-[12px] text-[#666] leading-relaxed">
+                  Preencha os campos abaixo para cadastrar um ritual próprio. Os textos aparecem para o RH e para os participantes ao publicar.
+                </p>
               </div>
-              <textarea
-                value={manual.expected_outcome}
-                onChange={(e) => setManual({ ...manual, expected_outcome: e.target.value })}
-                placeholder="Resultado esperado (opcional)"
-                rows={2}
-                className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
-              />
-              <div className="flex justify-end gap-2">
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[#111]">Título do ritual</label>
+                <input
+                  value={manual.title}
+                  onChange={(e) => setManual({ ...manual, title: e.target.value })}
+                  placeholder="Ex.: Roda de energia da segunda-feira"
+                  className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
+                />
+                <p className="text-[11px] text-[#888] leading-relaxed">Use um nome curto e claro. Dica: comece pelo verbo ou pelo propósito (ex.: "Pausa consciente", "Check-in de equipe").</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[#111]">Descrição</label>
+                <textarea
+                  value={manual.description}
+                  onChange={(e) => setManual({ ...manual, description: e.target.value })}
+                  placeholder="Ex.: Encontro de 15 minutos para o time compartilhar como chegou ao dia e alinhar prioridades."
+                  rows={3}
+                  className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
+                />
+                <p className="text-[11px] text-[#888] leading-relaxed">Explique em 2–3 frases o que é o ritual, quem participa e como acontece.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[#111]">Tipo de ritual</label>
+                  <select
+                    value={manual.ritual_type}
+                    onChange={(e) => setManual({ ...manual, ritual_type: e.target.value })}
+                    className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px] bg-white"
+                  >
+                    {RITUAL_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-[#888] leading-relaxed">{currentTypeHint}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[#111]">Duração (minutos)</label>
+                  <input
+                    type="number"
+                    min={5} max={60}
+                    value={manual.duration_minutes}
+                    onChange={(e) => setManual({ ...manual, duration_minutes: Number(e.target.value) })}
+                    className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
+                  />
+                  <p className="text-[11px] text-[#888] leading-relaxed">Entre 5 e 60 min. Rituais curtos (10–20 min) tendem a ter mais adesão.</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[#111]">Resultado esperado <span className="text-[#999] font-normal normal-case tracking-normal">(opcional)</span></label>
+                <textarea
+                  value={manual.expected_outcome}
+                  onChange={(e) => setManual({ ...manual, expected_outcome: e.target.value })}
+                  placeholder="Ex.: Time mais alinhado sobre prioridades da semana e com menor sensação de sobrecarga."
+                  rows={2}
+                  className="w-full rounded-xl border border-[#E5E0DA] p-3 text-[13px]"
+                />
+                <p className="text-[11px] text-[#888] leading-relaxed">Descreva o efeito que você espera observar após algumas execuções. Ajuda a medir impacto depois.</p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#F7F4F2]">
                 <button onClick={() => setShowManual(false)} className="px-4 py-2 text-[12px] font-bold text-[#666]">Cancelar</button>
-                <button onClick={createManual} className="px-4 py-2 rounded-xl bg-[#F88A2B] text-white text-[12px] font-bold">Criar</button>
+                <button onClick={createManual} disabled={!manual.title.trim()} className="px-4 py-2 rounded-xl bg-[#F88A2B] text-white text-[12px] font-bold disabled:opacity-40">Criar ritual</button>
               </div>
             </div>
           </div>
