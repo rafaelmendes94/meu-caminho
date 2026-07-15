@@ -144,6 +144,7 @@ const EnterpriseDataRetentionScreen = lazy(() => import("./pages/EnterpriseDataR
 const EnterpriseComplianceScreen = lazy(() => import("./pages/EnterpriseComplianceScreen.tsx"));
 const EnterprisePoliciesScreen = lazy(() => import("./pages/EnterprisePoliciesScreen.tsx"));
 const EnterpriseUnitsScreen = lazy(() => import("./pages/EnterpriseUnitsScreen.tsx"));
+const EnterpriseJobPositionsScreen = lazy(() => import("./pages/EnterpriseJobPositionsScreen.tsx"));
 const EnterpriseOrgChartScreen = lazy(() => import("./pages/EnterpriseOrgChartScreen.tsx"));
 const EnterpriseOrganizationalDNAScreen = lazy(() => import("./pages/EnterpriseOrganizationalDNAScreen.tsx"));
 const EnterpriseWeeklyInsightsScreen = lazy(() => import("./pages/EnterpriseWeeklyInsightsScreen.tsx"));
