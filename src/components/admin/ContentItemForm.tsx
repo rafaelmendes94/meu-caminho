@@ -120,7 +120,7 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-[#0B0908] border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#2A2320] border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-black text-white mb-4">{form.id ? "Editar" : "Novo"} {form.type}</h2>
         <div className="grid grid-cols-2 gap-3">
           <label className="col-span-2 block"><span className="text-xs text-white/50">Título *</span><input value={form.title} onChange={(e) => set("title", e.target.value)} className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" /></label>
