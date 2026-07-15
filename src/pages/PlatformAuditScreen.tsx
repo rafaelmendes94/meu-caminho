@@ -88,12 +88,12 @@ const PlatformAuditScreen = () => {
 
   return (
     <PlatformAdminLayout>
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-black mb-2">Auditoria</h1>
-          <p className="text-white/60">Registros operacionais da plataforma. Nunca exibe dados individuais de colaboradores.</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black mb-2">Auditoria</h1>
+          <p className="text-sm sm:text-base text-white/60">Registros operacionais da plataforma. Nunca exibe dados individuais de colaboradores.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <div className="flex bg-white/[0.03] border border-white/10 rounded-lg p-0.5">
             <button onClick={() => setView("table")} className={`px-3 py-1.5 text-xs rounded-md ${view === "table" ? "bg-[#F88A2B] text-black font-bold" : "text-white/60"}`}>Tabela</button>
             <button onClick={() => setView("timeline")} className={`px-3 py-1.5 text-xs rounded-md ${view === "timeline" ? "bg-[#F88A2B] text-black font-bold" : "text-white/60"}`}>Timeline</button>
