@@ -7,6 +7,7 @@ import {
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 
 const brand = "#F88A2B";
@@ -20,17 +21,13 @@ const benefits = [
   "Conteúdos offline e sem anúncios",
 ];
 
-const invoices = [
-  { date: "12 Mar 2026", amount: "R$ 0,00", status: "Pago pela Empresa", type: "Corporate" },
-  { date: "12 Fev 2026", amount: "R$ 0,00", status: "Pago pela Empresa", type: "Corporate" },
-  { date: "12 Jan 2026", amount: "R$ 0,00", status: "Pago pela Empresa", type: "Corporate" },
-];
-
 const SubscriptionScreen = () => {
   const al = useAudienceLink();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isEnterprise = pathname.startsWith('/enterprise');
+  const { organization } = useAuth();
+  const orgName = organization?.name ?? "Sua empresa";
 
   if (isEnterprise) {
     return (
@@ -57,8 +54,8 @@ const SubscriptionScreen = () => {
                  <div className="flex items-center gap-3 px-6 py-4 bg-[#F9F8F6] rounded-2xl border border-black/5">
                     <Building2 className="text-orange-500" size={20} />
                     <div className="text-left">
-                       <p className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Patrocinador</p>
-                       <p className="text-sm font-bold text-[#111]">Cury Construtora</p>
+                       <p className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Plano vinculado a</p>
+                       <p className="text-sm font-bold text-[#111]">{orgName}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-3 px-6 py-4 bg-[#F9F8F6] rounded-2xl border border-black/5">
@@ -80,28 +77,24 @@ const SubscriptionScreen = () => {
                      </div>
                      <div>
                         <p className="text-[10px] font-bold text-orange-400 uppercase tracking-[0.2em]">Status do Plano</p>
-                        <p className="text-lg font-bold">Ativo e Vitalício</p>
+                        <p className="text-lg font-bold">Ativo</p>
                      </div>
                   </div>
                   
                   <div className="space-y-4 mb-8">
                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-white/40">Próxima Renovação</span>
-                        <span className="font-bold">12 Mar 2027</span>
-                     </div>
-                     <div className="flex items-center justify-between text-sm">
-                        <span className="text-white/40">Valor da Assinatura</span>
-                        <span className="font-bold text-green-400">R$ 0,00</span>
+                        <span className="text-white/40">Empresa</span>
+                        <span className="font-bold truncate max-w-[200px] text-right">{orgName}</span>
                      </div>
                      <div className="h-px w-full bg-white/5" />
                      <div className="flex items-center gap-2 text-[10px] font-bold text-orange-400/80 uppercase tracking-widest">
-                        <ShieldCheck size={12} /> Protegido pela sua Organização
+                        <ShieldCheck size={12} /> Gerenciado pela sua empresa
                      </div>
                   </div>
 
-                  <button className="w-full py-4 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
-                    Detalhes do Contrato <ArrowRight size={16} />
-                  </button>
+                  <div className="w-full py-4 bg-white/5 text-white/70 border border-white/10 rounded-2xl text-xs text-center leading-relaxed px-4">
+                    Todos os custos e detalhes contratuais são administrados pela sua empresa.
+                  </div>
                </div>
             </div>
           </section>
@@ -125,43 +118,6 @@ const SubscriptionScreen = () => {
                   ))}
                 </div>
               </div>
-
-              {/* History Card */}
-              <div className="bg-white rounded-[32px] p-8 shadow-sm border border-black/5">
-                <h2 className="text-xl font-bold text-[#111] mb-8 flex items-center gap-3">
-                  <History size={20} className="text-purple-500" /> Histórico de Recibos
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left border-b border-black/5">
-                        <th className="pb-4 text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Data</th>
-                        <th className="pb-4 text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Descrição</th>
-                        <th className="pb-4 text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Status</th>
-                        <th className="pb-4 text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest">Recibo</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-black/[0.03]">
-                      {invoices.map((inv, i) => (
-                        <tr key={i} className="group">
-                          <td className="py-5 text-sm font-bold text-[#111]">{inv.date}</td>
-                          <td className="py-5 text-sm text-[#8A8A8A]">{inv.type} Plan</td>
-                          <td className="py-5">
-                            <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                              {inv.status}
-                            </span>
-                          </td>
-                          <td className="py-5">
-                            <button className="p-2 text-[#B8B0A8] hover:text-orange-500 transition-colors">
-                              <Download size={18} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
 
             {/* Sidebar Column */}
@@ -170,16 +126,6 @@ const SubscriptionScreen = () => {
                 <h2 className="text-xl font-bold text-[#111]">Gestão da Conta</h2>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform">
-                      <Wallet size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#111]">Método de Pagamento</p>
-                      <p className="text-[10px] text-[#8A8A8A]">Faturamento Centralizado</p>
-                    </div>
-                  </div>
-                  
                   <div className="flex items-center gap-4 group cursor-pointer">
                     <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-transform">
                       <Lock size={20} />
@@ -193,14 +139,9 @@ const SubscriptionScreen = () => {
 
                 <div className="h-px w-full bg-black/5" />
 
-                <div className="space-y-3">
-                   <button className="w-full py-4 text-xs font-bold text-[#8A8A8A] hover:text-red-500 transition-colors flex items-center justify-center gap-2">
-                     <RefreshCcw size={14} /> Solicitar Pausa do Acesso
-                   </button>
-                   <button className="w-full py-4 text-xs font-bold text-red-500 hover:bg-red-50 rounded-2xl transition-all">
-                     Sair do Plano Corporativo
-                   </button>
-                </div>
+                <p className="text-[11px] text-[#8A8A8A] leading-relaxed text-center">
+                  Pausas, saídas e alterações no plano são solicitadas ao RH da sua empresa.
+                </p>
               </div>
 
               <div className="bg-gradient-to-br from-[#111] to-[#222] rounded-[32px] p-8 text-white shadow-xl relative overflow-hidden group">
