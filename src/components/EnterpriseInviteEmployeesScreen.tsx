@@ -153,6 +153,9 @@ const EnterpriseInviteEmployeesScreen = () => {
 
   const handleSendInvites = async () => {
     if (!form.email.trim()) return toast.error("Informe o e-mail do colaborador");
+    if (form.role !== "rh_admin" && !form.manager_id) {
+      return toast.error("Selecione o gestor imediato. Só RH/Admin pode ficar sem gestor.");
+    }
     setSending(true);
     const dept = depts.find((d) => d.id === form.department_id);
     const { data, error } = await supabase.functions.invoke("send-enterprise-invite", {
@@ -174,6 +177,8 @@ const EnterpriseInviteEmployeesScreen = () => {
         license_limit_reached: "Sem licenças disponíveis. Solicite expansão de plano.",
         invite_already_pending: "Já existe um convite pendente para este e-mail.",
         invalid_email: "E-mail inválido.",
+        manager_required: "Gestor imediato é obrigatório para colaboradores e líderes.",
+        manager_invalid: "O gestor selecionado não pertence à organização.",
       };
       return toast.error(map[errMsg] ?? errMsg);
     }
