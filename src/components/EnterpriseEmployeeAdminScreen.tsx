@@ -105,6 +105,19 @@ const EnterpriseEmployeeAdminScreen = () => {
 
   const save = async () => {
     if (!id) return;
+    const isAdmin = rolesList.some((r) => r === "rh_admin" || r === "owner");
+    if (!isAdmin && !form.manager_id) {
+      toast({
+        title: "Gestor imediato é obrigatório",
+        description: "Selecione um gestor. Só RH/Owner pode ficar sem gestor (topo da organização).",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (form.manager_id && form.manager_id === id) {
+      toast({ title: "Um colaborador não pode ser gestor de si mesmo", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("profiles").update({
       full_name: form.full_name || null,
