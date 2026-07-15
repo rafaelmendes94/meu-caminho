@@ -273,12 +273,14 @@ const EnterprisePrivacyCenterScreen = () => {
               </p>
             </div>
             
-            <button 
-                onClick={() => navigate('/enterprise/sos-rh')}
-                className="relative z-10 h-14 px-8 rounded-full bg-white text-[#0B0908] font-bold text-[14px] transition-all hover:bg-[#F88A2B] hover:text-[#111] shrink-0 shadow-lg shadow-black/20"
-            >
-                Acessar Canal Direto
-            </button>
+            {!isRH && (
+              <button 
+                  onClick={() => navigate('/enterprise/sos-rh')}
+                  className="relative z-10 h-14 px-8 rounded-full bg-white text-[#0B0908] font-bold text-[14px] transition-all hover:bg-[#F88A2B] hover:text-[#111] shrink-0 shadow-lg shadow-black/20"
+              >
+                  Acessar Canal Direto
+              </button>
+            )}
           </div>
         </section>
 
