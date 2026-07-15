@@ -6,6 +6,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "Meu Caminho Enterprise <no-reply@augustocury.fivestarsmarketing.com.br>";
 
 async function sha256(input: string) {
   const bytes = new TextEncoder().encode(input);
@@ -91,7 +92,7 @@ Deno.serve(async (req) => {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}`, "X-Connection-Api-Key": RESEND_API_KEY },
           body: JSON.stringify({
-            from: "Meu Caminho Enterprise <onboarding@resend.dev>",
+            from: RESEND_FROM,
             to: [invite.email],
             subject: "Lembrete: seu convite para o Meu Caminho Enterprise",
             html: `<p>Olá${invite.full_name ? " " + invite.full_name : ""},</p><p>Este é um lembrete do seu convite.</p><p><a href="${invite_link}">Aceitar convite</a></p>`,
