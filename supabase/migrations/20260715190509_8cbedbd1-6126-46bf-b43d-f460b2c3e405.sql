@@ -1,0 +1,2 @@
+ALTER TABLE public.action_plans DROP CONSTRAINT IF EXISTS action_plans_source_type_check;
+ALTER TABLE public.action_plans ADD CONSTRAINT action_plans_source_type_check CHECK (source_type = ANY (ARRAY['dna'::text, 'predictive_signal'::text, 'alert'::text, 'executive_ai'::text, 'weekly_insight'::text, 'manual'::text]));
