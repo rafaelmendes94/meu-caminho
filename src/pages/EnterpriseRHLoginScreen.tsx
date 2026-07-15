@@ -148,31 +148,6 @@ const EnterpriseRHLoginScreen = () => {
                 </Button>
               </form>
 
-              <div className="relative my-10">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#0B0908]/5"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-transparent px-4 text-[9px] font-bold text-[#0B0908]/20 uppercase tracking-widest">Sistemas Integrados</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant="outline" 
-                  className="h-12 rounded-xl border-[#0B0908]/5 hover:bg-[#0B0908]/5 transition-all flex items-center justify-center gap-2 text-[10px] font-bold text-[#0B0908]/60 uppercase tracking-tighter"
-                >
-                  <Chrome className="w-3.5 h-3.5" />
-                  <span>Google</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="h-12 rounded-xl border-[#0B0908]/5 hover:bg-[#0B0908]/5 transition-all flex items-center justify-center gap-2 text-[10px] font-bold text-[#0B0908]/60 uppercase tracking-tighter"
-                >
-                  <MonitorCheck className="w-3.5 h-3.5" />
-                  <span>Microsoft</span>
-                </Button>
-              </div>
             </div>
 
             {/* Support info */}
