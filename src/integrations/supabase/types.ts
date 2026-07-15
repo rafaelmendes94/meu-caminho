@@ -6654,6 +6654,17 @@ export type Database = {
           subscription_status: Database["public"]["Enums"]["subscription_status"]
         }[]
       }
+      get_org_announcement_history: {
+        Args: { _organization_id: string }
+        Returns: {
+          batch_id: string
+          body: string
+          created_at: string
+          read_count: number
+          title: string
+          total_recipients: number
+        }[]
+      }
       get_org_min_group_size: {
         Args: { _organization_id: string }
         Returns: number
