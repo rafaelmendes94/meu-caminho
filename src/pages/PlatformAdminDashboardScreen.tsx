@@ -71,7 +71,7 @@ const PlatformAdminDashboardScreen = () => {
       <p className="text-white/60 mb-8">Indicadores operacionais e comerciais da plataforma.</p>
 
       {loading ? (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : err ? (
@@ -82,7 +82,7 @@ const PlatformAdminDashboardScreen = () => {
       ) : !data ? (
         <p className="text-white/50">Sem dados disponíveis.</p>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card label="Total organizações" value={data.total_organizations} />
           <Card label="Ativas" value={data.active_organizations} />
           <Card label="Trials" value={data.trialing_organizations} />
