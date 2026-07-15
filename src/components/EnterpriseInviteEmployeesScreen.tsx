@@ -39,11 +39,12 @@ const EnterpriseInviteEmployeesScreen = () => {
   const navigate = useNavigate();
   const { organization } = useAuth();
   const [tone, setTone] = useState("Acolhedor");
-  const [form, setForm] = useState<{ full_name: string; email: string; department: string; job_title: string; department_id: string; unit_id: string }>({
-    full_name: "", email: "", department: "", job_title: "", department_id: "", unit_id: "",
+  const [form, setForm] = useState<{ full_name: string; email: string; department: string; job_title: string; department_id: string; unit_id: string; manager_id: string; role: "employee" | "leader" | "rh_admin" }>({
+    full_name: "", email: "", department: "", job_title: "", department_id: "", unit_id: "", manager_id: "", role: "employee",
   });
   const [depts, setDepts] = useState<Array<{ id: string; name: string }>>([]);
   const [units, setUnits] = useState<Array<{ id: string; name: string }>>([]);
+  const [managers, setManagers] = useState<Array<{ id: string; full_name: string | null; email: string | null }>>([]);
   const [sending, setSending] = useState(false);
   const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
   const [invites, setInvites] = useState<Array<{ id: string; email: string; full_name: string | null; department: string | null; accepted_at: string | null; canceled_at: string | null; declined_at: string | null; created_at: string }>>([]);
@@ -55,12 +56,20 @@ const EnterpriseInviteEmployeesScreen = () => {
   useEffect(() => {
     if (!organization?.id) return;
     (async () => {
-      const [d, u] = await Promise.all([
+      const [d, u, m] = await Promise.all([
         supabase.from("departments").select("id,name").eq("organization_id", organization.id).order("name"),
         supabase.from("units").select("id,name").eq("organization_id", organization.id).order("name"),
+        supabase.from("profiles").select("id, full_name, email:id").eq("organization_id", organization.id).order("full_name"),
       ]);
       setDepts((d.data as typeof depts) ?? []);
       setUnits((u.data as typeof units) ?? []);
+      // Fetch profiles with email requires joining auth; use profiles.full_name only.
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("organization_id", organization.id)
+        .order("full_name");
+      setManagers(((profs as Array<{ id: string; full_name: string | null }>) ?? []).map((p) => ({ id: p.id, full_name: p.full_name, email: null })));
     })();
     loadInvites();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,7 +165,8 @@ const EnterpriseInviteEmployeesScreen = () => {
         department: dept?.name ?? form.department,
         department_id: form.department_id || null,
         unit_id: form.unit_id || null,
-        role: "employee",
+        manager_id: form.manager_id || null,
+        role: form.role,
       },
     });
     setSending(false);
@@ -172,7 +182,7 @@ const EnterpriseInviteEmployeesScreen = () => {
     const link = (data as { invite_link?: string } | null)?.invite_link ?? null;
     setLastInviteLink(link);
     toast.success(link ? "Convite criado. Link de teste disponível abaixo." : "Convite enviado com sucesso.");
-    setForm({ full_name: "", email: "", department: "", job_title: "", department_id: "", unit_id: "" });
+    setForm({ full_name: "", email: "", department: "", job_title: "", department_id: "", unit_id: "", manager_id: "", role: "employee" });
     loadInvites();
   };
 
