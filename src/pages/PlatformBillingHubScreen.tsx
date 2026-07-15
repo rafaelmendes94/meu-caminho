@@ -223,7 +223,7 @@ export default function PlatformBillingHubScreen() {
       </div>
 
       <Tabs defaultValue="dashboard">
-        <TabsList className="flex flex-wrap gap-1">
+        <TabsList className="inline-flex h-auto w-max gap-1 overflow-x-auto scrollbar-none max-w-full">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="subscriptions">Assinaturas</TabsTrigger>
           <TabsTrigger value="invoices">Faturas</TabsTrigger>
