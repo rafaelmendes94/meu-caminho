@@ -373,6 +373,83 @@ const EnterpriseLaunchCommunicationScreen = () => {
 
         {/* Final Actions */}
         <section className="flex flex-col items-center gap-8 py-12">
+        </section>
+
+        {/* Histórico + Taxa de abertura */}
+        {canSend && (
+          <section className="space-y-4">
+            <div className="flex items-end justify-between px-2">
+              <div>
+                <h3 className="font-playfair text-2xl font-bold">Histórico de comunicados</h3>
+                <p className="text-xs text-[#0B0908]/50 mt-1">
+                  Taxa de abertura = % de colaboradores que abriram a notificação in-app.
+                </p>
+              </div>
+              <button
+                onClick={() => loadHistory()}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#0B0908]/50 hover:text-[#0B0908]"
+              >
+                Atualizar
+              </button>
+            </div>
+            <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-[#0B0908]/5">
+              {historyLoading && history.length === 0 ? (
+                <div className="p-8 text-center text-sm text-[#0B0908]/40">Carregando...</div>
+              ) : history.length === 0 ? (
+                <div className="p-8 text-center text-sm text-[#0B0908]/40">
+                  Nenhum comunicado enviado ainda.
+                </div>
+              ) : (
+                history.map((h) => {
+                  const rate = h.total_recipients > 0 ? (h.read_count / h.total_recipients) * 100 : 0;
+                  const dt = new Date(h.created_at).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return (
+                    <div
+                      key={h.batch_id}
+                      className="p-5 border-b border-[#0B0908]/5 last:border-0 flex items-center gap-6"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-[#0B0908] truncate">{h.title}</p>
+                        {h.body && (
+                          <p className="text-xs text-[#0B0908]/50 mt-1 line-clamp-1">{h.body}</p>
+                        )}
+                        <p className="text-[10px] uppercase tracking-widest text-[#0B0908]/40 mt-2">
+                          {dt} · {h.total_recipients} destinatário{h.total_recipients === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <div className="w-40 shrink-0">
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-[10px] uppercase tracking-widest text-[#0B0908]/40">
+                            Abertura
+                          </span>
+                          <span className="text-lg font-bold text-[#F88A2B]">
+                            {rate.toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-[#0B0908]/5 overflow-hidden">
+                          <div
+                            className="h-full bg-[#F88A2B] transition-all"
+                            style={{ width: `${Math.min(100, rate)}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-[#0B0908]/40 mt-1 text-right">
+                          {h.read_count}/{h.total_recipients} leram
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </section>
+        )}
+
+        <section className="flex flex-col items-center gap-8 py-12">
           <button 
             onClick={handleSend}
             disabled={sending || !canSend}
