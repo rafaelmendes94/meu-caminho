@@ -48,6 +48,7 @@ import {
   Plug,
   ChevronsLeft,
   ChevronsRight,
+  Briefcase,
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.webp";
 import AdminTopbar from "@/components/admin/AdminTopbar";
@@ -270,6 +271,7 @@ const rhGroups: RHNavGroup[] = [
       { to: "/enterprise/rh/equipe/licencas", label: "Licenças", icon: KeyRound },
       { to: "/enterprise/rh/departamentos", label: "Departamentos", icon: Users2 },
       { to: "/enterprise/rh/unidades", label: "Unidades", icon: Package },
+      { to: "/enterprise/rh/cargos", label: "Cargos", icon: Briefcase },
       { to: "/enterprise/rh/organograma", label: "Organograma Vivo", icon: Network },
     ],
   },

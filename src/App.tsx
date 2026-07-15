@@ -144,6 +144,7 @@ const EnterpriseDataRetentionScreen = lazy(() => import("./pages/EnterpriseDataR
 const EnterpriseComplianceScreen = lazy(() => import("./pages/EnterpriseComplianceScreen.tsx"));
 const EnterprisePoliciesScreen = lazy(() => import("./pages/EnterprisePoliciesScreen.tsx"));
 const EnterpriseUnitsScreen = lazy(() => import("./pages/EnterpriseUnitsScreen.tsx"));
+const EnterpriseJobPositionsScreen = lazy(() => import("./pages/EnterpriseJobPositionsScreen.tsx"));
 const EnterpriseOrgChartScreen = lazy(() => import("./pages/EnterpriseOrgChartScreen.tsx"));
 const EnterpriseOrganizationalDNAScreen = lazy(() => import("./pages/EnterpriseOrganizationalDNAScreen.tsx"));
 const EnterpriseWeeklyInsightsScreen = lazy(() => import("./pages/EnterpriseWeeklyInsightsScreen.tsx"));
@@ -413,6 +414,7 @@ const App = () => (
           <Route path="/enterprise/rh/compliance" element={<RH><EnterpriseComplianceScreen /></RH>} />
           <Route path="/enterprise/rh/politicas" element={<RH><EnterprisePoliciesScreen /></RH>} />
           <Route path="/enterprise/rh/unidades" element={<RH><EnterpriseUnitsScreen /></RH>} />
+          <Route path="/enterprise/rh/cargos" element={<RH><EnterpriseJobPositionsScreen /></RH>} />
           <Route path="/enterprise/rh/multiplos-admins" element={<RH><EnterpriseMultiAdminsScreen /></RH>} />
           <Route path="/enterprise/rh/rituais/guiados" element={<Navigate to="/enterprise/rh/rituais-inteligentes" replace />} />
           <Route path="/enterprise/rh/central-admin" element={<RH><EnterpriseAdminCenterScreen /></RH>} />

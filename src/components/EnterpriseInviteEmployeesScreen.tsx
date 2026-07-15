@@ -44,6 +44,7 @@ const EnterpriseInviteEmployeesScreen = () => {
   });
   const [depts, setDepts] = useState<Array<{ id: string; name: string }>>([]);
   const [units, setUnits] = useState<Array<{ id: string; name: string }>>([]);
+  const [positions, setPositions] = useState<Array<{ id: string; name: string }>>([]);
   const [managers, setManagers] = useState<Array<{ id: string; full_name: string | null; email: string | null }>>([]);
   const [sending, setSending] = useState(false);
   const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
@@ -62,6 +63,12 @@ const EnterpriseInviteEmployeesScreen = () => {
       ]);
       setDepts((d.data as typeof depts) ?? []);
       setUnits((u.data as typeof units) ?? []);
+      const { data: pos } = await supabase
+        .from("job_positions")
+        .select("id,name")
+        .eq("organization_id", organization.id)
+        .order("name");
+      setPositions((pos as typeof positions) ?? []);
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, full_name")
@@ -300,12 +307,26 @@ const EnterpriseInviteEmployeesScreen = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">Cargo (opcional)</label>
-                <Input 
-                  placeholder="Ex: Gestor de Operações" 
-                  value={form.job_title}
-                  onChange={(e) => setForm((f) => ({ ...f, job_title: e.target.value }))}
-                  className="rounded-2xl border-black/5 bg-white h-14 focus-visible:ring-[#F88A2B]"
-                />
+                <Select
+                  value={form.job_title || "__none"}
+                  onValueChange={(v) => setForm((f) => ({ ...f, job_title: v === "__none" ? "" : v }))}
+                >
+                  <SelectTrigger className="rounded-2xl border-black/5 bg-white h-14 focus:ring-[#F88A2B]">
+                    <SelectValue placeholder="Selecione um cargo..." />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-black/5 max-h-72">
+                    <SelectItem value="__none">Sem cargo</SelectItem>
+                    {positions.length === 0 && (
+                      <SelectItem value="__empty" disabled>Cadastre em Cargos</SelectItem>
+                    )}
+                    {positions.map((p) => (
+                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-[#0B0908]/40 ml-1">
+                  Gerencie os cargos disponíveis em <button type="button" onClick={() => navigate('/enterprise/rh/cargos')} className="underline text-[#F88A2B]">Empresa › Cargos</button>.
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-[#0B0908]/50 ml-1">
