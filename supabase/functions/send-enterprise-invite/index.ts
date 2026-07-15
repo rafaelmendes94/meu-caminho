@@ -53,6 +53,22 @@ Deno.serve(async (req) => {
     const roleList = (roles ?? []).map((r: { role: string }) => r.role);
     if (!roleList.includes("owner") && !roleList.includes("rh_admin")) return json({ error: "forbidden" }, 403);
 
+    // Gestor imediato é obrigatório para employee/leader — apenas rh_admin (topo)
+    // pode ficar sem gestor. Se veio manager_id, valida que pertence à mesma org.
+    if (finalRole !== "rh_admin" && !manager_id) {
+      return json({ error: "manager_required" }, 400);
+    }
+    if (manager_id) {
+      const { data: mgr } = await admin
+        .from("profiles")
+        .select("id, organization_id, deleted_at, status")
+        .eq("id", manager_id)
+        .maybeSingle();
+      if (!mgr || mgr.organization_id !== orgId || mgr.deleted_at) {
+        return json({ error: "manager_invalid" }, 400);
+      }
+    }
+
     // License precheck
     const { data: org } = await admin
       .from("organizations")
