@@ -104,30 +104,6 @@ const Index = () => {
 
   const loginButtons = (
     <div className="mt-5 w-full flex flex-col gap-3">
-      <button
-        onClick={handleGoogle}
-        className="relative h-[58px] w-full rounded-full bg-white border border-[#EFEAE5] flex items-center justify-center text-[15.5px] font-semibold text-[#111] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)] transition-all duration-300 hover:shadow-[0_12px_28px_-12px_rgba(0,0,0,0.16)] active:scale-[0.98]"
-      >
-        <span className="absolute left-6 flex items-center"><GoogleIcon /></span>
-        Continuar com Google
-        <span className="absolute right-6 flex items-center"><ChevronRight /></span>
-      </button>
-
-      <button
-        onClick={() => toast.info("Login Apple em breve.")}
-        className="relative h-[58px] w-full rounded-full bg-white border border-[#EFEAE5] flex items-center justify-center text-[15.5px] font-semibold text-[#111] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)] transition-all duration-300 hover:shadow-[0_12px_28px_-12px_rgba(0,0,0,0.16)] active:scale-[0.98]"
-      >
-        <span className="absolute left-6 flex items-center"><AppleIcon /></span>
-        Continuar com Apple
-        <span className="absolute right-6 flex items-center"><ChevronRight /></span>
-      </button>
-
-      <div className="flex items-center gap-3 px-1 -my-0.5">
-        <div className="h-px flex-1 bg-[#1a1a1a]/10" />
-        <span className="text-[12px] text-[#999]">ou</span>
-        <div className="h-px flex-1 bg-[#1a1a1a]/10" />
-      </div>
-
       {mode === "choose" ? (
         <button
           onClick={goEmail}
