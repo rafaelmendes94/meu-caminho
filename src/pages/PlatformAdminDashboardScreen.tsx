@@ -18,15 +18,15 @@ type Overview = {
 };
 
 const Card = ({ label, value, hint }: { label: string; value: string | number; hint?: string }) => (
-  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5">
-    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">{label}</p>
-    <p className="mt-2 text-3xl font-black text-white">{value}</p>
+  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 min-w-0">
+    <p className="text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-white/40 font-bold leading-tight break-words">{label}</p>
+    <p className="mt-2 text-2xl sm:text-3xl font-black text-white break-words">{value}</p>
     {hint && <p className="mt-1 text-xs text-white/40">{hint}</p>}
   </div>
 );
 
 const SkeletonCard = () => (
-  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-pulse">
+  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 animate-pulse">
     <div className="h-3 w-24 bg-white/10 rounded" />
     <div className="mt-3 h-8 w-20 bg-white/10 rounded" />
   </div>
@@ -67,11 +67,11 @@ const PlatformAdminDashboardScreen = () => {
 
   return (
     <PlatformAdminLayout>
-      <h1 className="text-3xl font-black mb-2">Visão Geral SaaS</h1>
-      <p className="text-white/60 mb-8">Indicadores operacionais e comerciais da plataforma.</p>
+      <h1 className="text-2xl sm:text-3xl font-black mb-2">Visão Geral SaaS</h1>
+      <p className="text-sm sm:text-base text-white/60 mb-6 sm:mb-8">Indicadores operacionais e comerciais da plataforma.</p>
 
       {loading ? (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : err ? (
@@ -82,7 +82,7 @@ const PlatformAdminDashboardScreen = () => {
       ) : !data ? (
         <p className="text-white/50">Sem dados disponíveis.</p>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card label="Total organizações" value={data.total_organizations} />
           <Card label="Ativas" value={data.active_organizations} />
           <Card label="Trials" value={data.trialing_organizations} />
