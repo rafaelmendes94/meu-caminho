@@ -1,36 +1,19 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { ChevronLeft, Bell, Settings, CheckCircle2, Trash2, ChevronRight } from "lucide-react";
+import { ChevronLeft, Bell, Settings, CheckCircle2, ChevronRight, Megaphone } from "lucide-react";
 import { AppUserLayout } from "./layouts/AppUserLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { useNotifications, formatNotificationTime, type AppNotification } from "@/hooks/useNotifications";
 
 const serif = { fontFamily: "'Playfair Display', serif" };
 
-type Cat = "jornada" | "conteudos" | "novidades";
 type Group = "hoje" | "semana" | "anteriores";
-
-type Notif = {
-  id: string;
-  title: string;
-  desc: string;
-  time: string;
-  Icon: React.ElementType;
-  color: string;
-  bg: string;
-  unread?: boolean;
-  category: Cat;
-  group: Group;
-};
-
-// Notifications backend not implemented yet; screen renders empty state instead of mock data.
-const ALL_NOTIFS: Notif[] = [];
 
 const filters = [
   { id: "todas", label: "Todas" },
   { id: "naolidas", label: "Não lidas" },
-  { id: "jornada", label: "Jornada" },
-  { id: "conteudos", label: "Conteúdos" },
+  { id: "comunicados", label: "Comunicados" },
 ] as const;
 
 const groupTitles: Record<Group, string> = {
@@ -39,23 +22,39 @@ const groupTitles: Record<Group, string> = {
   anteriores: "Anteriores",
 };
 
+function groupOf(iso: string): Group {
+  const diff = Date.now() - new Date(iso).getTime();
+  const days = diff / 86400000;
+  if (days < 1) return "hoje";
+  if (days < 7) return "semana";
+  return "anteriores";
+}
+
 const NotificationsScreen = () => {
   const al = useAudienceLink();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isEnterprise = pathname.startsWith('/enterprise');
-  
+  const { items, unreadCount, markAsRead, markAllAsRead } = useNotifications(100);
+
   const [filter, setFilter] = useState<typeof filters[number]["id"]>("todas");
 
   const filtered = useMemo(() => {
-    return ALL_NOTIFS.filter((n) => {
+    return items.filter((n) => {
       if (filter === "todas") return true;
-      if (filter === "naolidas") return n.unread;
-      if (filter === "jornada") return n.category === "jornada";
-      if (filter === "conteudos") return n.category === "conteudos";
+      if (filter === "naolidas") return !n.read_at;
+      if (filter === "comunicados") return n.type === "announcement";
       return true;
     });
-  }, [filter]);
+  }, [filter, items]);
+
+  const onOpen = (n: AppNotification) => {
+    if (!n.read_at) markAsRead(n.id);
+    if (n.action_url) navigate(n.action_url);
+  };
+
+  const iconFor = (t: string) => (t === "announcement" ? Megaphone : Bell);
+  const grouped = (g: Group) => filtered.filter((n) => groupOf(n.created_at) === g);
 
   if (isEnterprise) {
     return (
@@ -66,11 +65,17 @@ const NotificationsScreen = () => {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2">
               <h1 style={serif} className="text-4xl lg:text-5xl font-bold text-[#111]">Notificações</h1>
-              <p className="text-base text-[#8A8A8A] font-medium">Acompanhe as atualizações da sua jornada e conteúdos.</p>
+              <p className="text-base text-[#8A8A8A] font-medium">
+                {unreadCount > 0 ? `${unreadCount} não lida${unreadCount === 1 ? "" : "s"} ·` : ""} Acompanhe comunicados e atualizações da sua jornada.
+              </p>
             </div>
             
             <div className="flex items-center gap-2">
-              <button className="px-6 py-2.5 bg-white border border-black/5 rounded-xl text-xs font-bold text-[#111] hover:bg-black/5 transition-all flex items-center gap-2">
+              <button
+                onClick={() => markAllAsRead()}
+                disabled={unreadCount === 0}
+                className="px-6 py-2.5 bg-white border border-black/5 rounded-xl text-xs font-bold text-[#111] hover:bg-black/5 transition-all flex items-center gap-2 disabled:opacity-40"
+              >
                 <CheckCircle2 size={14} className="text-green-500" /> Marcar todas como lidas
               </button>
               <button className="px-4 py-2.5 bg-white border border-black/5 rounded-xl text-[#111] hover:bg-black/5 transition-all">
@@ -105,7 +110,7 @@ const NotificationsScreen = () => {
           {/* Notification List SaaS */}
           <div className="space-y-8">
             {(["hoje", "semana", "anteriores"] as Group[]).map((g) => {
-              const inGroup = filtered.filter((n) => n.group === g);
+              const inGroup = grouped(g);
               if (inGroup.length === 0) return null;
               
               return (
@@ -116,37 +121,34 @@ const NotificationsScreen = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 gap-3">
-                    {inGroup.map((n) => (
-                      <div 
-                        key={n.id} 
-                        className={`group relative bg-white rounded-[24px] p-5 shadow-sm border border-black/5 hover:border-[#F88A2B]/20 transition-all flex items-center gap-5 ${n.unread ? 'ring-1 ring-[#F88A2B]/10' : ''}`}
-                      >
-                        {n.unread && (
-                          <div className="absolute top-6 right-6 w-2 h-2 rounded-full bg-[#F88A2B] shadow-[0_0_12px_rgba(248,138,43,0.4)]" />
-                        )}
-                        
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{ background: n.bg }}>
-                          <n.Icon size={24} color={n.color} strokeWidth={1.8} />
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-1">
-                            <h4 className="text-base font-bold text-[#111] truncate pr-8">{n.title}</h4>
-                            <span className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest whitespace-nowrap">· {n.time}</span>
+                    {inGroup.map((n) => {
+                      const Icon = iconFor(n.type);
+                      const unread = !n.read_at;
+                      return (
+                        <button
+                          key={n.id}
+                          onClick={() => onOpen(n)}
+                          className={`group relative bg-white rounded-[24px] p-5 shadow-sm border border-black/5 hover:border-[#F88A2B]/20 transition-all flex items-center gap-5 text-left w-full ${unread ? 'ring-1 ring-[#F88A2B]/10' : ''}`}
+                        >
+                          {unread && (
+                            <div className="absolute top-6 right-6 w-2 h-2 rounded-full bg-[#F88A2B] shadow-[0_0_12px_rgba(248,138,43,0.4)]" />
+                          )}
+                          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm bg-[#F88A2B]/10 text-[#F88A2B]">
+                            <Icon size={22} strokeWidth={1.8} />
                           </div>
-                          <p className="text-sm text-[#666] leading-relaxed line-clamp-2 max-w-2xl">{n.desc}</p>
-                        </div>
-
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-2 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-500 transition-colors">
-                            <Trash2 size={16} />
-                          </button>
-                          <button className="p-2 rounded-lg hover:bg-[#F9F8F6] text-[#8A8A8A] transition-colors">
-                            <ChevronRight size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-1">
+                              <h4 className="text-base font-bold text-[#111] truncate pr-8">{n.title}</h4>
+                              <span className="text-[10px] font-bold text-[#B8B0A8] uppercase tracking-widest whitespace-nowrap">· {formatNotificationTime(n.created_at)}</span>
+                            </div>
+                            {n.body && (
+                              <p className="text-sm text-[#666] leading-relaxed line-clamp-2 max-w-2xl whitespace-pre-line">{n.body}</p>
+                            )}
+                          </div>
+                          <ChevronRight size={18} className="text-[#8A8A8A] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                      );
+                    })}
                   </div>
                 </section>
               );
@@ -220,7 +222,7 @@ const NotificationsScreen = () => {
           <div className="relative z-10 flex-1 px-5 pb-6 pt-3 overflow-y-auto no-scrollbar">
             {filtered.length > 0 ? (
               (["hoje", "semana", "anteriores"] as Group[]).map((g) => {
-                const inGroup = filtered.filter((n) => n.group === g);
+                const inGroup = grouped(g);
                 if (inGroup.length === 0) return null;
                 return (
                   <section key={g} className="mb-6">
@@ -228,24 +230,31 @@ const NotificationsScreen = () => {
                       {groupTitles[g]}
                     </p>
                     <div className="bg-white/70 backdrop-blur-sm rounded-3xl px-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.08)] border border-white/70 divide-y divide-[#F0EAE3]">
-                      {inGroup.map((n, i) => (
-                        <div
-                          key={n.id}
-                          className="relative flex items-start gap-3 py-3.5 px-1 active:bg-black/[0.015] transition-colors"
-                        >
-                          <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: n.bg }}>
-                            <n.Icon size={18} color={n.color} strokeWidth={1.8} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-[13.5px] font-semibold text-[#111] leading-tight truncate">{n.title}</p>
-                              {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-[#F88A2B] shrink-0 shadow-[0_0_0_3px_rgba(248,138,43,0.18)]" />}
+                      {inGroup.map((n) => {
+                        const Icon = iconFor(n.type);
+                        const unread = !n.read_at;
+                        return (
+                          <button
+                            key={n.id}
+                            onClick={() => onOpen(n)}
+                            className="relative flex items-start gap-3 py-3.5 px-1 active:bg-black/[0.015] transition-colors text-left w-full"
+                          >
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#F88A2B]/10 text-[#F88A2B]">
+                              <Icon size={16} strokeWidth={1.8} />
                             </div>
-                            <p className="text-[11.5px] text-[#666] mt-1 leading-snug line-clamp-2">{n.desc}</p>
-                          </div>
-                          <span className="text-[10.5px] text-[#999] shrink-0 mt-0.5">{n.time}</span>
-                        </div>
-                      ))}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-[13.5px] font-semibold text-[#111] leading-tight truncate">{n.title}</p>
+                                {unread && <span className="w-1.5 h-1.5 rounded-full bg-[#F88A2B] shrink-0 shadow-[0_0_0_3px_rgba(248,138,43,0.18)]" />}
+                              </div>
+                              {n.body && (
+                                <p className="text-[11.5px] text-[#666] mt-1 leading-snug line-clamp-2 whitespace-pre-line">{n.body}</p>
+                              )}
+                            </div>
+                            <span className="text-[10.5px] text-[#999] shrink-0 mt-0.5">{formatNotificationTime(n.created_at)}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </section>
                 );
