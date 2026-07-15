@@ -297,10 +297,12 @@ const CreateOwnerModal = ({ onClose, onDone }: { onClose: () => void; onDone: ()
     cnpj: "", domain: "",
   });
   const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [plans, setPlans] = useState<{ slug: string; name: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     supabase.from("organizations").select("id,name").is("deleted_at", null).order("name").then(({ data }) => setOrgs(data ?? []));
+    supabase.from("platform_plans").select("slug,name").eq("is_active", true).order("sort_order").then(({ data }) => setPlans(data ?? []));
   }, []);
 
   const submit = async () => {
@@ -338,9 +340,8 @@ const CreateOwnerModal = ({ onClose, onDone }: { onClose: () => void; onDone: ()
       <div className="grid grid-cols-3 gap-3">
         <Field label="Plano">
           <select className={input} value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value })}>
-            <option value="starter">Starter</option>
-            <option value="growth">Growth</option>
-            <option value="enterprise">Enterprise</option>
+            {plans.length === 0 && <option value="">— nenhum plano —</option>}
+            {plans.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
           </select>
         </Field>
         <Field label="Licenças"><input type="number" className={input} value={form.licenses_total} onChange={(e) => setForm({ ...form, licenses_total: Number(e.target.value) })} /></Field>
@@ -374,6 +375,10 @@ const EditOwnerModal = ({ owner, onClose, onDone }: { owner: Owner; onClose: () 
     supabase.from("organizations").select("domain,cnpj").eq("id", owner.organization_id).maybeSingle()
       .then(({ data }) => data && setF((s) => ({ ...s, domain: data.domain ?? "", cnpj: data.cnpj ?? "" })));
   }, [owner.organization_id]);
+  const [plans, setPlans] = useState<{ slug: string; name: string }[]>([]);
+  useEffect(() => {
+    supabase.from("platform_plans").select("slug,name").eq("is_active", true).order("sort_order").then(({ data }) => setPlans(data ?? []));
+  }, []);
 
   const save = async () => {
     await supabase.from("profiles").update({ full_name: f.full_name, phone: f.phone }).eq("id", owner.user_id);
@@ -403,7 +408,8 @@ const EditOwnerModal = ({ owner, onClose, onDone }: { owner: Owner; onClose: () 
       <div className="grid grid-cols-3 gap-3">
         <Field label="Plano">
           <select className={input} value={f.plan} onChange={(e) => setF({ ...f, plan: e.target.value })}>
-            <option value="starter">Starter</option><option value="growth">Growth</option><option value="enterprise">Enterprise</option>
+            {plans.length === 0 && <option value="">— nenhum plano —</option>}
+            {plans.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
           </select>
         </Field>
         <Field label="Licenças"><input type="number" className={input} value={f.licenses_total} onChange={(e) => setF({ ...f, licenses_total: Number(e.target.value) })} /></Field>
