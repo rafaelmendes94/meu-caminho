@@ -223,16 +223,18 @@ export default function PlatformBillingHubScreen() {
       </div>
 
       <Tabs defaultValue="dashboard">
-        <TabsList className="inline-flex h-auto w-max gap-1 overflow-x-auto scrollbar-none max-w-full">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="subscriptions">Assinaturas</TabsTrigger>
-          <TabsTrigger value="invoices">Faturas</TabsTrigger>
-          <TabsTrigger value="coupons">Cupons</TabsTrigger>
-          <TabsTrigger value="addons">Add-ons</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas</TabsTrigger>
-          <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-          <TabsTrigger value="gateways">Gateways</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-none -mx-4 px-4">
+          <TabsList className="inline-flex h-auto w-max gap-1">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="subscriptions">Assinaturas</TabsTrigger>
+            <TabsTrigger value="invoices">Faturas</TabsTrigger>
+            <TabsTrigger value="coupons">Cupons</TabsTrigger>
+            <TabsTrigger value="addons">Add-ons</TabsTrigger>
+            <TabsTrigger value="alerts">Alertas</TabsTrigger>
+            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+            <TabsTrigger value="gateways">Gateways</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="dashboard" className="mt-4"><DashboardTab /></TabsContent>
         <TabsContent value="subscriptions" className="mt-4"><SubscriptionsTab /></TabsContent>
