@@ -1,0 +1,2 @@
+ALTER TABLE public.intelligent_rituals DROP CONSTRAINT IF EXISTS intelligent_rituals_ritual_type_check;
+ALTER TABLE public.intelligent_rituals ADD CONSTRAINT intelligent_rituals_ritual_type_check CHECK (ritual_type = ANY (ARRAY['energy','communication','recovery','leadership','engagement','collaboration','reflection','custom','daily','weekly','monthly','integration','recognition','feedback','alignment','mental_health','welcome','sprint_closing','culture','innovation','development']));
