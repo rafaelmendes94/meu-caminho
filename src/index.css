@@ -381,15 +381,24 @@ html:not(.dark) body :is(
   .admin-surface .rounded-3xl:not([data-desktop-raw] *)       { border-radius: 0.875rem !important; }
 
   /* Encolhe títulos Playfair oversize dentro do admin */
-  .admin-surface .font-playfair.text-5xl,
-  .admin-surface h1.font-playfair.text-5xl,
-  .admin-surface h2.font-playfair.text-5xl { font-size: 1.75rem !important; line-height: 1.15 !important; }
-  .admin-surface .font-playfair.text-4xl,
-  .admin-surface h1.font-playfair.text-4xl,
-  .admin-surface h2.font-playfair.text-4xl { font-size: 1.5rem !important;  line-height: 1.2 !important; }
-  .admin-surface .font-playfair.text-3xl { font-size: 1.375rem !important; line-height: 1.25 !important; }
-  .admin-surface .font-playfair.text-2xl { font-size: 1.125rem !important; line-height: 1.3 !important; }
-  .admin-surface .font-playfair.text-xl  { font-size: 1rem !important;     line-height: 1.35 !important; }
+  .admin-surface h1.text-6xl,
+  .admin-surface h2.text-6xl,
+  .admin-surface .text-6xl { font-size: 1.875rem !important; line-height: 1.1 !important; }
+  .admin-surface h1.text-5xl,
+  .admin-surface h2.text-5xl,
+  .admin-surface .text-5xl { font-size: 1.75rem !important; line-height: 1.15 !important; }
+  .admin-surface h1.text-4xl,
+  .admin-surface h2.text-4xl,
+  .admin-surface .text-4xl { font-size: 1.5rem !important;  line-height: 1.2 !important; }
+  .admin-surface .text-3xl { font-size: 1.375rem !important; line-height: 1.25 !important; }
+  .admin-surface .text-2xl { font-size: 1.125rem !important; line-height: 1.3 !important; }
+  .admin-surface h3.text-xl,
+  .admin-surface h2.text-xl { font-size: 1rem !important;   line-height: 1.35 !important; }
+  /* Restaura tamanhos para elementos legítimos como KPIs numéricos:
+     tiles do dashboard/central-admin usam `.text-2xl` como valor grande. */
+  .admin-surface .keep-large,
+  .admin-surface .kpi-value.text-2xl,
+  .admin-surface .kpi-value.text-3xl { font-size: revert !important; }
 
   /* Reduz padding de heróis/cards com p-8..p-16 */
   .admin-surface .p-16 { padding: 1.5rem !important; }
