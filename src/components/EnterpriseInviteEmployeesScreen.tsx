@@ -56,14 +56,12 @@ const EnterpriseInviteEmployeesScreen = () => {
   useEffect(() => {
     if (!organization?.id) return;
     (async () => {
-      const [d, u, m] = await Promise.all([
+      const [d, u] = await Promise.all([
         supabase.from("departments").select("id,name").eq("organization_id", organization.id).order("name"),
         supabase.from("units").select("id,name").eq("organization_id", organization.id).order("name"),
-        supabase.from("profiles").select("id, full_name, email:id").eq("organization_id", organization.id).order("full_name"),
       ]);
       setDepts((d.data as typeof depts) ?? []);
       setUnits((u.data as typeof units) ?? []);
-      // Fetch profiles with email requires joining auth; use profiles.full_name only.
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, full_name")
