@@ -229,6 +229,13 @@ main > div:not([data-fullbleed]) {
 .admin-surface .text-sky-300,
 .admin-surface .text-sky-400 { color: #075985 !important; }
 
+/* Textos "orange-50" foram usados como texto branco em heros escuros
+   mobile; no admin surface (fundo claro) ficam ilegíveis. Remapeia. */
+.admin-surface .text-orange-50,
+.admin-surface .text-orange-50\/70,
+.admin-surface .text-orange-50\/80,
+.admin-surface .text-orange-50\/90 { color: #475569 !important; }
+
 /* ============================================================
    Mobile: tabelas do admin/RH devem rolar horizontalmente
    sem clipar quando estão dentro de containers com
