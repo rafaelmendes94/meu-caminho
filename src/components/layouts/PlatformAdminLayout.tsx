@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronDown, ChevronsLeft, ChevronsRight, Star, Command as CommandIcon, Menu, X,
+  ChevronDown, ChevronsLeft, ChevronsRight, Star, Command as CommandIcon, Menu,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AdminTopbar from "@/components/admin/AdminTopbar";
