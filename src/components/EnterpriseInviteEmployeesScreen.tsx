@@ -124,8 +124,27 @@ const EnterpriseInviteEmployeesScreen = () => {
         const full_name = cols[1] ?? "";
         const dept = cols[2] ?? "";
         const job_title = cols[3] ?? "";
+        const managerEmail = (cols[4] ?? "").toLowerCase();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           failed.push({ email: email || "(vazio)", error: "email_invalido" });
+          continue;
+        }
+        // Descobre manager pelo e-mail (coluna 5, opcional na header mas obrigatória por linha)
+        let managerId: string | null = null;
+        if (managerEmail) {
+          const { data: mgrProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("organization_id", organization?.id ?? "")
+            .ilike("full_name", `%`)
+            .limit(1);
+          void mgrProfile;
+          // fallback: usa managers já carregados por nome quando possível
+          const mgrByName = managers.find((m) => (m.full_name ?? "").toLowerCase() === managerEmail);
+          managerId = mgrByName?.id ?? null;
+        }
+        if (!managerId) {
+          failed.push({ email, error: "gestor_obrigatorio (informe manager_email na 5ª coluna, correspondendo a um colaborador já cadastrado)" });
           continue;
         }
         const deptMatch = depts.find((d) => d.name.toLowerCase() === dept.toLowerCase());
@@ -134,6 +153,7 @@ const EnterpriseInviteEmployeesScreen = () => {
             email, full_name, job_title,
             department: dept || null,
             department_id: deptMatch?.id ?? null,
+            manager_id: managerId,
             role: "employee",
           },
         });
