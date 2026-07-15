@@ -539,6 +539,7 @@ const App = () => (
          <Route path="/admin/ai/rituais-inteligentes" element={<PlatformAdmin><PlatformAIComingSoonScreen title="Rituais Inteligentes" /></PlatformAdmin>} />
          <Route path="/admin/ai/recomendacoes" element={<PlatformAdmin><PlatformRecommendationEngineConfigScreen /></PlatformAdmin>} />
         <Route path="/admin/ai/orchestrator" element={<PlatformAdmin><PlatformOrchestratorConfigScreen /></PlatformAdmin>} />
+        <Route path="/admin/ai/onboarding" element={<PlatformAdmin><PlatformOnboardingConfigScreen /></PlatformAdmin>} />
          <Route path="/admin/knowledge" element={<PlatformAdmin><PlatformKnowledgeHubScreen /></PlatformAdmin>} />
           <Route path="/admin/ai/lab" element={<PlatformAdmin><PlatformAILabScreen /></PlatformAdmin>} />
 
