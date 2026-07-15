@@ -84,6 +84,7 @@ export const adminNavGroups: AdminNavGroup[] = [
     items: [
       { to: "/admin/ai", label: "Overview", icon: LayoutDashboard },
       { to: "/admin/ai/orchestrator", label: "Orchestrator", icon: Brain },
+      { to: "/admin/ai/onboarding", label: "Onboarding", icon: MessageSquare, keywords: "entrevista colaborador perfil inteligente" },
       { to: "/admin/ai/conselho-executivo", label: "Conselho", icon: MessageSquare },
       { to: "/admin/ai/dna-organizacional", label: "DNA", icon: Dna },
       { to: "/admin/ai/insights-semanais", label: "Insights", icon: CalendarClock },
