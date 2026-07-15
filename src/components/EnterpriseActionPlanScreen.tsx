@@ -227,12 +227,12 @@ export default function EnterpriseActionPlanScreen() {
     s === "doing" ? <CircleDot className="w-4 h-4 text-[#F88A2B]" /> :
     <Circle className="w-4 h-4 text-zinc-400" />;
 
-  const PlanCard = ({ plan }: { plan: Plan }) => {
+  const renderPlanCard = (plan: Plan) => {
     const planTasks = tasks[plan.id] ?? [];
     const pct = progress(plan.id);
     const isOpen = expanded === plan.id;
     return (
-      <div className="rounded-[28px] bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+      <div key={plan.id} className="rounded-[28px] bg-white border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
         <div className="p-6 space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -359,17 +359,17 @@ export default function EnterpriseActionPlanScreen() {
     );
   };
 
-  const StatusSection = ({ label, list }: { label: string; list: Plan[] }) => {
+  const renderStatusSection = (label: string, list: Plan[]) => {
     if (list.length === 0) return null;
     return (
-      <section>
+      <section key={label}>
         <div className="flex items-center gap-3 mb-4 px-1">
           <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999]">{label}</h3>
           <span className="text-[11px] text-[#999]">({list.length})</span>
           <div className="h-px flex-1 bg-black/5" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {list.map((p) => <PlanCard key={p.id} plan={p} />)}
+          {list.map((p) => renderPlanCard(p))}
         </div>
       </section>
     );
@@ -437,11 +437,11 @@ export default function EnterpriseActionPlanScreen() {
           </div>
         )}
 
-        <StatusSection label="Ativos" list={grouped.active} />
-        <StatusSection label="Rascunhos" list={grouped.draft} />
-        <StatusSection label="Pausados" list={grouped.paused} />
-        <StatusSection label="Concluídos" list={grouped.completed} />
-        <StatusSection label="Cancelados" list={grouped.canceled} />
+        {renderStatusSection("Ativos", grouped.active)}
+        {renderStatusSection("Rascunhos", grouped.draft)}
+        {renderStatusSection("Pausados", grouped.paused)}
+        {renderStatusSection("Concluídos", grouped.completed)}
+        {renderStatusSection("Cancelados", grouped.canceled)}
       </div>
     </EnterpriseRHLayout>
   );
