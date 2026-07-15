@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
     const recipients = (members ?? []).map((m: any) => m.id).filter(Boolean);
     if (recipients.length === 0) return json({ error: "no_recipients" }, 400);
 
+    const batchId = crypto.randomUUID();
     const rows = recipients.map((uid: string) => ({
       user_id: uid,
       organization_id: orgId,
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
       title,
       body: message,
       action_url: actionUrl,
-      metadata: { sent_by: userId, tone },
+      metadata: { sent_by: userId, tone, batch_id: batchId },
     }));
 
     // Insert in chunks to avoid large payloads.
@@ -86,7 +87,7 @@ Deno.serve(async (req) => {
       inserted += chunk.length;
     }
 
-    return json({ ok: true, recipients: inserted, organization_id: orgId });
+    return json({ ok: true, recipients: inserted, organization_id: orgId, batch_id: batchId });
   } catch (e) {
     console.error("broadcast-org-announcement error", e);
     return json({ error: (e as Error).message }, 500);
