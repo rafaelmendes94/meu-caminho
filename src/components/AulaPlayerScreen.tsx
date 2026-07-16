@@ -1,11 +1,13 @@
-import { useState } from"react";
-import { Link, useNavigate, useLocation } from"react-router-dom";
+import { useState, useEffect } from"react";
+import { Link, useNavigate, useLocation, useSearchParams } from"react-router-dom";
 import heroImg from"@/assets/trilha/aula-hero.jpg";
 import curyImg from"@/assets/trilha/cury.jpg";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { MediaDesktopLayout, SidePanelCard, SidePanelList } from "./layouts/MediaDesktopLayout";
 import nextImg from"@/assets/trilha/modulo1.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { supabase } from "@/integrations/supabase/client";
+import VTurbPlayer from "./VTurbPlayer";
 import {
   DropdownMenu,
   DropdownMenuContent,
