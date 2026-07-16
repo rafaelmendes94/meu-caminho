@@ -1,11 +1,13 @@
-import { useState } from"react";
-import { Link, useNavigate, useLocation } from"react-router-dom";
+import { useState, useEffect } from"react";
+import { Link, useNavigate, useLocation, useSearchParams } from"react-router-dom";
 import heroImg from"@/assets/trilha/aula-hero.jpg";
 import curyImg from"@/assets/trilha/cury.jpg";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { MediaDesktopLayout, SidePanelCard, SidePanelList } from "./layouts/MediaDesktopLayout";
 import nextImg from"@/assets/trilha/modulo1.jpg";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { supabase } from "@/integrations/supabase/client";
+import VTurbPlayer from "./VTurbPlayer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +87,31 @@ const sheetData: Record<Exclude<SheetKind, null>, { title: string; options: stri
 const AulaPlayerScreen = () => {
   const al = useAudienceLink();
  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const vturbSrc = params.get("v") ?? "";
+  const lessonId = params.get("lesson");
+  const [lessonMedia, setLessonMedia] = useState<string>("");
+  const [lessonTitle, setLessonTitle] = useState<string>("");
+  const [lessonDesc, setLessonDesc] = useState<string>("");
+  const [lessonDuration, setLessonDuration] = useState<number | null>(null);
+  useEffect(() => {
+    if (!lessonId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("course_lessons")
+        .select("title,media_url,content,duration_minutes")
+        .eq("id", lessonId)
+        .maybeSingle();
+      if (data) {
+        setLessonMedia((data as any).media_url ?? "");
+        setLessonTitle((data as any).title ?? "");
+        setLessonDesc((data as any).content ?? "");
+        setLessonDuration((data as any).duration_minutes ?? null);
+      }
+    })();
+  }, [lessonId]);
+  const videoSource = vturbSrc || lessonMedia;
+
   // No lesson player wired yet — do not fake progress.
   const current = 0;
   const total = 0;
@@ -129,24 +156,26 @@ const AulaPlayerScreen = () => {
   {/* HERO VIDEO */}
   <section className="relative px-5 pt-4">
   <div className={`relative w-full group ${isEnterprise ? 'lg:aspect-video lg:max-w-5xl lg:mx-auto' : 'aspect-[16/10]'} rounded-[24px] lg:rounded-[32px] overflow-hidden bg-black`} style={{ boxShadow: "0 30px 60px -12px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(0,0,0,0.05)" }}>
- <img src={heroImg} alt="" width={1024} height={640} className="absolute inset-0 w-full h-full object-cover" />
- <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.35) 100%)" }} />
-
-  {/* Play */}
-  <button
-    disabled
-    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 lg:w-24 lg:h-24 rounded-full flex items-center justify-center bg-white/90 backdrop-blur-md opacity-70 cursor-not-allowed"
-    style={{
-      boxShadow: "0 12px 32px rgba(0,0,0,0.25), 0 0 0 6px rgba(255,255,255,0.2)",
-    }}
-    aria-label="Player em produção"
-    title="Player em produção — vídeo será liberado em breve"
-  >
-    <PlayFill s={isEnterprise ? 40 : 28} />
-  </button>
-  <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-black/60 backdrop-blur text-white">
-    Prévia
-  </div>
+  {videoSource ? (
+    <VTurbPlayer source={videoSource} className="absolute inset-0 w-full h-full" />
+  ) : (
+    <>
+      <img src={heroImg} alt="" width={1024} height={640} className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.35) 100%)" }} />
+      <button
+        disabled
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 lg:w-24 lg:h-24 rounded-full flex items-center justify-center bg-white/90 backdrop-blur-md opacity-70 cursor-not-allowed"
+        style={{ boxShadow: "0 12px 32px rgba(0,0,0,0.25), 0 0 0 6px rgba(255,255,255,0.2)" }}
+        aria-label="Vídeo não configurado"
+        title="Cole a URL do script VTurb no CMS"
+      >
+        <PlayFill s={isEnterprise ? 40 : 28} />
+      </button>
+      <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-black/60 backdrop-blur text-white">
+        Prévia
+      </div>
+    </>
+  )}
 
   {/* timeline oculta enquanto não há vídeo real conectado */}
  </div>
@@ -157,12 +186,12 @@ const AulaPlayerScreen = () => {
     <div className="flex items-start justify-between gap-6">
       <div className="min-w-0">
         <h2 className="text-[28px] lg:text-[34px] leading-tight text-[#111] mb-3" style={{ ...serif, fontWeight: 600 }}>
-          Aula em preparação
+          {lessonTitle || (videoSource ? "Aula" : "Aula em preparação")}
         </h2>
         <div className="flex items-center gap-3 text-[13px] font-medium">
           <div className="flex items-center gap-1.5 text-[#666]">
             <Clock c={ink500} />
-            <span>Duração a definir</span>
+            <span>{lessonDuration ? `${lessonDuration} min` : "Duração a definir"}</span>
           </div>
         </div>
       </div>
@@ -180,7 +209,7 @@ const AulaPlayerScreen = () => {
     </div>
     
     <p className="mt-6 text-[15px] lg:text-[16px] leading-relaxed text-[#555] max-w-2xl font-medium">
-      Descrição da aula será exibida assim que o conteúdo for publicado.
+      {lessonDesc || "Descrição da aula será exibida assim que o conteúdo for publicado."}
     </p>
   </section>
 
