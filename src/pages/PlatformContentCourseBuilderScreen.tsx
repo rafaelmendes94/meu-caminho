@@ -65,7 +65,10 @@ export default function PlatformContentCourseBuilderScreen() {
   };
   const editLesson = async (l: Lesson) => {
     const title = prompt("Título:", l.title); if (title === null) return;
-    const media_url = prompt("URL da mídia (YouTube/Vimeo/áudio/PDF):", l.media_url ?? "");
+    const media_url = prompt(
+      "URL da mídia\n\n• Vídeo VTurb: cole a URL completa do script (https://scripts.converteai.net/<conta>/players/<id>/player.js)\n• Áudio/PDF: URL direta do arquivo",
+      l.media_url ?? ""
+    );
     const lesson_type = (prompt("Tipo (video/text/pdf/audio/exercise):", l.lesson_type) ?? l.lesson_type) as Lesson["lesson_type"];
     const duration = prompt("Duração (min):", l.duration_minutes?.toString() ?? "");
     const { error } = await supabase.from("course_lessons").update({ title, media_url, lesson_type, duration_minutes: duration ? Number(duration) : null }).eq("id", l.id);
