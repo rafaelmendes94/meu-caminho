@@ -1,8 +1,11 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ChevronLeft, Bookmark, MoreVertical, Play, Maximize2, Heart, Download, Share2 } from "lucide-react";
 import { MediaDesktopLayout, SidePanelCard, SidePanelList } from "./layouts/MediaDesktopLayout";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
 import { useAudienceLink } from "@/hooks/use-audience";
+import { supabase } from "@/integrations/supabase/client";
+import VTurbPlayer from "./VTurbPlayer";
 
 const serif = { fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: "-0.02em" } as const;
 
@@ -11,6 +14,26 @@ const VideoContentScreen = () => {
   const isEnterprise = pathname.startsWith('/enterprise');
   const al = useAudienceLink();
   const backTo = isEnterprise ? "/enterprise/feed" : "/feed";
+  const [params] = useSearchParams();
+  const vturbSrc = params.get("v") ?? "";
+  const lessonId = params.get("lesson");
+  const [lessonMedia, setLessonMedia] = useState<string>("");
+  const [lessonTitle, setLessonTitle] = useState<string>("");
+  useEffect(() => {
+    if (!lessonId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("course_lessons")
+        .select("title,media_url")
+        .eq("id", lessonId)
+        .maybeSingle();
+      if (data) {
+        setLessonMedia((data as any).media_url ?? "");
+        setLessonTitle((data as any).title ?? "");
+      }
+    })();
+  }, [lessonId]);
+  const videoSource = vturbSrc || lessonMedia;
 
   const topics: string[] = [];
   const metaData: { icon: React.ReactNode; label: string }[] = [];
@@ -38,27 +61,27 @@ const VideoContentScreen = () => {
       )}
 
       <div className="max-w-5xl mx-auto px-5 lg:px-10 py-6 lg:py-10">
-        {/* Video Player */}
-        <div className="relative rounded-[32px] overflow-hidden bg-black aspect-video shadow-2xl group mb-8">
-          <div className="w-full h-full bg-neutral-900" />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <button disabled className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-[#F88A2B]/70 text-white flex items-center justify-center shadow-2xl cursor-not-allowed" title="Player em produção">
-              <Play size={36} fill="currentColor" className="ml-1" />
-            </button>
-          </div>
-          
-          <div className="absolute top-6 right-6 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all">
-              <Maximize2 size={18} />
-            </button>
-          </div>
+        {/* Video Player (VTurb) */}
+        <div className="relative rounded-[32px] overflow-hidden bg-black aspect-video shadow-2xl mb-8">
+          {videoSource ? (
+            <VTurbPlayer source={videoSource} className="absolute inset-0 w-full h-full" />
+          ) : (
+            <>
+              <div className="w-full h-full bg-neutral-900" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <button disabled className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-[#F88A2B]/70 text-white flex items-center justify-center shadow-2xl cursor-not-allowed" title="Vídeo não configurado">
+                  <Play size={36} fill="currentColor" className="ml-1" />
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-10 items-start">
           <div className="flex-1 w-full">
             <div className="mb-8">
               <h1 style={serif} className="text-3xl lg:text-4xl font-bold text-[#111] leading-tight mb-4">
-                Vídeo em preparação
+                {lessonTitle || (videoSource ? "Vídeo" : "Vídeo em preparação")}
               </h1>
               
               <div className="flex flex-wrap items-center gap-6">
