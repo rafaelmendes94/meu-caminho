@@ -87,6 +87,31 @@ const sheetData: Record<Exclude<SheetKind, null>, { title: string; options: stri
 const AulaPlayerScreen = () => {
   const al = useAudienceLink();
  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const vturbSrc = params.get("v") ?? "";
+  const lessonId = params.get("lesson");
+  const [lessonMedia, setLessonMedia] = useState<string>("");
+  const [lessonTitle, setLessonTitle] = useState<string>("");
+  const [lessonDesc, setLessonDesc] = useState<string>("");
+  const [lessonDuration, setLessonDuration] = useState<number | null>(null);
+  useEffect(() => {
+    if (!lessonId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("course_lessons")
+        .select("title,media_url,content,duration_minutes")
+        .eq("id", lessonId)
+        .maybeSingle();
+      if (data) {
+        setLessonMedia((data as any).media_url ?? "");
+        setLessonTitle((data as any).title ?? "");
+        setLessonDesc((data as any).content ?? "");
+        setLessonDuration((data as any).duration_minutes ?? null);
+      }
+    })();
+  }, [lessonId]);
+  const videoSource = vturbSrc || lessonMedia;
+
   // No lesson player wired yet — do not fake progress.
   const current = 0;
   const total = 0;
