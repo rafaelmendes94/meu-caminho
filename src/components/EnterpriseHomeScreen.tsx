@@ -73,6 +73,94 @@ const JourneyCard = ({
   </div>
 );
 
+const MOOD_EMOJI = ["", "😢", "😕", "😐", "🙂", "😄"];
+const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+function WeeklyCheckinsCard({
+  checkins,
+  onNew,
+}: {
+  checkins: Array<{ mood_score: number; created_at: string }>;
+  onNew: () => void;
+}) {
+  // Build Mon..Sun of current week
+  const start = new Date();
+  const day = start.getDay();
+  const diffToMon = (day + 6) % 7;
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - diffToMon);
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return d;
+  });
+  const byDay = new Map<string, { mood_score: number; created_at: string }>();
+  for (const c of checkins) {
+    const k = new Date(c.created_at).toDateString();
+    // keep the last one for the day
+    byDay.set(k, c);
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const doneCount = days.filter((d) => byDay.has(d.toDateString())).length;
+
+  return (
+    <section className="rounded-[24px] bg-white p-5 lg:p-6 border border-black/5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F88A2B] mb-0.5">
+            Check-ins da semana
+          </p>
+          <h3 className="text-[16px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>
+            {doneCount} de 7 dias registrados
+          </h3>
+        </div>
+        <button
+          onClick={onNew}
+          className="text-[12px] font-bold text-[#F88A2B] hover:underline"
+        >
+          + Novo
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-1.5">
+        {days.map((d) => {
+          const c = byDay.get(d.toDateString());
+          const isToday = d.getTime() === today.getTime();
+          const isFuture = d.getTime() > today.getTime();
+          return (
+            <div
+              key={d.toISOString()}
+              className={`flex flex-col items-center gap-1 rounded-xl py-2 px-1 border ${
+                c
+                  ? "bg-[#F88A2B0D] border-[#F88A2B33]"
+                  : isToday
+                  ? "bg-white border-[#F88A2B66] border-dashed"
+                  : "bg-[#F8F9FA] border-transparent"
+              }`}
+            >
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#999]">
+                {DAY_LABELS[days.indexOf(d)]}
+              </span>
+              <span className="text-[20px] leading-none h-6 flex items-center">
+                {c ? MOOD_EMOJI[c.mood_score] : isFuture ? "·" : "–"}
+              </span>
+              <span
+                className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  c
+                    ? "bg-[#F88A2B] text-white"
+                    : "bg-transparent border border-[#E5E5E5] text-transparent"
+                }`}
+              >
+                ✓
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function EnterpriseHomeScreen() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -84,6 +172,7 @@ export default function EnterpriseHomeScreen() {
   })();
   const avatarUrl = profile?.avatar_url || null;
   const [lastCheckin, setLastCheckin] = useState<{ mood_score: number; energy_score: number; stress_score: number; created_at: string } | null>(null);
+  const [weekCheckins, setWeekCheckins] = useState<Array<{ mood_score: number; created_at: string }>>([]);
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -103,6 +192,20 @@ export default function EnterpriseHomeScreen() {
         .limit(1)
         .maybeSingle();
       setLastCheckin(data as any);
+    })();
+    (async () => {
+      const start = new Date();
+      const day = start.getDay(); // 0=sun
+      const diffToMon = (day + 6) % 7;
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - diffToMon);
+      const { data } = await supabase
+        .from("emotional_checkins")
+        .select("mood_score,created_at")
+        .eq("user_id", user.id)
+        .gte("created_at", start.toISOString())
+        .order("created_at", { ascending: true });
+      setWeekCheckins((data ?? []) as any);
     })();
   }, [user]);
 
@@ -208,6 +311,9 @@ export default function EnterpriseHomeScreen() {
         </section>
 
         <PulseWidget />
+
+        {/* Check-ins da Semana */}
+        <WeeklyCheckinsCard checkins={weekCheckins} onNew={() => navigate('/enterprise/checkin/intro')} />
 
         {/* Weekly Moment removed: no real data source; avoiding mock content. */}
 
