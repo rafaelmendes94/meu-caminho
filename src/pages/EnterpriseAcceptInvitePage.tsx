@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, Building2, AlertCircle } from "lucide-react";
+import { ShieldCheck, Building2, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 type InviteInfo = {
   status: "valid" | "accepted" | "canceled" | "declined" | "expired";
@@ -24,6 +24,8 @@ const EnterpriseAcceptInvitePage = () => {
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState<InviteInfo | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -141,11 +143,21 @@ const EnterpriseAcceptInvitePage = () => {
           </label>
           <label className="block space-y-1.5">
             <span className="text-[11px] font-bold uppercase tracking-widest text-[#0B0908]/50">Senha</span>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8, com letras e números" className="w-full h-12 px-4 rounded-xl border border-[#E5E0DA] bg-white focus:outline-none focus:border-[#F88A2B]" />
+            <div className="relative">
+              <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8, com letras e números" className="w-full h-12 pl-4 pr-12 rounded-xl border border-[#E5E0DA] bg-white focus:outline-none focus:border-[#F88A2B]" />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0B0908]/40 hover:text-[#0B0908]">
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </label>
           <label className="block space-y-1.5">
             <span className="text-[11px] font-bold uppercase tracking-widest text-[#0B0908]/50">Confirmar senha</span>
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a senha" className="w-full h-12 px-4 rounded-xl border border-[#E5E0DA] bg-white focus:outline-none focus:border-[#F88A2B]" />
+            <div className="relative">
+              <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a senha" className="w-full h-12 pl-4 pr-12 rounded-xl border border-[#E5E0DA] bg-white focus:outline-none focus:border-[#F88A2B]" />
+              <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0B0908]/40 hover:text-[#0B0908]">
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </label>
           <label className="flex items-start gap-3 text-sm text-[#0B0908]/70 cursor-pointer">
             <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-1 w-4 h-4 accent-[#F88A2B]" />
