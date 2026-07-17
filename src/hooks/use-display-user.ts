@@ -20,7 +20,12 @@ export function useDisplayUser(): DisplayUser {
   const firstName = name.split(" ")[0] || name;
   const email = user?.email ?? "";
   const avatarUrl = profile?.avatar_url ?? null;
-  const initial = (firstName[0] || "?").toUpperCase();
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const initial = (
+    parts.length >= 2
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+      : (parts[0]?.slice(0, 2) || "?")
+  ).toUpperCase();
   const isEnterprise = !!organization;
 
   let planLabel = "Plano Free";

@@ -1,6 +1,9 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
-  ChevronRight, TrendingUp, History, Download, Heart, Shield,
+  ChevronRight, TrendingUp, History, Download, Heart, Shield, Camera, Loader2,
   Crown, HelpCircle, Settings, Headphones, BellRing, LogOut, Flame, Sparkles,
   User, CreditCard, Lock, Globe, Smartphone, Home, Flag, MessageCircle, Play, BookOpen
 } from "lucide-react";
@@ -18,7 +21,37 @@ export default function MenuScreen() {
   const al = useAudienceLink();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { user, refresh } = useAuth();
   const { name, email, avatarUrl, initial, planLabel } = useDisplayUser();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handlePickPhoto = () => fileRef.current?.click();
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) { toast.error("Envie uma imagem"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Máx. 5 MB"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: signed, error: sErr } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
+      if (sErr || !signed?.signedUrl) throw sErr || new Error("Falha ao gerar URL");
+      const { error: pErr } = await supabase.from("profiles").update({ avatar_url: signed.signedUrl }).eq("id", user.id);
+      if (pErr) throw pErr;
+      await refresh();
+      toast.success("Foto atualizada");
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível enviar a foto");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -47,9 +80,23 @@ export default function MenuScreen() {
                 {initial}
               </div>
             )}
-            <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-[#F88A2B] border-4 border-white flex items-center justify-center text-white shadow-lg">
-              <Sparkles size={20} fill="currentColor" />
-            </div>
+            <button
+              type="button"
+              onClick={handlePickPhoto}
+              disabled={uploading}
+              aria-label="Alterar foto"
+              title="Alterar foto"
+              className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-[#F88A2B] border-4 border-white flex items-center justify-center text-white shadow-lg hover:scale-105 transition disabled:opacity-70"
+            >
+              {uploading ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
           </div>
           
           <div className="flex-1 text-center lg:text-left">
