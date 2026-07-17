@@ -50,17 +50,25 @@ export default function EnterpriseTeamManagementScreen() {
       pending: pendingRes.count ?? 0,
       removed: removedRes.count ?? 0,
     });
-    const { data: profs } = await supabase
+    const { data: profs, error: profErr } = await supabase
       .from("profiles")
-      .select("id, full_name, job_title, status, deleted_at, departments(name), units(name)")
+      .select("id, full_name, job_title, status, deleted_at, department_id, unit_id")
       .eq("organization_id", organization.id)
       .order("full_name");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setMembers((profs as any[] ?? []).map((p) => ({
-      id: p.id, full_name: p.full_name, job_title: p.job_title,
+    if (profErr) { toast.error("Falha ao carregar colaboradores: " + profErr.message); }
+    const [depsRes, unitsRes] = await Promise.all([
+      supabase.from("departments").select("id, name").eq("organization_id", organization.id),
+      supabase.from("units").select("id, name").eq("organization_id", organization.id),
+    ]);
+    const depMap = new Map((depsRes.data ?? []).map((d) => [d.id, d.name]));
+    const unitMap = new Map((unitsRes.data ?? []).map((u) => [u.id, u.name]));
+    setMembers((profs ?? []).map((p) => ({
+      id: p.id,
+      full_name: p.full_name,
+      job_title: p.job_title,
       status: p.deleted_at ? "removed" : (p.status ?? "active"),
-      department_name: p.departments?.name ?? null,
-      unit_name: p.units?.name ?? null,
+      department_name: p.department_id ? (depMap.get(p.department_id) ?? null) : null,
+      unit_name: p.unit_id ? (unitMap.get(p.unit_id) ?? null) : null,
     })));
     const { data: pendList } = await supabase
       .from("enterprise_invites")
