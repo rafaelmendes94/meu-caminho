@@ -60,6 +60,7 @@ const Index = () => {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const translateAuthError = (msg?: string) => {
     const m = (msg || "").toLowerCase();
