@@ -3,63 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { 
-  ArrowLeft, 
-  Users, 
-  ArrowRight, 
-  Mail, 
-  ShieldCheck, 
+import {
+  ShieldCheck,
   Lock,
   Plus,
-  CheckCircle2,
   Clock,
-  UserMinus,
-  X,
   Search,
-  LayoutDashboard
+  LayoutDashboard,
+  Download,
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 
 const KPICard = ({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) => (
-  <div className="bg-white rounded-2xl p-6 border border-black/5 flex flex-col justify-between shadow-sm group-hover:shadow-md transition-shadow">
-    <p className="text-[32px] font-extrabold text-[#111] mb-2 tracking-tighter" style={{ fontFamily: "'Montserrat', sans-serif" }}>{value}</p>
-    <p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${colorClass || 'text-black/40'} font-montserrat`}>{label}</p>
-  </div>
-);
-
-const AreaCard = ({ area, activePercentage }: { area: string; activePercentage: number }) => (
-  <div className="bg-white rounded-[28px] p-6 border border-black/5 shadow-sm flex items-center justify-between group hover:border-[#F88A2B]/30 transition-all hover:shadow-md">
-    <div className="flex flex-col">
-      <span className="text-[16px] font-bold text-[#111] mb-1 font-montserrat">{area}</span>
-      <span className="text-[12px] text-[#666] font-medium font-montserrat">Taxa de ativação</span>
-    </div>
-    <div className="flex items-center gap-4">
-      <div className="w-32 h-2 bg-black/[0.03] rounded-full overflow-hidden ring-1 ring-black/5">
-        <div 
-          className="h-full bg-[#F88A2B] rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(248,138,43,0.3)]" 
-          style={{ width: `${activePercentage}%` }}
-        />
-      </div>
-      <span className="text-[16px] font-bold text-[#F88A2B] font-montserrat w-10 text-right">{activePercentage}%</span>
-    </div>
-  </div>
-);
-
-const PendingInviteItem = ({ name, area }: { name: string; area: string }) => (
-  <div className="flex items-center justify-between py-5 border-b border-black/5 last:border-0 group hover:px-2 transition-all rounded-xl hover:bg-black/[0.02]">
-    <div className="flex items-center gap-4">
-      <div className="h-12 w-12 rounded-full bg-white border border-[#E5E0DA] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-        <span className="text-[16px] font-bold text-[#F88A2B] font-montserrat">{name.charAt(0)}</span>
-      </div>
-      <div>
-        <p className="text-[15px] font-bold text-[#111] font-montserrat">{name}</p>
-        <p className="text-[13px] text-[#666] font-medium font-montserrat uppercase tracking-wider text-[10px]">{area}</p>
-      </div>
-    </div>
-    <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F88A2B1A] border border-[#F88A2B2A]">
-      <Clock className="h-3.5 w-3.5 text-[#F88A2B]" />
-      <span className="text-[11px] font-bold text-[#F88A2B] uppercase tracking-widest font-montserrat">Pendente</span>
-    </div>
+  <div className="bg-white rounded-2xl p-5 lg:p-6 border border-black/5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+    <p className="text-[28px] lg:text-[32px] font-extrabold text-[#111] mb-1 tracking-tighter" style={{ fontFamily: "'Montserrat', sans-serif" }}>{value}</p>
+    <p className={`text-[10px] lg:text-[11px] font-bold uppercase tracking-[0.2em] ${colorClass || 'text-black/40'} font-montserrat`}>{label}</p>
   </div>
 );
 
@@ -92,17 +50,25 @@ export default function EnterpriseTeamManagementScreen() {
       pending: pendingRes.count ?? 0,
       removed: removedRes.count ?? 0,
     });
-    const { data: profs } = await supabase
+    const { data: profs, error: profErr } = await supabase
       .from("profiles")
-      .select("id, full_name, job_title, status, deleted_at, departments(name), units(name)")
+      .select("id, full_name, job_title, status, deleted_at, department_id, unit_id")
       .eq("organization_id", organization.id)
       .order("full_name");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setMembers((profs as any[] ?? []).map((p) => ({
-      id: p.id, full_name: p.full_name, job_title: p.job_title,
+    if (profErr) { toast.error("Falha ao carregar colaboradores: " + profErr.message); }
+    const [depsRes, unitsRes] = await Promise.all([
+      supabase.from("departments").select("id, name").eq("organization_id", organization.id),
+      supabase.from("units").select("id, name").eq("organization_id", organization.id),
+    ]);
+    const depMap = new Map((depsRes.data ?? []).map((d) => [d.id, d.name]));
+    const unitMap = new Map((unitsRes.data ?? []).map((u) => [u.id, u.name]));
+    setMembers((profs ?? []).map((p) => ({
+      id: p.id,
+      full_name: p.full_name,
+      job_title: p.job_title,
       status: p.deleted_at ? "removed" : (p.status ?? "active"),
-      department_name: p.departments?.name ?? null,
-      unit_name: p.units?.name ?? null,
+      department_name: p.department_id ? (depMap.get(p.department_id) ?? null) : null,
+      unit_name: p.unit_id ? (unitMap.get(p.unit_id) ?? null) : null,
     })));
     const { data: pendList } = await supabase
       .from("enterprise_invites")
@@ -145,44 +111,49 @@ export default function EnterpriseTeamManagementScreen() {
 
   return (
     <EnterpriseRHLayout title="Equipe Enterprise">
-      <div className="space-y-8 animate-fade-in bg-white -mx-6 lg:mx-0 px-6 lg:px-0 pb-20">
-        
-        {/* Hero Card */}
-        <section>
-          <div className="rounded-[48px] bg-white border border-black/5 p-10 md:p-14 relative overflow-hidden text-[#111] shadow-sm">
-            
-            <div className="relative z-10">
-              <h2 className="text-[36px] md:text-[52px] leading-[1.1] font-extrabold mb-6 max-w-2xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+      <div className="space-y-8 animate-fade-in pb-20 max-w-[1400px] mx-auto w-full">
+
+        {/* Hero + KPIs */}
+        <section className="rounded-[32px] bg-white border border-black/5 p-8 lg:p-10 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+            <div className="max-w-2xl">
+              <h2 className="text-[26px] lg:text-[34px] leading-tight font-extrabold text-[#111] tracking-tight mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 Gerencie acessos sem invadir jornadas.
               </h2>
-              
-              <p className="text-[16px] md:text-[18px] leading-relaxed text-[#666] max-w-[600px] mb-12 font-medium">
+              <p className="text-[14px] lg:text-[15px] text-[#666] font-medium leading-relaxed">
                 O RH administra quem tem acesso ao benefício, mas nunca vê respostas, conversas ou resultados individuais.
               </p>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-12 bg-white border border-black/5 rounded-[32px] p-6 shadow-sm">
-                <KPICard label="Convidados" value={stats ? String(stats.invited) : "—"} />
-                <KPICard label="Ativos" value={stats ? String(stats.active) : "—"} colorClass="text-[#F88A2B]" />
-                <KPICard label="Pendentes" value={stats ? String(stats.pending) : "—"} />
-                <KPICard label="Removidos" value={stats ? String(stats.removed) : "—"} />
-              </div>
             </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <EnterpriseRHButton onClick={() => navigate('/enterprise/rh/equipe/convidar')} icon={Plus}>
+                Convidar
+              </EnterpriseRHButton>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <KPICard label="Convidados" value={stats ? String(stats.invited) : "—"} />
+            <KPICard label="Ativos" value={stats ? String(stats.active) : "—"} colorClass="text-[#F88A2B]" />
+            <KPICard label="Pendentes" value={stats ? String(stats.pending) : "—"} />
+            <KPICard label="Removidos" value={stats ? String(stats.removed) : "—"} />
           </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Ativação por área */}
-          <section className="space-y-6">
-            <h3 className="text-[20px] font-extrabold text-[#111] px-1 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              Colaboradores
-            </h3>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Colaboradores — desktop table */}
+          <section className="xl:col-span-2 space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-[18px] font-extrabold text-[#111] tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                Colaboradores
+              </h3>
+              <span className="text-[11px] text-black/40 uppercase tracking-widest font-bold">{filtered.length} de {members.length}</span>
+            </div>
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
                 <input
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-                  placeholder="Buscar por nome, cargo, departamento..."
+                  placeholder="Buscar por nome, cargo, departamento, unidade..."
                   className="w-full pl-9 pr-3 h-11 rounded-2xl border border-black/5 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F88A2B]/30"
                 />
               </div>
@@ -196,47 +167,58 @@ export default function EnterpriseTeamManagementScreen() {
                 <option value="inactive">Inativos/Removidos</option>
               </select>
             </div>
-            <div className="rounded-[32px] bg-white p-6 border border-black/5 shadow-sm max-h-[420px] overflow-y-auto">
+            <div className="rounded-[24px] bg-white border border-black/5 shadow-sm overflow-hidden">
               {filtered.length === 0 ? (
-                <p className="text-[13px] text-[#666] py-6 text-center">Nenhum colaborador ainda.</p>
+                <p className="text-[13px] text-[#666] py-16 text-center">Nenhum colaborador encontrado.</p>
               ) : (
-                <ul className="divide-y divide-black/5">
-                  {pageItems.map((m) => (
-                    <li
-                      key={m.id}
-                      className="py-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-black/[0.02] px-2 rounded-xl"
-                      onClick={() => navigate(`/enterprise/rh/equipe/${m.id}`)}
-                    >
-                      <div>
-                        <p className="text-[14px] font-bold text-[#111]">{m.full_name ?? "Sem nome"}</p>
-                        <p className="text-[11px] text-[#666]">
-                          {[m.job_title, m.department_name, m.unit_name].filter(Boolean).join(" · ") || "—"}
-                        </p>
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest text-black/40">{m.status ?? "active"}</span>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <div className="hidden lg:grid grid-cols-[1.5fr_1fr_1fr_1fr_100px] gap-4 px-6 py-3 bg-black/[0.02] text-[10px] uppercase tracking-widest font-bold text-black/50">
+                    <span>Nome</span><span>Cargo</span><span>Departamento</span><span>Unidade</span><span className="text-right">Status</span>
+                  </div>
+                  <ul className="divide-y divide-black/5">
+                    {pageItems.map((m) => (
+                      <li
+                        key={m.id}
+                        className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_1fr_1fr_100px] gap-2 lg:gap-4 items-center px-6 py-4 cursor-pointer hover:bg-black/[0.02]"
+                        onClick={() => navigate(`/enterprise/rh/equipe/${m.id}`)}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-9 w-9 rounded-full bg-[#F88A2B]/10 border border-[#F88A2B]/20 flex items-center justify-center shrink-0">
+                            <span className="text-[12px] font-bold text-[#F88A2B]">{(m.full_name ?? "?").charAt(0).toUpperCase()}</span>
+                          </div>
+                          <p className="text-[14px] font-bold text-[#111] truncate">{m.full_name ?? "Sem nome"}</p>
+                        </div>
+                        <p className="text-[13px] text-[#666] truncate">{m.job_title || "—"}</p>
+                        <p className="text-[13px] text-[#666] truncate">{m.department_name || "—"}</p>
+                        <p className="text-[13px] text-[#666] truncate">{m.unit_name || "—"}</p>
+                        <span className={`text-[10px] uppercase tracking-widest font-bold text-right ${m.status === 'active' ? 'text-emerald-600' : 'text-black/40'}`}>{m.status ?? "active"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </div>
             {pageCount > 1 && (
               <div className="flex items-center justify-between text-xs text-black/50 px-2">
-                <button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} className="disabled:opacity-30">← Anterior</button>
-                <span>{page + 1} / {pageCount}</span>
-                <button disabled={page + 1 >= pageCount} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))} className="disabled:opacity-30">Próxima →</button>
+                <button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} className="disabled:opacity-30 font-bold uppercase tracking-widest">← Anterior</button>
+                <span className="font-bold">{page + 1} / {pageCount}</span>
+                <button disabled={page + 1 >= pageCount} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))} className="disabled:opacity-30 font-bold uppercase tracking-widest">Próxima →</button>
               </div>
             )}
           </section>
 
           {/* Convites pendentes */}
-          <section className="space-y-6">
-            <h3 className="text-[20px] font-extrabold text-[#111] px-1 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              Convites pendentes
-            </h3>
-            <div className="rounded-[32px] p-8 bg-white border border-black/5 shadow-sm h-full">
+          <section className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-[18px] font-extrabold text-[#111] tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                Convites pendentes
+              </h3>
+              <span className="text-[11px] text-black/40 uppercase tracking-widest font-bold">{pending.length}</span>
+            </div>
+            <div className="rounded-[24px] p-6 bg-white border border-black/5 shadow-sm">
               <div className="flex flex-col">
                 {pending.length === 0 ? (
-                  <p className="text-[13px] text-[#666] py-6 text-center">Nenhum convite pendente.</p>
+                  <p className="text-[13px] text-[#666] py-8 text-center">Nenhum convite pendente.</p>
                 ) : (
                   pending.map((p) => (
                     <div key={p.id} className="flex items-center justify-between py-4 border-b border-black/5 last:border-0">
@@ -271,7 +253,7 @@ export default function EnterpriseTeamManagementScreen() {
               </div>
               <button
                 onClick={() => navigate('/enterprise/rh/equipe/convidar')}
-                className="w-full mt-6 py-4 text-[#F88A2B] font-bold text-sm uppercase tracking-widest font-montserrat hover:bg-[#F88A2B]/5 rounded-2xl transition-all"
+                className="w-full mt-4 py-3 text-[#F88A2B] font-bold text-xs uppercase tracking-widest font-montserrat hover:bg-[#F88A2B]/5 rounded-2xl transition-all"
               >
                 Convidar mais colaboradores
               </button>
@@ -281,27 +263,26 @@ export default function EnterpriseTeamManagementScreen() {
 
         {/* Privacy Card */}
         <section>
-          <div className="rounded-[40px] p-10 bg-white border border-black/5 shadow-sm flex flex-col md:flex-row items-center gap-10">
-            <div className="h-20 w-20 rounded-[28px] bg-black/[0.02] flex items-center justify-center shrink-0 border border-black/5">
-              <Lock className="h-10 w-10 text-[#999]" />
+          <div className="rounded-[24px] p-6 lg:p-8 bg-white border border-black/5 shadow-sm flex flex-col md:flex-row items-center gap-6">
+            <div className="h-16 w-16 rounded-[20px] bg-black/[0.02] flex items-center justify-center shrink-0 border border-black/5">
+              <Lock className="h-8 w-8 text-[#999]" />
             </div>
-            <div className="text-center md:text-left space-y-3">
-              <h4 className="text-[22px] font-extrabold text-[#111] tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <div className="text-center md:text-left space-y-2 flex-1">
+              <h4 className="text-[18px] font-extrabold text-[#111] tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 Gestão de acesso não é monitoramento.
               </h4>
-              <p className="text-[16px] text-[#666] leading-relaxed font-medium">
+              <p className="text-[14px] text-[#666] leading-relaxed font-medium">
                 Esta área mostra apenas status de ativação. Nenhum dado emocional individual aparece para o RH. Sua governança é focada na liberação do benefício e na saúde coletiva.
               </p>
             </div>
-            <div className="flex-1" />
-            <div className="bg-[#F88A2B]/10 px-6 py-3 rounded-2xl border border-[#F88A2B]/20">
-              <ShieldCheck className="h-8 w-8 text-[#F88A2B]" />
+            <div className="bg-[#F88A2B]/10 px-4 py-2 rounded-2xl border border-[#F88A2B]/20 shrink-0">
+              <ShieldCheck className="h-6 w-6 text-[#F88A2B]" />
             </div>
           </div>
         </section>
 
         {/* Actions */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 pb-12">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <EnterpriseRHButton 
             onClick={() => navigate('/enterprise/rh/equipe/convidar')}
             icon={Plus}
