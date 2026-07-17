@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import abstractArt from "@/assets/login-abstract.webp";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { getDefaultAuthenticatedPath, useAuth } from "@/hooks/useAuth";
