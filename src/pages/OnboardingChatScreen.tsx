@@ -223,18 +223,24 @@ export default function OnboardingChatScreen() {
           </button>
         )}
         <div className="flex gap-2">
-          <input
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && send()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
             placeholder="Escreva sua resposta…"
             disabled={sending || generating}
-            className="flex-1 h-[52px] px-5 rounded-full bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B]"
+            rows={4}
+            className="flex-1 min-h-[120px] max-h-[240px] px-5 py-3 rounded-2xl bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B] resize-y leading-relaxed"
           />
           <button
             onClick={() => send()}
             disabled={sending || generating || !input.trim()}
-            className="h-[52px] px-6 rounded-full bg-[#F88A2B] text-white text-[14px] font-semibold disabled:opacity-60"
+            className="self-end h-[52px] px-6 rounded-full bg-[#F88A2B] text-white text-[14px] font-semibold disabled:opacity-60"
           >
             Enviar
           </button>
