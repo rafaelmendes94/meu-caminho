@@ -15,16 +15,21 @@ function json(body: unknown, status = 200) {
 }
 
 const SYSTEM_PROMPT = `Você é o motor de recomendação de conteúdo do Meu Caminho.
-Recomende conteúdos do catálogo levando em conta o interesse, humor, tipo preferido e histórico do usuário.
-Você recebe uma LISTA DE CONTEÚDOS DISPONÍVEIS (id, type, title, category, short_description).
-SOMENTE recomende itens dessa lista — nunca invente ids ou títulos.
-Priorize diversidade de tipos e categorias quando fizer sentido.
+Monte uma TRILHA PERSONALIZADA para o colaborador — comece SEMPRE pelo nível mais básico (difficulty 1)
+e só suba de nível conforme o colaborador evolui (histórico de itens concluídos).
+Regras duras:
+- SOMENTE itens da lista fornecida — nunca invente ids.
+- Respeite pré-requisitos: nunca recomende um item cujos "prerequisites" não estejam concluídos.
+- Ordene do menor "difficulty" para o maior.
+- Case "audience_tags" com o perfil (papel, momento emocional, foco). "todos" cabe em qualquer perfil.
+- Priorize competências alinhadas ao perfil.
+- Diversifique formato (livro, vídeo, exercício, ritual) só quando o nível permitir.
 Responda EXCLUSIVAMENTE em JSON:
 {
-  "items": [{ "id": string, "reason": string }],
+  "items": [{ "id": string, "reason": string, "order": number }],
   "message": string
 }
-No máximo 6 recomendações. "message" é uma frase curta em português explicando o critério.`;
+No máximo 6 recomendações. "message" é uma frase curta em português explicando por que essa trilha, nessa ordem.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -63,30 +68,64 @@ Deno.serve(async (req) => {
     // Pool of published content
     const { data: items, error: itemsErr } = await admin
       .from("content_items")
-      .select("id,type,title,short_description,category_id")
+      .select("id,type,title,short_description,category_id,audience_tags,difficulty_level,expected_outcomes,competency_ids,prerequisite_ids")
       .eq("status", "published")
-      .limit(200);
+      .order("difficulty_level", { ascending: true })
+      .limit(300);
     if (itemsErr) return json({ error: itemsErr.message }, 500);
     if (!items || items.length === 0) return json({ items: [], message: "Sem conteúdo disponível ainda." });
 
     const { data: cats } = await admin.from("content_categories").select("id,name");
     const catName = new Map((cats ?? []).map((c: any) => [c.id, c.name]));
 
-    const pool = items.map((i: any) => ({
+    // Employee profile + histórico de conclusões
+    const { data: profileRow } = await admin.from("profiles").select("organization_id").eq("id", userData.user.id).maybeSingle();
+    const { data: empProfile } = await admin.from("employee_profiles").select("*").eq("user_id", userData.user.id).maybeSingle();
+    const { data: views } = await admin
+      .from("content_views")
+      .select("content_item_id,progress_pct")
+      .eq("user_id", userData.user.id)
+      .limit(500);
+    const completedIds = new Set((views ?? []).filter((v: any) => (v.progress_pct ?? 0) >= 90).map((v: any) => v.content_item_id));
+
+    // Hard filter: só itens cujos pré-requisitos foram concluídos
+    const eligible = (items as any[]).filter((i) => {
+      const prereqs: string[] = i.prerequisite_ids ?? [];
+      return prereqs.every((p) => completedIds.has(p));
+    });
+
+    const pool = eligible.map((i: any) => ({
       id: i.id,
       type: i.type,
       title: i.title,
       category: i.category_id ? catName.get(i.category_id) : null,
       short_description: i.short_description ?? "",
+      difficulty: i.difficulty_level ?? 1,
+      audience_tags: i.audience_tags ?? [],
+      expected_outcomes: i.expected_outcomes ?? [],
+      competencies: i.competency_ids ?? [],
+      prerequisites: i.prerequisite_ids ?? [],
+      already_seen: completedIds.has(i.id),
     }));
 
-    const userContext = { mood, interest, preferred_type: preferredType, limit };
+    const userContext = {
+      mood,
+      interest,
+      preferred_type: preferredType,
+      limit,
+      profile: empProfile ? {
+        strengths: (empProfile as any).strengths ?? null,
+        aspirations: (empProfile as any).aspirations ?? null,
+        current_focus: (empProfile as any).current_focus ?? null,
+        dimensions: (empProfile as any).dimensions ?? null,
+      } : null,
+      completed_count: completedIds.size,
+    };
 
     const { fetchKnowledgeContext } = await import("../_shared/knowledge_rag.ts");
-    const { data: profile } = await admin.from("profiles").select("organization_id").eq("id", userData.user.id).maybeSingle();
     const rag = await fetchKnowledgeContext({
       query: `${mood} ${interest} ${preferredType}`.trim() || "recomendação de conteúdo bem-estar",
-      organizationId: (profile as any)?.organization_id ?? null,
+      organizationId: (profileRow as any)?.organization_id ?? null,
       aiModule: "cms-recommend",
     });
 

@@ -2406,12 +2406,16 @@ export type Database = {
       }
       content_items: {
         Row: {
+          audience_tags: string[]
           banner_url: string | null
           category_id: string | null
+          competency_ids: string[]
           cover_url: string | null
           created_at: string
           created_by: string | null
+          difficulty_level: number
           duration_minutes: number | null
+          expected_outcomes: string[]
           file_url: string | null
           id: string
           is_featured: boolean
@@ -2421,6 +2425,7 @@ export type Database = {
           long_description: string | null
           media_url: string | null
           metadata: Json
+          prerequisite_ids: string[]
           published_at: string | null
           recommendation_weights: Json
           short_description: string | null
@@ -2432,12 +2437,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          audience_tags?: string[]
           banner_url?: string | null
           category_id?: string | null
+          competency_ids?: string[]
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          difficulty_level?: number
           duration_minutes?: number | null
+          expected_outcomes?: string[]
           file_url?: string | null
           id?: string
           is_featured?: boolean
@@ -2447,6 +2456,7 @@ export type Database = {
           long_description?: string | null
           media_url?: string | null
           metadata?: Json
+          prerequisite_ids?: string[]
           published_at?: string | null
           recommendation_weights?: Json
           short_description?: string | null
@@ -2458,12 +2468,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          audience_tags?: string[]
           banner_url?: string | null
           category_id?: string | null
+          competency_ids?: string[]
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          difficulty_level?: number
           duration_minutes?: number | null
+          expected_outcomes?: string[]
           file_url?: string | null
           id?: string
           is_featured?: boolean
@@ -2473,6 +2487,7 @@ export type Database = {
           long_description?: string | null
           media_url?: string | null
           metadata?: Json
+          prerequisite_ids?: string[]
           published_at?: string | null
           recommendation_weights?: Json
           short_description?: string | null
