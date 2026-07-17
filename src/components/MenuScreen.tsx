@@ -20,8 +20,7 @@ export default function MenuScreen() {
   const isEnterprise = pathname.startsWith('/enterprise');
   const al = useAudienceLink();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
-  const { user, refresh } = useAuth();
+  const { signOut, user, refresh } = useAuth();
   const { name, email, avatarUrl, initial, planLabel } = useDisplayUser();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
