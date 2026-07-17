@@ -35,6 +35,11 @@ export default function OnboardingChatScreen() {
   const listRef = useRef<HTMLDivElement>(null);
 
   const stripEndMarker = (t: string) => t.replace(/\s*\[FIM\]\s*$/i, "").trim();
+  const stripMarkdown = (t: string) =>
+    t
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/(^|\s)\*(?!\s)([^*\n]+?)\*(?!\w)/g, "$1$2")
+      .replace(/__([^_]+)__/g, "$1");
   const hasEndMarker = (t: string) => /\[FIM\]/i.test(t);
 
   useEffect(() => {
@@ -210,7 +215,7 @@ export default function OnboardingChatScreen() {
                 : "ml-auto bg-[#F88A2B] text-white"
             }`}
           >
-            {m.content}
+            {stripMarkdown(m.content)}
           </div>
         ))}
         {sending && (
