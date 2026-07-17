@@ -84,6 +84,7 @@ export default function EnterpriseHomeScreen() {
   })();
   const avatarUrl = profile?.avatar_url || null;
   const [lastCheckin, setLastCheckin] = useState<{ mood_score: number; energy_score: number; stress_score: number; created_at: string } | null>(null);
+  const [weekCheckins, setWeekCheckins] = useState<Array<{ mood_score: number; created_at: string }>>([]);
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -103,6 +104,20 @@ export default function EnterpriseHomeScreen() {
         .limit(1)
         .maybeSingle();
       setLastCheckin(data as any);
+    })();
+    (async () => {
+      const start = new Date();
+      const day = start.getDay(); // 0=sun
+      const diffToMon = (day + 6) % 7;
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - diffToMon);
+      const { data } = await supabase
+        .from("emotional_checkins")
+        .select("mood_score,created_at")
+        .eq("user_id", user.id)
+        .gte("created_at", start.toISOString())
+        .order("created_at", { ascending: true });
+      setWeekCheckins((data ?? []) as any);
     })();
   }, [user]);
 
@@ -208,6 +223,9 @@ export default function EnterpriseHomeScreen() {
         </section>
 
         <PulseWidget />
+
+        {/* Check-ins da Semana */}
+        <WeeklyCheckinsCard checkins={weekCheckins} onNew={() => navigate('/enterprise/checkin/intro')} />
 
         {/* Weekly Moment removed: no real data source; avoiding mock content. */}
 
