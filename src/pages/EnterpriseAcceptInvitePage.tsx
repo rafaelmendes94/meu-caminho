@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, Building2, AlertCircle } from "lucide-react";
+import { ShieldCheck, Building2, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 type InviteInfo = {
   status: "valid" | "accepted" | "canceled" | "declined" | "expired";
