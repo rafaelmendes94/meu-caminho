@@ -149,8 +149,8 @@ export default function EnterpriseHomeScreen() {
               Ent
             </div>
           </div>
-          <div>
-            <h2 className="text-[22px] font-bold text-[#111] leading-tight flex items-center gap-x-1.5 whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[20px] font-bold text-[#111] leading-tight truncate" style={{ fontFamily: "'Playfair Display', serif" }}>
               {greeting}, {userName}
             </h2>
             <p className="text-[12px] text-[#666] font-medium leading-tight">
