@@ -204,7 +204,7 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
             </div>
             <div className="mt-2 flex gap-2">
               <input value={newAudience} onChange={(e) => setNewAudience(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAudience(); } }} placeholder="ex.: engenharia" className="flex-1 px-3 py-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs" />
-              <button type="button" onClick={addAudience} className="px-3 py-1.5 bg-[#0F172A] text-white text-xs rounded-lg">+ Add</button>
+              <button type="button" onClick={addAudience} className="px-3 py-1.5 bg-[#F88A2B] text-black text-xs font-semibold rounded-lg hover:bg-[#E67A1F]">+ Add</button>
             </div>
           </div>
           <div className="col-span-2">
@@ -219,7 +219,7 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
             </div>
             <div className="mt-2 flex gap-2">
               <input value={newOutcome} onChange={(e) => setNewOutcome(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOutcome(); } }} placeholder="ex.: reduzir ansiedade em 20%" className="flex-1 px-3 py-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs" />
-              <button type="button" onClick={addOutcome} className="px-3 py-1.5 bg-[#0F172A] text-white text-xs rounded-lg">+ Add</button>
+              <button type="button" onClick={addOutcome} className="px-3 py-1.5 bg-[#F88A2B] text-black text-xs font-semibold rounded-lg hover:bg-[#E67A1F]">+ Add</button>
             </div>
           </div>
           <div className="col-span-2">
@@ -267,7 +267,7 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
             </div>
             <div className="mt-2 flex gap-2">
               <input value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void createTag(); } }} placeholder="Nova tag…" className="flex-1 px-3 py-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs" />
-              <button type="button" onClick={createTag} className="px-3 py-1.5 bg-[#0F172A] text-white text-xs rounded-lg hover:bg-[#1E293B]">+ Criar</button>
+              <button type="button" onClick={createTag} className="px-3 py-1.5 bg-[#F88A2B] text-black text-xs font-semibold rounded-lg hover:bg-[#E67A1F]">+ Criar</button>
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm text-[#334155]"><input type="checkbox" checked={form.is_premium} onChange={(e) => set("is_premium", e.target.checked)} />Premium</label>
