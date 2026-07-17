@@ -3,63 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { 
-  ArrowLeft, 
-  Users, 
-  ArrowRight, 
-  Mail, 
-  ShieldCheck, 
+import {
+  ShieldCheck,
   Lock,
   Plus,
-  CheckCircle2,
   Clock,
-  UserMinus,
-  X,
   Search,
-  LayoutDashboard
+  LayoutDashboard,
+  Download,
 } from "lucide-react";
 import { EnterpriseRHLayout, EnterpriseRHButton } from "./EnterpriseRHNavigation";
 
 const KPICard = ({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) => (
-  <div className="bg-white rounded-2xl p-6 border border-black/5 flex flex-col justify-between shadow-sm group-hover:shadow-md transition-shadow">
-    <p className="text-[32px] font-extrabold text-[#111] mb-2 tracking-tighter" style={{ fontFamily: "'Montserrat', sans-serif" }}>{value}</p>
-    <p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${colorClass || 'text-black/40'} font-montserrat`}>{label}</p>
-  </div>
-);
-
-const AreaCard = ({ area, activePercentage }: { area: string; activePercentage: number }) => (
-  <div className="bg-white rounded-[28px] p-6 border border-black/5 shadow-sm flex items-center justify-between group hover:border-[#F88A2B]/30 transition-all hover:shadow-md">
-    <div className="flex flex-col">
-      <span className="text-[16px] font-bold text-[#111] mb-1 font-montserrat">{area}</span>
-      <span className="text-[12px] text-[#666] font-medium font-montserrat">Taxa de ativação</span>
-    </div>
-    <div className="flex items-center gap-4">
-      <div className="w-32 h-2 bg-black/[0.03] rounded-full overflow-hidden ring-1 ring-black/5">
-        <div 
-          className="h-full bg-[#F88A2B] rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(248,138,43,0.3)]" 
-          style={{ width: `${activePercentage}%` }}
-        />
-      </div>
-      <span className="text-[16px] font-bold text-[#F88A2B] font-montserrat w-10 text-right">{activePercentage}%</span>
-    </div>
-  </div>
-);
-
-const PendingInviteItem = ({ name, area }: { name: string; area: string }) => (
-  <div className="flex items-center justify-between py-5 border-b border-black/5 last:border-0 group hover:px-2 transition-all rounded-xl hover:bg-black/[0.02]">
-    <div className="flex items-center gap-4">
-      <div className="h-12 w-12 rounded-full bg-white border border-[#E5E0DA] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-        <span className="text-[16px] font-bold text-[#F88A2B] font-montserrat">{name.charAt(0)}</span>
-      </div>
-      <div>
-        <p className="text-[15px] font-bold text-[#111] font-montserrat">{name}</p>
-        <p className="text-[13px] text-[#666] font-medium font-montserrat uppercase tracking-wider text-[10px]">{area}</p>
-      </div>
-    </div>
-    <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F88A2B1A] border border-[#F88A2B2A]">
-      <Clock className="h-3.5 w-3.5 text-[#F88A2B]" />
-      <span className="text-[11px] font-bold text-[#F88A2B] uppercase tracking-widest font-montserrat">Pendente</span>
-    </div>
+  <div className="bg-white rounded-2xl p-5 lg:p-6 border border-black/5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+    <p className="text-[28px] lg:text-[32px] font-extrabold text-[#111] mb-1 tracking-tighter" style={{ fontFamily: "'Montserrat', sans-serif" }}>{value}</p>
+    <p className={`text-[10px] lg:text-[11px] font-bold uppercase tracking-[0.2em] ${colorClass || 'text-black/40'} font-montserrat`}>{label}</p>
   </div>
 );
 
