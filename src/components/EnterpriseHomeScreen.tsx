@@ -77,6 +77,12 @@ export default function EnterpriseHomeScreen() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const userName = profile?.display_name || profile?.full_name || "colaborador";
+  const initials = (() => {
+    const parts = (userName || "").trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return (parts[0]?.slice(0, 2) || "?").toUpperCase();
+  })();
+  const avatarUrl = profile?.avatar_url || null;
   const [lastCheckin, setLastCheckin] = useState<{ mood_score: number; energy_score: number; stress_score: number; created_at: string } | null>(null);
 
   const greeting = (() => {
@@ -128,11 +134,13 @@ export default function EnterpriseHomeScreen() {
         <div className="flex items-center gap-3 lg:hidden">
           <div className="relative">
             <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-white shadow-[0_4px_12px_-4px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
-              <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
-                alt="Profile" 
-                className="h-full w-full object-cover"
-              />
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={userName} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full bg-[#0B0908] text-white flex items-center justify-center font-bold text-[14px] tracking-tight">
+                  {initials}
+                </div>
+              )}
             </div>
             <div 
               className="absolute -bottom-1 -right-1 text-[#111] text-[8px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white lg:border-[#F8F9FA] uppercase tracking-tighter"
