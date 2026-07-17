@@ -10,7 +10,9 @@ import {
   Sparkles, 
   Chrome, 
   MonitorCheck,
-  CheckCircle2
+  CheckCircle2,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,7 @@ const EnterpriseRHLoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signInWithPassword, isAuthenticated, roles, hasAnyRole, hasEmployeeProfile, loading } = useAuth();
 
   useEffect(() => {
@@ -129,12 +132,20 @@ const EnterpriseRHLoginScreen = () => {
                   <div className="relative">
                     <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0B0908]/20" />
                     <Input 
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="h-14 pl-12 rounded-2xl border-[#0B0908]/5 bg-white focus:border-[#F88A2B] focus:ring-[#F88A2B]/20 transition-all text-sm"
+                      className="h-14 pl-12 pr-12 rounded-2xl border-[#0B0908]/5 bg-white focus:border-[#F88A2B] focus:ring-[#F88A2B]/20 transition-all text-sm"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0B0908]/40 hover:text-[#0B0908] transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
