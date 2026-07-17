@@ -31,7 +31,11 @@ export default function OnboardingChatScreen() {
   const [userTurns, setUserTurns] = useState(0);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [interviewEnded, setInterviewEnded] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+
+  const stripEndMarker = (t: string) => t.replace(/\s*\[FIM\]\s*$/i, "").trim();
+  const hasEndMarker = (t: string) => /\[FIM\]/i.test(t);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -66,11 +70,13 @@ export default function OnboardingChatScreen() {
       if (msgErr) throw msgErr;
       const loaded: Msg[] = (msgs ?? [])
         .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+        .map((m) => ({ role: m.role as "user" | "assistant", content: stripEndMarker(m.content) }));
       setMessages(
         loaded.length > 0 ? loaded : [{ role: "assistant", content: INITIAL_ASSISTANT }]
       );
       setUserTurns(loaded.filter((m) => m.role === "user").length);
+      const lastAssistant = [...(msgs ?? [])].reverse().find((m) => m.role === "assistant");
+      setInterviewEnded(!!lastAssistant && hasEndMarker(lastAssistant.content));
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Falha ao carregar sua entrevista.";
       setLoadError(msg);
@@ -101,7 +107,9 @@ export default function OnboardingChatScreen() {
       setUserTurns((n) => n + 1);
       const assistant = (payload?.assistant ?? "").trim();
       if (!assistant) throw new Error("empty_ai_response");
-      setMessages((m) => [...m, { role: "assistant", content: assistant }]);
+      const ended = hasEndMarker(assistant);
+      setMessages((m) => [...m, { role: "assistant", content: stripEndMarker(assistant) }]);
+      if (ended) setInterviewEnded(true);
     } catch (e: any) {
       const code = String(e?.message ?? "");
       const map: Record<string, string> = {
@@ -139,7 +147,7 @@ export default function OnboardingChatScreen() {
     }
   };
 
-  const canFinish = userTurns >= 4;
+  const canFinish = interviewEnded || userTurns >= 4;
   const progress = Math.min(userTurns / DIMENSIONS.length, 1);
 
   if (loadingHistory) {
@@ -214,13 +222,24 @@ export default function OnboardingChatScreen() {
 
       <footer className="px-6 pt-3 pb-6 max-w-2xl w-full mx-auto sticky bottom-0 bg-[#F7F4F2]">
         {canFinish && (
-          <button
-            onClick={generateProfile}
-            disabled={generating}
-            className="w-full mb-3 h-[48px] rounded-full bg-[#111] text-white text-[14px] font-semibold disabled:opacity-60"
-          >
-            {generating ? "Gerando seu Perfil Inteligente…" : "Gerar meu Perfil Inteligente"}
-          </button>
+          <div className="mb-3">
+            {interviewEnded && (
+              <p className="text-center text-[12px] text-[#666] mb-2">
+                Entrevista concluída. Clique abaixo para gerar seu Perfil Inteligente.
+              </p>
+            )}
+            <button
+              onClick={generateProfile}
+              disabled={generating}
+              className={`w-full h-[52px] rounded-full text-[14px] font-semibold disabled:opacity-60 ${
+                interviewEnded
+                  ? "bg-[#F88A2B] text-white shadow-lg shadow-[#F88A2B]/30"
+                  : "bg-[#111] text-white"
+              }`}
+            >
+              {generating ? "Gerando seu Perfil Inteligente…" : "Gerar meu Perfil Inteligente"}
+            </button>
+          </div>
         )}
         <div className="flex gap-2">
           <textarea
@@ -232,14 +251,14 @@ export default function OnboardingChatScreen() {
                 send();
               }
             }}
-            placeholder="Escreva sua resposta…"
-            disabled={sending || generating}
+            placeholder={interviewEnded ? "Entrevista concluída — gere seu Perfil Inteligente acima." : "Escreva sua resposta…"}
+            disabled={sending || generating || interviewEnded}
             rows={4}
             className="flex-1 min-h-[120px] max-h-[240px] px-5 py-3 rounded-2xl bg-white border border-[#EFEAE5] text-[15px] text-[#111] focus:outline-none focus:border-[#F88A2B] resize-y leading-relaxed"
           />
           <button
             onClick={() => send()}
-            disabled={sending || generating || !input.trim()}
+            disabled={sending || generating || !input.trim() || interviewEnded}
             className="self-end h-[52px] px-6 rounded-full bg-[#F88A2B] text-white text-[14px] font-semibold disabled:opacity-60"
           >
             Enviar
