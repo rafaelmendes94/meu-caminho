@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     if (invite.declined_at) return json({ error: "declined" }, 410);
     if (new Date(invite.expires_at).getTime() < Date.now()) return json({ error: "expired" }, 410);
 
-    // Try to create user; if already exists we fetch id
+    // Try to create user; if already exists we locate and update the existing account
     let userId: string | null = null;
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email: invite.email,
@@ -47,11 +47,38 @@ Deno.serve(async (req) => {
       user_metadata: { full_name: full_name ?? invite.full_name ?? null },
     });
     if (createErr) {
-      // find existing user
-      const { data: list } = await admin.auth.admin.listUsers();
-      const found = list?.users?.find((u) => u.email?.toLowerCase() === invite.email.toLowerCase());
-      if (!found) return json({ error: createErr.message }, 400);
+      const msg = (createErr as { message?: string; code?: string }).message ?? "";
+      const code = (createErr as { code?: string }).code ?? "";
+      const isDuplicate =
+        code === "email_exists" ||
+        /already/i.test(msg) ||
+        /registered/i.test(msg) ||
+        /exists/i.test(msg);
+      if (!isDuplicate) {
+        return json({ error: msg || "create_user_failed" }, 400);
+      }
+      // Paginate listUsers to find the existing account (default page holds only 50)
+      const emailLower = invite.email.toLowerCase();
+      let found: { id: string; email?: string | null } | undefined;
+      for (let page = 1; page <= 20 && !found; page++) {
+        const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+        if (listErr) break;
+        const users = list?.users ?? [];
+        found = users.find((u) => u.email?.toLowerCase() === emailLower);
+        if (users.length < 200) break;
+      }
+      if (!found) return json({ error: "user_not_found_after_duplicate" }, 400);
       userId = found.id;
+      // Reset password + confirm email so the invite flow lets them log in immediately
+      const { error: updErr } = await admin.auth.admin.updateUserById(userId, {
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: full_name ?? invite.full_name ?? null },
+      });
+      if (updErr) {
+        console.error("updateUserById failed", updErr);
+        return json({ error: "password_update_failed" }, 400);
+      }
     } else {
       userId = created.user!.id;
     }
