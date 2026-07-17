@@ -128,13 +128,23 @@ const Index = () => {
             placeholder="E-mail"
             className={`h-[52px] px-5 rounded-full bg-white border text-[15px] text-[#111] focus:outline-none ${formError ? "border-red-400 focus:border-red-500" : "border-[#EFEAE5] focus:border-[#F88A2B]"}`}
           />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); if (formError) setFormError(null); }}
-            placeholder="Senha"
-            className={`h-[52px] px-5 rounded-full bg-white border text-[15px] text-[#111] focus:outline-none ${formError ? "border-red-400 focus:border-red-500" : "border-[#EFEAE5] focus:border-[#F88A2B]"}`}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); if (formError) setFormError(null); }}
+              placeholder="Senha"
+              className={`w-full h-[52px] pl-5 pr-12 rounded-full bg-white border text-[15px] text-[#111] focus:outline-none ${formError ? "border-red-400 focus:border-red-500" : "border-[#EFEAE5] focus:border-[#F88A2B]"}`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#111]"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {formError && (
             <div
               role="alert"
