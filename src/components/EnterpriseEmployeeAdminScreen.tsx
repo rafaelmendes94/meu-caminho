@@ -219,15 +219,15 @@ const EnterpriseEmployeeAdminScreen = () => {
                       {employee.status}
                     </span>
                   </div>
-                  <p className="text-orange-50/60 font-medium">{employee.role} • {employee.department}</p>
+                  <p className="text-[#666] font-medium">{employee.role} • {employee.department}</p>
                 </div>
 
                 <div className="inline-flex items-center gap-2 bg-black/[0.03] backdrop-blur-md px-4 py-1.5 rounded-full border border-black/5">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#F88A2B]" />
-                  <span className="text-[11px] font-bold text-orange-50 tracking-[0.15em] uppercase">Privacidade preservada</span>
+                  <span className="text-[11px] font-bold text-[#F88A2B] tracking-[0.15em] uppercase">Privacidade preservada</span>
                 </div>
                 
-                <p className="text-orange-50/40 text-sm leading-relaxed max-w-lg">
+                <p className="text-[#666] text-sm leading-relaxed max-w-lg">
                   O Enterprise separa administração organizacional de qualquer informação emocional individual.
                 </p>
               </div>
