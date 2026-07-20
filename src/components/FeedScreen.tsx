@@ -66,8 +66,29 @@ type Post = {
  when: string;
 };
 
-// Sem imagem de fallback externa: usa string vazia até integração real de mídia via CMS.
-const FALLBACK_IMG = "";
+import feedReflexao from "@/assets/feed/reflexao.jpg";
+import feedPodcast from "@/assets/feed/podcast.jpg";
+import feedVideo from "@/assets/feed/video.jpg";
+import feedAudio from "@/assets/feed/audio.jpg";
+import feedLivro from "@/assets/feed/livro.jpg";
+import feedIa from "@/assets/feed/ia.jpg";
+import feedExercicio from "@/assets/feed/exercicio.jpg";
+import feedMeditacao from "@/assets/feed/meditacao.jpg";
+import feedFrase from "@/assets/feed/frase.jpg";
+import feedCorte from "@/assets/feed/corte.jpg";
+
+const FALLBACK_BY_TYPE: Record<PostType, string> = {
+  reflexao: feedReflexao,
+  frase: feedFrase,
+  audio: feedAudio,
+  podcast: feedPodcast,
+  video: feedVideo,
+  livro: feedLivro,
+  ia: feedIa,
+  exercicio: feedExercicio,
+  meditacao: feedMeditacao,
+  corte: feedCorte,
+};
 const CMS_TYPE_TO_POST: Record<string, PostType> = {
   book: "livro", podcast: "podcast", video: "video", audio: "audio",
   material: "reflexao", track: "ia", course: "exercicio",
@@ -99,7 +120,7 @@ function mapCmsToPost(it: CmsItem): Post {
     subtitle: POST_SUBTITLE[t],
     badge: it.subtitle || it.title,
     caption: it.short_description || "",
-    image: it.cover_url || it.banner_url || FALLBACK_IMG,
+    image: it.cover_url || it.banner_url || FALLBACK_BY_TYPE[t] || feedReflexao,
     duration: dur,
     inspires: "—",
     reflections: "—",
