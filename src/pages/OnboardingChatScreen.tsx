@@ -181,6 +181,25 @@ export default function OnboardingChatScreen() {
 
   return (
     <main className="min-h-[100dvh] bg-[#F7F4F2] font-display flex flex-col">
+      {generating && (
+        <div className="fixed inset-0 z-50 bg-[#F7F4F2]/95 backdrop-blur-sm flex items-center justify-center px-6">
+          <div className="max-w-sm w-full text-center space-y-5">
+            <div className="relative w-20 h-20 mx-auto">
+              <div className="absolute inset-0 rounded-full border-4 border-[#F88A2B]/15" />
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#F88A2B] animate-spin" />
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-[#F88A2B] font-bold">Aguarde</p>
+              <h2 className="mt-1 text-[22px] font-black text-[#111] leading-tight">
+                Gerando seu Perfil Inteligente
+              </h2>
+              <p className="mt-3 text-[13px] text-[#666] leading-relaxed">
+                Nossa IA está analisando suas respostas e montando sua jornada personalizada. Isso pode levar alguns segundos — não feche esta tela.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="px-6 pt-8 pb-4 max-w-2xl w-full mx-auto">
         <p className="text-[11px] uppercase tracking-[0.2em] text-[#F88A2B] font-bold">Onboarding</p>
         <h1 className="mt-1 text-[26px] leading-tight font-black text-[#111]">
