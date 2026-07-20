@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type CmsItem = {
   id: string;
-  type: "book" | "course" | "track" | "podcast" | "video" | "audio" | "material";
+  type: "book" | "course" | "track" | "podcast" | "video" | "audio" | "material" | "reflection" | "exercise" | "ritual" | "message";
   title: string;
   slug: string;
   subtitle: string | null;
@@ -20,6 +20,7 @@ export type CmsItem = {
   is_premium: boolean;
   is_featured: boolean;
   published_at: string | null;
+  metadata?: Record<string, any> | null;
 };
 
 export type CmsCategory = {

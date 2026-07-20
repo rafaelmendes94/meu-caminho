@@ -54,7 +54,7 @@ export const EnterpriseUserLayout = ({ children, title }: BaseLayoutProps) => {
   };
   
   return (
-    <div className="h-screen bg-white flex font-montserrat relative z-10 overflow-hidden touch-none">
+    <div className="h-screen bg-white flex font-montserrat relative z-10 overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-72 bg-white border-r border-[#0B0908]/5 p-6 flex-col h-full overflow-y-auto no-scrollbar z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)] shrink-0">
         <div className="mb-10 px-2 pt-2">

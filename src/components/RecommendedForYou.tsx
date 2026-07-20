@@ -9,6 +9,7 @@ type Recommendation = { id: string; reason: string };
 const TYPE_LABEL: Record<CmsItem["type"], string> = {
   book: "Leitura", course: "Curso", track: "Trilha",
   podcast: "Podcast", video: "Vídeo", audio: "Áudio", material: "Material",
+  reflection: "Reflexão", exercise: "Exercício", ritual: "Ritual", message: "Mensagem",
 };
 
 function pathFor(item: CmsItem, al: (p: string) => string): string {
