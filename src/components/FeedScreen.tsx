@@ -66,16 +66,27 @@ type Post = {
  when: string;
 };
 
-import feedReflexao from "@/assets/feed/reflexao.jpg";
-import feedPodcast from "@/assets/feed/podcast.jpg";
-import feedVideo from "@/assets/feed/video.jpg";
-import feedAudio from "@/assets/feed/audio.jpg";
-import feedLivro from "@/assets/feed/livro.jpg";
-import feedIa from "@/assets/feed/ia.jpg";
-import feedExercicio from "@/assets/feed/exercicio.jpg";
-import feedMeditacao from "@/assets/feed/meditacao.jpg";
-import feedFrase from "@/assets/feed/frase.jpg";
-import feedCorte from "@/assets/feed/corte.jpg";
+import feedReflexaoAsset from "@/assets/feed/reflexao.jpg.asset.json";
+import feedPodcastAsset from "@/assets/feed/podcast.jpg.asset.json";
+import feedVideoAsset from "@/assets/feed/video.jpg.asset.json";
+import feedAudioAsset from "@/assets/feed/audio.jpg.asset.json";
+import feedLivroAsset from "@/assets/feed/livro.jpg.asset.json";
+import feedIaAsset from "@/assets/feed/ia.jpg.asset.json";
+import feedExercicioAsset from "@/assets/feed/exercicio.jpg.asset.json";
+import feedMeditacaoAsset from "@/assets/feed/meditacao.jpg.asset.json";
+import feedFraseAsset from "@/assets/feed/frase.jpg.asset.json";
+import feedCorteAsset from "@/assets/feed/corte.jpg.asset.json";
+
+const feedReflexao = feedReflexaoAsset.url;
+const feedPodcast = feedPodcastAsset.url;
+const feedVideo = feedVideoAsset.url;
+const feedAudio = feedAudioAsset.url;
+const feedLivro = feedLivroAsset.url;
+const feedIa = feedIaAsset.url;
+const feedExercicio = feedExercicioAsset.url;
+const feedMeditacao = feedMeditacaoAsset.url;
+const feedFrase = feedFraseAsset.url;
+const feedCorte = feedCorteAsset.url;
 
 const FALLBACK_BY_TYPE: Record<PostType, string> = {
   reflexao: feedReflexao,
@@ -111,7 +122,9 @@ function timeAgo(iso: string | null): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 function mapCmsToPost(it: CmsItem): Post {
-  const t: PostType = CMS_TYPE_TO_POST[it.type as string] ?? "reflexao";
+  const metadata = ((it as any).metadata ?? {}) as Record<string, any>;
+  const baseType: PostType = CMS_TYPE_TO_POST[it.type as string] ?? "reflexao";
+  const t: PostType = metadata.feed_format === "story" || metadata.feed_variant === "story" || metadata.is_story === true ? "corte" : baseType;
   const dur = it.duration_minutes ? (it.duration_minutes < 60 ? `${it.duration_minutes} min` : `${Math.floor(it.duration_minutes / 60)}h ${it.duration_minutes % 60}min`) : undefined;
   return {
     id: it.id,
@@ -120,12 +133,27 @@ function mapCmsToPost(it: CmsItem): Post {
     subtitle: POST_SUBTITLE[t],
     badge: it.subtitle || it.title,
     caption: it.short_description || "",
-    image: it.cover_url || it.banner_url || FALLBACK_BY_TYPE[t] || feedReflexao,
+    image: normalizeFeedImage(it.cover_url || it.banner_url, t),
     duration: dur,
     inspires: "—",
     reflections: "—",
     when: timeAgo(it.published_at),
   };
+}
+
+function normalizeFeedImage(url: string | null | undefined, type: PostType) {
+  const fallback = FALLBACK_BY_TYPE[type] || feedReflexao;
+  const clean = (url || "").trim();
+  if (!clean) return fallback;
+  if (clean.includes("images.unsplash.com") || clean.includes("example.com")) return fallback;
+  return clean;
+}
+
+function handleFeedImageError(e: React.SyntheticEvent<HTMLImageElement>, type: PostType) {
+  const img = e.currentTarget;
+  if (img.dataset.fallbackApplied === "true") return;
+  img.dataset.fallbackApplied = "true";
+  img.src = FALLBACK_BY_TYPE[type] || feedReflexao;
 }
 
 // Sem posts hardcoded: quando o CMS não retorna itens, o feed exibe estado vazio.
@@ -265,7 +293,7 @@ const PostCard = ({ post, isEnterprise }: { post: Post; isEnterprise?: boolean }
             src={post.image} 
             alt="" 
             loading="lazy"
-            onError={(e) => { const t = e.currentTarget; if (t.src !== FALLBACK_BY_TYPE[post.type]) t.src = FALLBACK_BY_TYPE[post.type]; }}
+            onError={(e) => handleFeedImageError(e, post.type)}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
           />
           
@@ -377,7 +405,7 @@ const PostCard = ({ post, isEnterprise }: { post: Post; isEnterprise?: boolean }
  {/* Media block */}
  <Link to={al(post.to)} className="block px-3">
  <div className="relative w-full aspect-[16/10] rounded-[22px] overflow-hidden bg-[#F0EAE3]">
- <img src={post.image} alt="" loading="lazy" onError={(e) => { const t = e.currentTarget; if (t.src !== FALLBACK_BY_TYPE[post.type]) t.src = FALLBACK_BY_TYPE[post.type]; }} className="absolute inset-0 w-full h-full object-cover" />
+  <img src={post.image} alt="" loading="lazy" onError={(e) => handleFeedImageError(e, post.type)} className="absolute inset-0 w-full h-full object-cover" />
  {(isMedia || isQuote) && (
  <div
  className="absolute inset-0"
@@ -502,13 +530,22 @@ const FeedScreen = () => {
  return v;
  }, [active, query, searchOpen, posts]);
 
+  const storyPosts = useMemo(() => {
+    const picked = [
+      ...posts.filter((p) => p.type === "corte"),
+      ...posts.filter((p) => p.type === "video").slice(0, 4),
+      ...posts.filter((p) => p.type === "audio" || p.type === "podcast" || p.type === "meditacao").slice(0, 4),
+    ];
+    return Array.from(new Map(picked.map((p) => [p.id, p])).values()).slice(0, 12);
+  }, [posts]);
+
  const markAllRead = () => { notifications.forEach((n) => (n.unread = false)); setUnread(0); };
 
   return (
     <LayoutComponent title="Feed">
-      <main className={`${isEnterprise ? 'w-full' : 'min-h-[100dvh] w-full'} font-display`} style={{ background: isEnterprise ? 'transparent' : cream }}>
+      <main className={`${isEnterprise ? 'w-full' : 'min-h-[100dvh] w-full'} feed-scroll-root font-display`} style={{ background: isEnterprise ? 'transparent' : cream }}>
         <div
-          className={`relative w-full ${isEnterprise ? 'bg-transparent' : 'min-h-[100dvh] flex flex-col'}`}
+          className={`feed-scroll-content relative w-full ${isEnterprise ? 'bg-transparent' : 'min-h-[100dvh] flex flex-col'}`}
           style={{
             background: isEnterprise ? 'transparent' : `radial-gradient(120% 60% at 50% 0%, #FFF1DD 0%, ${cream} 38%, ${cream} 100%)`,
             paddingTop: isEnterprise ? '0' : "env(safe-area-inset-top)",
@@ -587,21 +624,17 @@ const FeedScreen = () => {
  <Link to={al("/feed/cortes")} className="text-[11px] font-semibold" style={{ color: brand }}>Ver todos</Link>
  </div>
  <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1">
- {posts.filter((p) => p.type ==="corte").concat(
- posts.filter((p) => p.type ==="video").slice(0, 1)
- ).concat(
- posts.filter((p) => p.type ==="meditacao").slice(0, 1)
- ).map((p) => (
+  {storyPosts.map((p) => (
  <Link
  key={"story-" + p.id}
- to={p.type ==="corte" ?"/feed/cortes" : p.to}
+  to={p.type ==="corte" ? al("/feed/cortes") : al(p.to)}
  className="shrink-0 w-[96px] active:scale-[0.97] transition"
  >
  <div
  className="relative w-[96px] h-[140px] rounded-[20px] overflow-hidden"
  style={{ boxShadow:"0 10px 24px -14px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.9), inset 0 0 0 4px rgba(224,122,43,0.7)" }}
  >
- <img src={p.image} alt="" loading="lazy" onError={(e) => { const t = e.currentTarget; if (t.src !== FALLBACK_BY_TYPE[p.type]) t.src = FALLBACK_BY_TYPE[p.type]; }} className="absolute inset-0 w-full h-full object-cover" />
+  <img src={p.image} alt="" loading="lazy" onError={(e) => handleFeedImageError(e, p.type)} className="absolute inset-0 w-full h-full object-cover" />
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(20,12,4,0.7) 100%)" }} />
  <span className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
  <Play size={11} className="ml-0.5 text-[#1A1410]" fill="#1A1410" />
