@@ -557,7 +557,13 @@ const FeedScreen = () => {
  <div className="flex items-center gap-3 min-w-0">
  <span className="w-11 h-11 rounded-full p-[2px]" style={{ background:"linear-gradient(135deg,#F8C58A,#E07A2B)" }}>
   <span className="block w-full h-full rounded-full bg-white p-[2px]">
-  <span className="block w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage:`url(${userAvatar})` }} />
+   {userAvatar ? (
+     <span className="block w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage:`url(${userAvatar})` }} />
+   ) : (
+     <span className="flex w-full h-full rounded-full items-center justify-center text-[13px] font-semibold" style={{ background:"linear-gradient(135deg,#FFE3C2,#F8C58A)", color:"#7A3B0E" }}>
+       {(initial || userName?.[0] || "?").toString().toUpperCase()}
+     </span>
+   )}
   </span>
   </span>
   <div className="leading-tight min-w-0">
