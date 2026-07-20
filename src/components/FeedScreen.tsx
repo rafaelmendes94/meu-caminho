@@ -504,9 +504,9 @@ const FeedScreen = () => {
 
   return (
     <LayoutComponent title="Feed">
-      <main className={`${isEnterprise ? 'w-full' : 'h-screen min-h-[100dvh] w-full flex items-center justify-center overflow-hidden'} font-display`} style={{ background: isEnterprise ? 'transparent' : cream }}>
+      <main className={`${isEnterprise ? 'w-full' : 'min-h-[100dvh] w-full'} font-display`} style={{ background: isEnterprise ? 'transparent' : cream }}>
         <div
-          className={`relative w-full ${isEnterprise ? 'bg-transparent' : 'h-[100dvh] overflow-hidden flex flex-col'}`}
+          className={`relative w-full ${isEnterprise ? 'bg-transparent' : 'min-h-[100dvh] flex flex-col'}`}
           style={{
             background: isEnterprise ? 'transparent' : `radial-gradient(120% 60% at 50% 0%, #FFF1DD 0%, ${cream} 38%, ${cream} 100%)`,
             paddingTop: isEnterprise ? '0' : "env(safe-area-inset-top)",
