@@ -68,9 +68,10 @@ type Post = {
 
 // Sem imagem de fallback externa: usa string vazia até integração real de mídia via CMS.
 const FALLBACK_IMG = "";
-const CMS_TYPE_TO_POST: Record<CmsItem["type"], PostType> = {
+const CMS_TYPE_TO_POST: Record<string, PostType> = {
   book: "livro", podcast: "podcast", video: "video", audio: "audio",
   material: "reflexao", track: "ia", course: "exercicio",
+  reflection: "reflexao", exercise: "exercicio", ritual: "meditacao", message: "frase",
 };
 const POST_SUBTITLE: Record<PostType, string> = {
   reflexao: "Reflexão", frase: "Reflexão do dia", audio: "Audiolivro", podcast: "Podcast",
@@ -89,7 +90,7 @@ function timeAgo(iso: string | null): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 function mapCmsToPost(it: CmsItem): Post {
-  const t = CMS_TYPE_TO_POST[it.type];
+  const t: PostType = CMS_TYPE_TO_POST[it.type as string] ?? "reflexao";
   const dur = it.duration_minutes ? (it.duration_minutes < 60 ? `${it.duration_minutes} min` : `${Math.floor(it.duration_minutes / 60)}h ${it.duration_minutes % 60}min`) : undefined;
   return {
     id: it.id,
@@ -134,7 +135,7 @@ const typeMeta = (t: PostType) => {
  meditacao: { Icon: Sun, c:"#D08A3F", bg:"#F8E8D2", label:"Meditação" },
  corte: { Icon: Play, c:"#A14B6E", bg:"#F4DDE6", label:"Corte" },
  } as const;
- return map[t];
+ return map[t] ?? map.reflexao;
 };
 
 /* ───────────── Premium header widgets ───────────── */
