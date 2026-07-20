@@ -135,7 +135,7 @@ const typeMeta = (t: PostType) => {
  meditacao: { Icon: Sun, c:"#D08A3F", bg:"#F8E8D2", label:"Meditação" },
  corte: { Icon: Play, c:"#A14B6E", bg:"#F4DDE6", label:"Corte" },
  } as const;
- return map[t];
+ return map[t] ?? map.reflexao;
 };
 
 /* ───────────── Premium header widgets ───────────── */
