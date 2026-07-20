@@ -167,19 +167,20 @@ export default function EnterpriseOrganizationalScoreScreen() {
             {history.length > 1 && (
               <section className="rounded-[2rem] bg-white p-8 border border-[#E5E0DA]">
                 <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-4">Tendência últimos {history.length} dias</h3>
-                <div className="flex items-end gap-2 h-40">
+                <div className="flex items-end gap-3" style={{ height: 220 }}>
                   {[...history].reverse().map((r) => {
                     const v = Math.max(0, Math.min(100, Number(r.overall_score ?? 0)));
                     const d = new Date(r.score_date);
+                    const barPx = Math.max(6, Math.round((v / 100) * 160));
                     return (
-                      <div key={r.id} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
-                        <div className="text-[10px] font-bold text-[#0B0908]">{Math.round(v)}</div>
+                      <div key={r.id} className="flex-1 flex flex-col items-center justify-end gap-2" style={{ height: "100%" }}>
+                        <div className="text-[11px] font-bold text-[#0B0908]">{Math.round(v)}</div>
                         <div
-                          className="w-full rounded-t bg-gradient-to-t from-[#F88A2B] to-[#FFB870] min-h-[4px] transition-all"
-                          style={{ height: `${Math.max(4, v)}%` }}
+                          className="w-full rounded-t bg-gradient-to-t from-[#F88A2B] to-[#FFB870] transition-all"
+                          style={{ height: `${barPx}px` }}
                           title={`${r.score_date}: ${fmt(r.overall_score)}`}
                         />
-                        <div className="text-[10px] text-[#999] uppercase tracking-wider">
+                        <div className="text-[10px] text-[#999] uppercase tracking-wider text-center">
                           {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                         </div>
                       </div>
