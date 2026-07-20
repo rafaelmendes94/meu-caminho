@@ -264,6 +264,8 @@ const PostCard = ({ post, isEnterprise }: { post: Post; isEnterprise?: boolean }
           <img 
             src={post.image} 
             alt="" 
+            loading="lazy"
+            onError={(e) => { const t = e.currentTarget; if (t.src !== FALLBACK_BY_TYPE[post.type]) t.src = FALLBACK_BY_TYPE[post.type]; }}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
           />
           
@@ -375,7 +377,7 @@ const PostCard = ({ post, isEnterprise }: { post: Post; isEnterprise?: boolean }
  {/* Media block */}
  <Link to={al(post.to)} className="block px-3">
  <div className="relative w-full aspect-[16/10] rounded-[22px] overflow-hidden bg-[#F0EAE3]">
- <img src={post.image} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+ <img src={post.image} alt="" loading="lazy" onError={(e) => { const t = e.currentTarget; if (t.src !== FALLBACK_BY_TYPE[post.type]) t.src = FALLBACK_BY_TYPE[post.type]; }} className="absolute inset-0 w-full h-full object-cover" />
  {(isMedia || isQuote) && (
  <div
  className="absolute inset-0"
@@ -504,9 +506,9 @@ const FeedScreen = () => {
 
   return (
     <LayoutComponent title="Feed">
-      <main className={`${isEnterprise ? 'w-full' : 'h-screen min-h-[100dvh] w-full flex items-center justify-center overflow-hidden'} font-display`} style={{ background: isEnterprise ? 'transparent' : cream }}>
+      <main className={`${isEnterprise ? 'w-full' : 'min-h-[100dvh] w-full'} font-display`} style={{ background: isEnterprise ? 'transparent' : cream }}>
         <div
-          className={`relative w-full ${isEnterprise ? 'bg-transparent' : 'h-[100dvh] overflow-hidden flex flex-col'}`}
+          className={`relative w-full ${isEnterprise ? 'bg-transparent' : 'min-h-[100dvh] flex flex-col'}`}
           style={{
             background: isEnterprise ? 'transparent' : `radial-gradient(120% 60% at 50% 0%, #FFF1DD 0%, ${cream} 38%, ${cream} 100%)`,
             paddingTop: isEnterprise ? '0' : "env(safe-area-inset-top)",
@@ -599,7 +601,7 @@ const FeedScreen = () => {
  className="relative w-[96px] h-[140px] rounded-[20px] overflow-hidden"
  style={{ boxShadow:"0 10px 24px -14px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.9), inset 0 0 0 4px rgba(224,122,43,0.7)" }}
  >
- <img src={p.image} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+ <img src={p.image} alt="" loading="lazy" onError={(e) => { const t = e.currentTarget; if (t.src !== FALLBACK_BY_TYPE[p.type]) t.src = FALLBACK_BY_TYPE[p.type]; }} className="absolute inset-0 w-full h-full object-cover" />
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(20,12,4,0.7) 100%)" }} />
  <span className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
  <Play size={11} className="ml-0.5 text-[#1A1410]" fill="#1A1410" />
