@@ -167,16 +167,24 @@ export default function EnterpriseOrganizationalScoreScreen() {
             {history.length > 1 && (
               <section className="rounded-[2rem] bg-white p-8 border border-[#E5E0DA]">
                 <h3 className="text-[12px] font-bold uppercase tracking-widest text-[#999] mb-4">Tendência últimos {history.length} dias</h3>
-                <div className="flex items-end gap-1 h-32">
-                  {[...history].reverse().map((r) => (
-                    <div key={r.id} className="flex-1 flex flex-col items-center gap-1">
-                      <div
-                        className="w-full rounded-t bg-gradient-to-t from-[#F88A2B] to-[#FFB870]"
-                        style={{ height: `${Math.max(2, Number(r.overall_score ?? 0))}%` }}
-                        title={`${r.score_date}: ${fmt(r.overall_score)}`}
-                      />
-                    </div>
-                  ))}
+                <div className="flex items-end gap-2 h-40">
+                  {[...history].reverse().map((r) => {
+                    const v = Math.max(0, Math.min(100, Number(r.overall_score ?? 0)));
+                    const d = new Date(r.score_date);
+                    return (
+                      <div key={r.id} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
+                        <div className="text-[10px] font-bold text-[#0B0908]">{Math.round(v)}</div>
+                        <div
+                          className="w-full rounded-t bg-gradient-to-t from-[#F88A2B] to-[#FFB870] min-h-[4px] transition-all"
+                          style={{ height: `${Math.max(4, v)}%` }}
+                          title={`${r.score_date}: ${fmt(r.overall_score)}`}
+                        />
+                        <div className="text-[10px] text-[#999] uppercase tracking-wider">
+                          {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
