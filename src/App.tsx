@@ -174,6 +174,7 @@ const PlatformOrganizationDetailScreen = lazy(() => import("./pages/PlatformOrga
 const PlatformSubscriptionsScreen = lazy(() => import("./pages/PlatformSubscriptionsScreen.tsx"));
 const PlatformPlansScreen = lazy(() => import("./pages/PlatformPlansScreen.tsx"));
 const PlatformAIUsageScreen = lazy(() => import("./pages/PlatformAIUsageScreen.tsx"));
+const PlatformAIProviderScreen = lazy(() => import("./pages/PlatformAIProviderScreen.tsx"));
 const PlatformAnalyticsScreen = lazy(() => import("./pages/PlatformAnalyticsScreen.tsx"));
 const PlatformSystemHealthScreen = lazy(() => import("./pages/PlatformSystemHealthScreen.tsx"));
 const PlatformBackupRecoveryScreen = lazy(() => import("./pages/PlatformBackupRecoveryScreen.tsx"));
@@ -488,6 +489,7 @@ const App = () => (
           <Route path="/admin/plans" element={<PlatformAdmin><PlatformPlansScreen /></PlatformAdmin>} />
           <Route path="/admin/billing" element={<PlatformAdmin><PlatformBillingScreen /></PlatformAdmin>} />
           <Route path="/admin/ai-usage" element={<PlatformAdmin><PlatformAIUsageScreen /></PlatformAdmin>} />
+          <Route path="/admin/ai/provider" element={<PlatformAdmin><PlatformAIProviderScreen /></PlatformAdmin>} />
           <Route path="/admin/analytics" element={<PlatformAdmin><PlatformAnalyticsScreen /></PlatformAdmin>} />
           <Route path="/admin/system" element={<PlatformAdmin><PlatformSystemHealthScreen /></PlatformAdmin>} />
           <Route path="/admin/system/backup" element={<PlatformAdmin><PlatformBackupRecoveryScreen /></PlatformAdmin>} />
