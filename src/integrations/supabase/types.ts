@@ -5322,6 +5322,33 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_resend_settings: {
+        Row: {
+          api_key: string | null
+          from_email: string
+          from_name: string
+          id: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          from_email?: string
+          from_name?: string
+          id?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          from_email?: string
+          from_name?: string
+          id?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           id: string
