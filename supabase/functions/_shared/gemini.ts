@@ -243,3 +243,42 @@ export function maskKey(key: string | null | undefined): string {
   if (s.length <= 4) return "****";
   return `****${s.slice(-4)}`;
 }
+
+// --------- Compat: substituto drop-in para fetch(gateway) ---------
+// Aceita o body OpenAI-compatível já usado nas edge functions e devolve
+// um Response com o mesmo shape que o gateway devolvia.
+export async function openAICompatChatFetch(body: ChatCompletionRequest): Promise<Response> {
+  try {
+    const resp = await chatCompletion(body);
+    return new Response(JSON.stringify(resp), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    const err = e as GeminiError;
+    const status = err?.status ?? 500;
+    const detail = err?.detail ?? String(e);
+    return new Response(JSON.stringify({ error: { message: detail } }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+export async function openAICompatEmbeddingFetch(body: EmbeddingRequest): Promise<Response> {
+  try {
+    const resp = await createEmbedding(body);
+    return new Response(JSON.stringify(resp), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    const err = e as GeminiError;
+    const status = err?.status ?? 500;
+    const detail = err?.detail ?? String(e);
+    return new Response(JSON.stringify({ error: { message: detail } }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
