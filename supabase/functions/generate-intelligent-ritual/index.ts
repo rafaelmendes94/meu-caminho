@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -117,11 +118,7 @@ async function callModel(model: string, key: string, systemPrompt: string, userP
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
-      body: JSON.stringify({
+    return await openAICompatChatFetch({
         model,
         messages: [
           { role: "system", content: systemPrompt },
@@ -130,8 +127,7 @@ async function callModel(model: string, key: string, systemPrompt: string, userP
         temperature: Number(cfg?.model_config?.temperature ?? 0.4),
         max_tokens: Number(cfg?.model_config?.max_tokens ?? 6000),
         response_format: { type: "json_object" },
-      }),
-    });
+      });
   } finally { clearTimeout(timer); }
 }
 
@@ -222,8 +218,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableKey) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
 
     const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
@@ -321,12 +315,12 @@ Deno.serve(async (req) => {
     const primary = String(cfg.model_config?.primary_model ?? "google/gemini-2.5-pro");
     const fallback = String(cfg.model_config?.fallback_model ?? "google/gemini-2.5-flash");
     let usedModel = primary;
-    let aiRes = await callModel(primary, lovableKey, systemPrompt, userPrompt, cfg);
+    let aiRes = await callModel(primary, "", systemPrompt, userPrompt, cfg);
     let fallbackUsed = false;
     if (!aiRes.ok && (aiRes.status >= 500 || aiRes.status === 429)) {
       const errText = await aiRes.text();
       console.warn("primary_failed", aiRes.status, errText.slice(0, 200));
-      aiRes = await callModel(fallback, lovableKey, systemPrompt, userPrompt, cfg);
+      aiRes = await callModel(fallback, "", systemPrompt, userPrompt, cfg);
       usedModel = fallback;
       fallbackUsed = true;
     }

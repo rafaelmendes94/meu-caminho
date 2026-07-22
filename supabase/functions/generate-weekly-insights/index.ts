@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,7 +126,7 @@ function json(body: unknown, status = 200) {
 async function processOrganization(
   admin: ReturnType<typeof createClient>,
   orgId: string,
-  lovableKey: string,
+  "": string,
   opts: { testMode?: boolean; configSource?: "draft" | "published"; force?: boolean } = {},
 ) {
   const testMode = !!opts.testMode;
@@ -174,10 +175,7 @@ async function processOrganization(
 
   const started = Date.now();
   async function callModel(model: string) {
-    return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${lovableKey}` },
-      body: JSON.stringify({
+    return await openAICompatChatFetch({
         model, temperature, max_tokens: maxTokens,
         messages: [
           { role: "system", content: systemPrompt },
@@ -188,8 +186,7 @@ async function processOrganization(
           },
         ],
         response_format: { type: "json_object" },
-      }),
-    });
+      });
   }
 
   let usedModel = modelPrimary;
@@ -260,8 +257,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableKey) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
 
     const admin = createClient(supabaseUrl, serviceKey);
     const body = await req.json().catch(() => ({}));
@@ -299,7 +294,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const result = await processOrganization(admin, orgId as string, lovableKey, { testMode, configSource, force });
+        const result = await processOrganization(admin, orgId as string, "", { testMode, configSource, force });
         return json({ ok: true, ...result });
       } catch (e: any) {
         if (e?.status === 429) return json({ error: "rate_limited" }, 429);
@@ -317,7 +312,7 @@ Deno.serve(async (req) => {
     const results: Array<{ organization_id: string; ok: boolean; error?: string; inserted?: number; skipped?: boolean }> = [];
     for (const o of orgs ?? []) {
       try {
-        const r = await processOrganization(admin, (o as any).id as string, lovableKey, { testMode: false, configSource, force });
+        const r = await processOrganization(admin, (o as any).id as string, "", { testMode: false, configSource, force });
         results.push({ organization_id: (o as any).id, ok: true, inserted: r.inserted, skipped: (r as any).skipped });
       } catch (e: any) {
         results.push({ organization_id: (o as any).id, ok: false, error: e?.message ?? "error" });

@@ -2,8 +2,7 @@
 // Recebe metadados + storage_path (ou raw_text/url) → extrai → chunk → embeddings → indexa
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -29,17 +28,10 @@ async function embedBatch(inputs: string[]): Promise<Array<number[] | null>> {
   const results: Array<number[] | null> = [];
   for (const input of inputs) {
     try {
-      const resp = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        },
-        body: JSON.stringify({
+      const resp = await openAICompatEmbeddingFetch({
           model: "google/gemini-embedding-001",
           input: input.slice(0, 7000),
-        }),
-      });
+        });
       if (!resp.ok) { results.push(null); continue; }
       const j = await resp.json();
       results.push(j?.data?.[0]?.embedding ?? null);
@@ -60,21 +52,14 @@ async function extractFromStorage(bucket: string, path: string, docType: string)
 
 async function summarizeAndTag(text: string): Promise<{ summary: string; keywords: string[] }> {
   try {
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const resp = await openAICompatChatFetch({
         model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: "Você resume documentos corporativos em PT-BR de forma consultiva e extrai palavras-chave." },
           { role: "user", content: `Resuma em até 5 linhas e retorne JSON {"summary":"...","keywords":["..."]}.\n\nTexto:\n${text.slice(0, 6000)}` },
         ],
         response_format: { type: "json_object" },
-      }),
-    });
+      });
     if (!resp.ok) return { summary: "", keywords: [] };
     const j = await resp.json();
     const raw = j?.choices?.[0]?.message?.content ?? "{}";

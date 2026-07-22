@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,10 +63,7 @@ Deno.serve(async (req) => {
       `Resposta gerada: ${run.response_raw ?? ""}`,
     ].filter(Boolean).join("\n\n");
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}` },
-      body: JSON.stringify({
+    const aiRes = await openAICompatChatFetch({
         model: judge_model,
         temperature: 0.1,
         max_tokens: 700,
@@ -74,8 +72,7 @@ Deno.serve(async (req) => {
           { role: "system", content: JUDGE_SYSTEM },
           { role: "user", content: userMsg },
         ],
-      }),
-    });
+      });
     if (!aiRes.ok) {
       const t = await aiRes.text();
       if (aiRes.status === 429) return json({ error: "rate_limited" }, 429);

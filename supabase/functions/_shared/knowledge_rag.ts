@@ -1,8 +1,7 @@
 // Shared RAG helper — Knowledge Hub™
 // Used by all AI edge functions to fetch grounded context before generation.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -32,17 +31,10 @@ export interface RagContext {
 
 async function embed(text: string): Promise<number[] | null> {
   try {
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const resp = await openAICompatEmbeddingFetch({
         model: "google/gemini-embedding-001",
         input: text.slice(0, 8000),
-      }),
-    });
+      });
     if (!resp.ok) return null;
     const json = await resp.json();
     return json?.data?.[0]?.embedding ?? null;

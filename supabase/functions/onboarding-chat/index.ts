@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { enforceRateLimit } from "../_shared/rate_limit.ts";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
 const DEFAULT_SYSTEM_PROMPT = `Você é o guia do Meu Caminho Enterprise. Conduza uma entrevista conversacional, acolhedora e breve em português do Brasil. Seu objetivo é compreender contexto profissional, rotina, relação com liderança, percepção do ambiente, objetivos, comunicação, energia, engajamento e desafios atuais. Faça uma pergunta por vez. Nunca faça diagnóstico clínico. Nunca use linguagem médica. Nunca diga que está avaliando saúde mental. Ao perceber que já possui informações suficientes, convide o usuário a finalizar e gerar seu Perfil Inteligente.
@@ -111,14 +111,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({ model: cfg.model, messages, temperature: cfg.temperature, max_tokens: cfg.maxTokens }),
-    });
+    const aiRes = await openAICompatChatFetch({ model: cfg.model, messages, temperature: cfg.temperature, max_tokens: cfg.maxTokens });
     if (aiRes.status === 429) return json({ error: "rate_limited" }, 429);
     if (aiRes.status === 402) return json({ error: "credits_exhausted" }, 402);
     if (!aiRes.ok) {

@@ -93,6 +93,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: "/admin/ai/recomendacoes", label: "Recomendações", icon: Wand2 },
       { to: "/admin/knowledge", label: "Knowledge Hub", icon: FileText },
       { to: "/admin/ai-usage", label: "Observability", icon: Activity, keywords: "observability tokens uso" },
+      { to: "/admin/ai/provider", label: "Provedor (Gemini)", icon: Brain, keywords: "gemini api key modelos provider" },
       { to: "/admin/ai/lab", label: "AI Lab", icon: FlaskConical },
     ],
   },

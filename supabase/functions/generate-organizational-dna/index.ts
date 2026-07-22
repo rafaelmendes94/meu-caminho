@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { resolveOrgAiSettings } from "../_shared/org_ai_settings.ts";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -135,8 +136,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableKey) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -214,13 +213,7 @@ Deno.serve(async (req) => {
 
     const started = Date.now();
     async function callModel(model: string) {
-      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableKey}`,
-        },
-        body: JSON.stringify({
+      return await openAICompatChatFetch({
           model,
           temperature,
           max_tokens: maxTokens,
@@ -235,8 +228,7 @@ Deno.serve(async (req) => {
             },
           ],
           response_format: { type: "json_object" },
-        }),
-      });
+        });
     }
 
     // Call Lovable AI Gateway
