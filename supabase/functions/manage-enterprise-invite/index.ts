@@ -1,12 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { loadResendConfig, sendResendEmail } from "../_shared/resend.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "Meu Caminho Enterprise <no-reply@augustocury.fivestarsmarketing.com.br>";
 
 async function sha256(input: string) {
   const bytes = new TextEncoder().encode(input);
@@ -130,20 +128,13 @@ Deno.serve(async (req) => {
     });
 
     let emailSent = false;
-    if (RESEND_API_KEY && LOVABLE_API_KEY) {
-      try {
-        const r = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}`, "X-Connection-Api-Key": RESEND_API_KEY },
-          body: JSON.stringify({
-            from: RESEND_FROM,
-            to: [invite.email],
-            subject: `Lembrete: ${org?.name ?? "sua empresa"} está te esperando no Meu Caminho`,
-            html: emailHtml,
-          }),
-        });
-        emailSent = r.ok;
-      } catch (e) { console.warn("resend failed", e); }
+    const resendCfg = await loadResendConfig();
+    if (resendCfg) {
+      emailSent = await sendResendEmail(resendCfg, {
+        to: invite.email,
+        subject: `Lembrete: ${org?.name ?? "sua empresa"} está te esperando no Meu Caminho`,
+        html: emailHtml,
+      });
     }
 
     await admin.from("organization_audit_logs").insert({

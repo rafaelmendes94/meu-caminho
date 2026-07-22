@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
-  Brain,
   CreditCard,
   KeyRound,
   Mail,
@@ -19,12 +18,13 @@ import {
   RotateCcw,
   Save,
   PlayCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 type SettingRow = { id: string; key: string; value: any; updated_at: string };
 
 type SectionKey =
-  | "ai"
   | "billing"
   | "oauth"
   | "resend"
@@ -42,19 +42,6 @@ const SECTIONS: {
   icon: any;
   defaults: Record<string, any>;
 }[] = [
-  {
-    key: "ai",
-    label: "IA",
-    description: "Modelos, limites de tokens e provedores.",
-    icon: Brain,
-    defaults: {
-      default_model: "google/gemini-2.5-flash",
-      fallback_model: "google/gemini-2.5-flash-lite",
-      max_tokens_per_request: 4000,
-      streaming_enabled: true,
-      temperature: 0.7,
-    },
-  },
   {
     key: "billing",
     label: "Billing",
@@ -82,18 +69,11 @@ const SECTIONS: {
   {
     key: "resend",
     label: "Resend",
-    description: "Configuração de envio de e-mails transacionais.",
+    description: "Chave da API e remetente padrão para e-mails transacionais.",
     icon: Mail,
     defaults: {
-      connected: false,
       from_email: "no-reply@meucaminho.app",
       from_name: "Meu Caminho",
-      templates: {
-        invite: true,
-        password_reset: true,
-        rh_alert: true,
-        weekly_report: true,
-      },
     },
   },
   {
@@ -393,29 +373,152 @@ function OAuthSection({ v, set }: { v: any; set: (p: any) => void }) {
   );
 }
 
-function ResendSection({ v, set }: { v: any; set: (p: any) => void }) {
-  const t = v.templates ?? {};
-  const setT = (patch: any) => set({ ...v, templates: { ...t, ...patch } });
+function ResendSection() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [configured, setConfigured] = useState(false);
+  const [maskedKey, setMaskedKey] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [fromEmail, setFromEmail] = useState("");
+  const [fromName, setFromName] = useState("");
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke("platform-resend-settings", {
+      method: "GET",
+    });
+    setLoading(false);
+    if (error) { toast.error("Falha ao carregar configuração do Resend"); return; }
+    setConfigured(!!data?.configured);
+    setMaskedKey(data?.api_key_masked ?? null);
+    setFromEmail(data?.from_email ?? "");
+    setFromName(data?.from_name ?? "");
+    setUpdatedAt(data?.updated_at ?? null);
+    setApiKey("");
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const save = async () => {
+    setSaving(true);
+    const body: Record<string, string> = { from_email: fromEmail, from_name: fromName };
+    if (apiKey.trim().length > 0) body.api_key = apiKey.trim();
+    const { error } = await supabase.functions.invoke("platform-resend-settings", {
+      method: "POST",
+      body,
+    });
+    setSaving(false);
+    if (error) { toast.error("Erro ao salvar"); return; }
+    toast.success("Configuração do Resend salva");
+    await load();
+  };
+
+  const clearKey = async () => {
+    if (!confirm("Remover a chave da API do Resend? O envio de e-mails será desativado.")) return;
+    const { error } = await supabase.functions.invoke("platform-resend-settings", {
+      method: "DELETE",
+    });
+    if (error) { toast.error("Erro ao remover chave"); return; }
+    toast.success("Chave removida");
+    await load();
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-10 bg-slate-100 rounded-lg animate-pulse" />
+        <div className="h-10 bg-slate-100 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center gap-2">
         <span className="text-xs font-semibold text-slate-700">Status:</span>
-        {v.connected ? <Badge tone="ok"><Check className="w-3 h-3" /> Conectado</Badge> : <Badge tone="off">Não conectado</Badge>}
+        {configured ? (
+          <Badge tone="ok"><Check className="w-3 h-3" /> Chave configurada</Badge>
+        ) : (
+          <Badge tone="warn"><AlertCircle className="w-3 h-3" /> Sem chave — e-mails desativados</Badge>
+        )}
+        {updatedAt && (
+          <span className="text-[11px] text-slate-500">
+            · Atualizado {new Date(updatedAt).toLocaleString("pt-BR")}
+          </span>
+        )}
       </div>
+
+      <Field
+        label="Chave da API do Resend"
+        hint={
+          configured
+            ? `Chave atual: ${maskedKey ?? "•••"}. Digite uma nova chave apenas se quiser substituir.`
+            : "Cole aqui a chave gerada em resend.com/api-keys (começa com re_)."
+        }
+      >
+        <div className="relative">
+          <Input
+            type={showKey ? "text" : "password"}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={configured ? "Nova chave (opcional)" : "re_xxxxxxxxxxxxxxxxxxxxxxxx"}
+            autoComplete="off"
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowKey((v) => !v)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-800"
+            aria-label={showKey ? "Ocultar chave" : "Mostrar chave"}
+          >
+            {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+      </Field>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Email remetente padrão">
-          <Input type="email" value={v.from_email ?? ""} onChange={(e) => set({ ...v, from_email: e.target.value })} />
+        <Field label="E-mail remetente" hint="Domínio precisa estar verificado no Resend.">
+          <Input
+            type="email"
+            value={fromEmail}
+            onChange={(e) => setFromEmail(e.target.value)}
+            placeholder="no-reply@seudominio.com.br"
+          />
         </Field>
         <Field label="Nome do remetente">
-          <Input value={v.from_name ?? ""} onChange={(e) => set({ ...v, from_name: e.target.value })} />
+          <Input
+            value={fromName}
+            onChange={(e) => setFromName(e.target.value)}
+            placeholder="Meu Caminho Enterprise"
+          />
         </Field>
       </div>
-      <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">
-        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1 px-1">Templates ativos</div>
-        <Switch checked={!!t.invite} onChange={(x) => setT({ invite: x })} label="Convite colaborador" />
-        <Switch checked={!!t.password_reset} onChange={(x) => setT({ password_reset: x })} label="Reset de senha" />
-        <Switch checked={!!t.rh_alert} onChange={(x) => setT({ rh_alert: x })} label="Alerta RH" />
-        <Switch checked={!!t.weekly_report} onChange={(x) => setT({ weekly_report: x })} label="Relatório semanal" />
+
+      <div className="flex items-center gap-2 flex-wrap pt-1">
+        <button
+          onClick={save}
+          disabled={saving}
+          className="inline-flex items-center gap-1.5 px-4 h-10 bg-[#F88A2B] text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-[#e57a20]"
+        >
+          <Save className="w-3.5 h-3.5" />
+          {saving ? "Salvando…" : "Salvar"}
+        </button>
+        {configured && (
+          <button
+            onClick={clearKey}
+            className="inline-flex items-center gap-1.5 px-4 h-10 bg-white border border-slate-200 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-50"
+          >
+            Remover chave
+          </button>
+        )}
+      </div>
+
+      <div className="text-[11px] text-slate-500 leading-relaxed bg-slate-50 border border-slate-200 rounded-lg p-3">
+        A chave é armazenada apenas no backend (nunca é enviada ao navegador dos usuários). Ela é lida pelas funções
+        <code className="font-mono text-slate-700"> send-enterprise-invite </code> e
+        <code className="font-mono text-slate-700"> manage-enterprise-invite </code> para disparar convites e lembretes.
       </div>
     </div>
   );
@@ -536,7 +639,7 @@ function MaintenanceSection({ v, set }: { v: any; set: (p: any) => void }) {
 const PlatformSettingsScreen = () => {
   const [rows, setRows] = useState<Record<string, SettingRow>>({});
   const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState<SectionKey>("ai");
+  const [active, setActive] = useState<SectionKey>("billing");
   const [value, setValue] = useState<any>({});
   const [initial, setInitial] = useState<any>({});
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -609,10 +712,9 @@ const PlatformSettingsScreen = () => {
 
   const renderForm = () => {
     switch (section.key) {
-      case "ai": return <AISection v={value} set={updateValue} />;
       case "billing": return <BillingSection v={value} set={updateValue} />;
       case "oauth": return <OAuthSection v={value} set={updateValue} />;
-      case "resend": return <ResendSection v={value} set={updateValue} />;
+      case "resend": return <ResendSection />;
       case "lgpd": return <LGPDSection v={value} set={updateValue} />;
       case "limits":
         return <NumberGrid v={value} set={updateValue} fields={[
@@ -636,7 +738,8 @@ const PlatformSettingsScreen = () => {
     }
   };
 
-  const showTest = ["ai", "billing", "oauth", "resend"].includes(section.key);
+  const showTest = ["billing", "oauth"].includes(section.key);
+  const isCustomPanel = section.key === "resend";
   const Icon = section.icon;
 
   return (
@@ -702,6 +805,7 @@ const PlatformSettingsScreen = () => {
               renderForm()
             )}
 
+            {!isCustomPanel && (
             <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-100 flex-wrap">
               <button
                 onClick={save}
@@ -717,10 +821,7 @@ const PlatformSettingsScreen = () => {
                   className="inline-flex items-center gap-1.5 px-4 h-10 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
                 >
                   <PlayCircle className="w-3.5 h-3.5" />
-                  {section.key === "ai" ? "Testar IA" :
-                   section.key === "billing" ? "Testar Stripe" :
-                   section.key === "oauth" ? "Testar OAuth" :
-                   "Enviar email teste"}
+                  {section.key === "billing" ? "Testar Stripe" : "Testar OAuth"}
                 </button>
               )}
               <button
@@ -731,9 +832,11 @@ const PlatformSettingsScreen = () => {
                 Restaurar padrão
               </button>
             </div>
+            )}
           </Card>
 
           {/* Advanced JSON */}
+          {!isCustomPanel && (
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <button
               onClick={() => setShowAdvanced((x) => !x)}
@@ -768,6 +871,7 @@ const PlatformSettingsScreen = () => {
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
     </PlatformAdminLayout>
