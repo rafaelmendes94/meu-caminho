@@ -14,6 +14,10 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+.env
+.env.*
+!.env.example
+!.env.*.example
 *.local
 
 # Wrangler / Cloudflare
