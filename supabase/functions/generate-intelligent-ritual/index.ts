@@ -315,12 +315,12 @@ Deno.serve(async (req) => {
     const primary = String(cfg.model_config?.primary_model ?? "google/gemini-2.5-pro");
     const fallback = String(cfg.model_config?.fallback_model ?? "google/gemini-2.5-flash");
     let usedModel = primary;
-    let aiRes = await callModel(primary, lovableKey, systemPrompt, userPrompt, cfg);
+    let aiRes = await callModel(primary, "", systemPrompt, userPrompt, cfg);
     let fallbackUsed = false;
     if (!aiRes.ok && (aiRes.status >= 500 || aiRes.status === 429)) {
       const errText = await aiRes.text();
       console.warn("primary_failed", aiRes.status, errText.slice(0, 200));
-      aiRes = await callModel(fallback, lovableKey, systemPrompt, userPrompt, cfg);
+      aiRes = await callModel(fallback, "", systemPrompt, userPrompt, cfg);
       usedModel = fallback;
       fallbackUsed = true;
     }

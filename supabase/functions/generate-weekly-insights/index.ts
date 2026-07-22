@@ -126,7 +126,7 @@ function json(body: unknown, status = 200) {
 async function processOrganization(
   admin: ReturnType<typeof createClient>,
   orgId: string,
-  lovableKey: string,
+  "": string,
   opts: { testMode?: boolean; configSource?: "draft" | "published"; force?: boolean } = {},
 ) {
   const testMode = !!opts.testMode;
@@ -294,7 +294,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const result = await processOrganization(admin, orgId as string, lovableKey, { testMode, configSource, force });
+        const result = await processOrganization(admin, orgId as string, "", { testMode, configSource, force });
         return json({ ok: true, ...result });
       } catch (e: any) {
         if (e?.status === 429) return json({ error: "rate_limited" }, 429);
@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
     const results: Array<{ organization_id: string; ok: boolean; error?: string; inserted?: number; skipped?: boolean }> = [];
     for (const o of orgs ?? []) {
       try {
-        const r = await processOrganization(admin, (o as any).id as string, lovableKey, { testMode: false, configSource, force });
+        const r = await processOrganization(admin, (o as any).id as string, "", { testMode: false, configSource, force });
         results.push({ organization_id: (o as any).id, ok: true, inserted: r.inserted, skipped: (r as any).skipped });
       } catch (e: any) {
         results.push({ organization_id: (o as any).id, ok: false, error: e?.message ?? "error" });
