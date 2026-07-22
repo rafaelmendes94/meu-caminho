@@ -66,7 +66,11 @@ export default function PlatformAIProviderScreen() {
   }
 
   return (
-    <PlatformAdminLayout title="Provedor de IA (Gemini)" description="Configuração global de IA para todas as edge functions.">
+    <PlatformAdminLayout>
+      <div className="mb-6">
+        <h1 className="text-white text-2xl font-black">Provedor de IA (Gemini)</h1>
+        <p className="text-white/50 text-sm mt-1">Configuração global usada por todas as edge functions de IA.</p>
+      </div>
       {loading || !s ? (
         <div className="text-white/60 text-sm">Carregando…</div>
       ) : (
