@@ -68,28 +68,28 @@ export default function PlatformAIProviderScreen() {
   return (
     <PlatformAdminLayout>
       <div className="mb-6">
-        <h1 className="text-white text-2xl font-black">Provedor de IA (Gemini)</h1>
-        <p className="text-white/50 text-sm mt-1">Configuração global usada por todas as edge functions de IA.</p>
+        <h1 className="text-slate-900 text-2xl font-black">Provedor de IA (Gemini)</h1>
+        <p className="text-slate-500 text-sm mt-1">Configuração global usada por todas as edge functions de IA.</p>
       </div>
       {loading || !s ? (
-        <div className="text-white/60 text-sm">Carregando…</div>
+        <div className="text-slate-500 text-sm">Carregando…</div>
       ) : (
         <div className="space-y-6 max-w-3xl">
-          <section className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
+          <section className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
             <div>
-              <h3 className="text-white font-bold">Gemini API Key</h3>
-              <p className="text-white/50 text-xs mt-1">
+              <h3 className="text-slate-900 font-bold">Gemini API Key</h3>
+              <p className="text-slate-500 text-xs mt-1">
                 A chave é gravada apenas no backend (Supabase, acessível pelo service_role). Nunca é enviada ao frontend depois de salva.
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-xs text-white/60">Status:</div>
+              <div className="text-xs text-slate-500">Status:</div>
               {s.key_configured ? (
-                <div className="text-emerald-400 text-sm font-semibold">
+                <div className="text-emerald-600 text-sm font-semibold">
                   Chave configurada: ****{s.key_last4 ?? "····"}
                 </div>
               ) : (
-                <div className="text-amber-400 text-sm font-semibold">Nenhuma chave configurada</div>
+                <div className="text-amber-600 text-sm font-semibold">Nenhuma chave configurada</div>
               )}
             </div>
             <div className="flex gap-2">
@@ -98,7 +98,7 @@ export default function PlatformAIProviderScreen() {
                 placeholder={s.key_configured ? "Cole uma nova chave para substituir" : "AIza… (chave do Google AI Studio)"}
                 value={newKey}
                 onChange={(e) => setNewKey(e.target.value)}
-                className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 text-sm placeholder:text-slate-400"
                 autoComplete="off"
               />
               <button
@@ -112,23 +112,23 @@ export default function PlatformAIProviderScreen() {
             <button
               disabled={testing || !s.key_configured}
               onClick={test}
-              className="px-4 py-2 rounded-lg border border-white/20 text-white text-sm font-semibold hover:bg-white/5 disabled:opacity-50"
+              className="px-4 py-2 rounded-lg border border-slate-300 text-slate-800 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50"
             >
               {testing ? "Testando…" : "Testar conexão"}
             </button>
             {s.test_status && (
-              <div className="text-xs text-white/60">
-                Último teste: <span className={s.test_status === "success" ? "text-emerald-400" : "text-rose-400"}>{s.test_status}</span>
+              <div className="text-xs text-slate-600">
+                Último teste: <span className={s.test_status === "success" ? "text-emerald-600" : "text-rose-600"}>{s.test_status}</span>
                 {s.tested_at ? ` em ${new Date(s.tested_at).toLocaleString("pt-BR")}` : ""}
                 {s.test_latency_ms ? ` — ${s.test_latency_ms}ms` : ""}
                 {s.tested_model ? ` — ${s.tested_model}` : ""}
-                {s.test_error ? <div className="text-rose-400 mt-1">{s.test_error}</div> : null}
+                {s.test_error ? <div className="text-rose-600 mt-1 break-words">{s.test_error}</div> : null}
               </div>
             )}
           </section>
 
-          <section className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
-            <h3 className="text-white font-bold">Modelos</h3>
+          <section className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+            <h3 className="text-slate-900 font-bold">Modelos</h3>
             <Field label="Modelo padrão">
               <select value={s.default_model} onChange={(e) => save({ default_model: e.target.value })} className={selectCls}>
                 {CHAT_MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
@@ -146,8 +146,8 @@ export default function PlatformAIProviderScreen() {
             </Field>
           </section>
 
-          <section className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
-            <h3 className="text-white font-bold">Parâmetros padrão</h3>
+          <section className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+            <h3 className="text-slate-900 font-bold">Parâmetros padrão</h3>
             <Field label={`Temperatura: ${s.temperature.toFixed(2)}`}>
               <input type="range" min={0} max={2} step={0.05} defaultValue={s.temperature}
                 onMouseUp={(e) => save({ temperature: Number((e.target as HTMLInputElement).value) })}
@@ -169,12 +169,12 @@ export default function PlatformAIProviderScreen() {
   );
 }
 
-const selectCls = "w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm";
+const selectCls = "w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 text-sm";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs text-white/50 uppercase tracking-widest font-bold mb-1">{label}</label>
+      <label className="block text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">{label}</label>
       {children}
     </div>
   );
