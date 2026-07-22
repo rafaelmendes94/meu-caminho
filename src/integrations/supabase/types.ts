@@ -5149,6 +5149,63 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_ai_settings: {
+        Row: {
+          created_at: string
+          default_model: string
+          embedding_model: string
+          fallback_model: string
+          gemini_api_key: string | null
+          id: string
+          key_last4: string | null
+          max_tokens: number
+          provider: string
+          temperature: number
+          test_error: string | null
+          test_latency_ms: number | null
+          test_status: string | null
+          tested_at: string | null
+          tested_model: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_model?: string
+          embedding_model?: string
+          fallback_model?: string
+          gemini_api_key?: string | null
+          id?: string
+          key_last4?: string | null
+          max_tokens?: number
+          provider?: string
+          temperature?: number
+          test_error?: string | null
+          test_latency_ms?: number | null
+          test_status?: string | null
+          tested_at?: string | null
+          tested_model?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_model?: string
+          embedding_model?: string
+          fallback_model?: string
+          gemini_api_key?: string | null
+          id?: string
+          key_last4?: string | null
+          max_tokens?: number
+          provider?: string
+          temperature?: number
+          test_error?: string | null
+          test_latency_ms?: number | null
+          test_status?: string | null
+          tested_at?: string | null
+          tested_model?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_audit_logs: {
         Row: {
           action: string
