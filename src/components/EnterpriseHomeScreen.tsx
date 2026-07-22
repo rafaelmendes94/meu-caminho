@@ -13,7 +13,10 @@ import {
   MessageSquare, 
   BookOpen, 
   Compass,
-  Lock
+  Lock,
+  Flame,
+  Clock,
+  BookMarked
 } from "lucide-react";
 import logoMark from "@/assets/login-abstract.webp";
 import { EnterpriseUserLayout } from "./layouts/EnterpriseUserLayout";
@@ -314,6 +317,78 @@ export default function EnterpriseHomeScreen() {
 
         {/* Check-ins da Semana */}
         <WeeklyCheckinsCard checkins={weekCheckins} onNew={() => navigate('/enterprise/checkin/intro')} />
+
+        {/* Seu progresso — atalho para /enterprise/progresso */}
+        <section className="rounded-[24px] bg-white p-5 lg:p-6 border border-black/5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F88A2B] mb-0.5">
+                Seu progresso
+              </p>
+              <h3 className="text-[16px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Acompanhe sua evolução
+              </h3>
+            </div>
+            <button
+              onClick={() => navigate('/enterprise/progresso')}
+              className="text-[12px] font-bold text-[#F88A2B] hover:underline flex items-center gap-1"
+            >
+              Ver tudo <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <button
+              onClick={() => navigate('/enterprise/progresso')}
+              className="rounded-2xl bg-[#F8F9FA] border border-black/5 p-4 flex flex-col items-center text-center hover:border-[#F88A2B]/30 transition-all"
+            >
+              <div className="relative w-12 h-12 mb-2">
+                <svg viewBox="0 0 56 56" className="w-full h-full -rotate-90">
+                  <circle cx="28" cy="28" r="22" stroke="#F2EBE3" strokeWidth="5" fill="none" />
+                  <circle cx="28" cy="28" r="22" stroke="#F88A2B" strokeWidth="5" fill="none" strokeDasharray={2*Math.PI*22} strokeDashoffset={2*Math.PI*22} strokeLinecap="round" />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#111]" style={{ fontFamily: "'Playfair Display', serif" }}>0%</span>
+              </div>
+              <p className="text-[18px] font-bold text-[#111] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>0%</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-[#666] mt-1">Progresso geral</p>
+            </button>
+            <button
+              onClick={() => navigate('/enterprise/progresso')}
+              className="rounded-2xl bg-[#F8F9FA] border border-black/5 p-4 flex flex-col items-center text-center hover:border-[#F88A2B]/30 transition-all"
+            >
+              <div className="h-12 w-12 rounded-xl bg-[#F88A2B]/10 flex items-center justify-center mb-2">
+                <Flame className="h-6 w-6 text-[#F88A2B]" />
+              </div>
+              <p className="text-[18px] font-bold text-[#111] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                0 <span className="text-[11px] font-sans font-medium text-[#666]">dias</span>
+              </p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-[#666] mt-1">Sequência</p>
+            </button>
+            <button
+              onClick={() => navigate('/enterprise/progresso')}
+              className="rounded-2xl bg-[#F8F9FA] border border-black/5 p-4 flex flex-col items-center text-center hover:border-[#F88A2B]/30 transition-all"
+            >
+              <div className="h-12 w-12 rounded-xl bg-[#8FB17D]/10 flex items-center justify-center mb-2">
+                <Clock className="h-6 w-6 text-[#8FB17D]" />
+              </div>
+              <p className="text-[18px] font-bold text-[#111] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                0h <span className="text-[11px] font-sans font-medium text-[#666]">00m</span>
+              </p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-[#666] mt-1">Dedicado</p>
+            </button>
+            <button
+              onClick={() => navigate('/enterprise/progresso')}
+              className="rounded-2xl bg-[#F8F9FA] border border-black/5 p-4 flex flex-col items-center text-center hover:border-[#F88A2B]/30 transition-all"
+            >
+              <div className="h-12 w-12 rounded-xl bg-[#9B8AC9]/10 flex items-center justify-center mb-2">
+                <BookMarked className="h-6 w-6 text-[#9B8AC9]" />
+              </div>
+              <p className="text-[18px] font-bold text-[#111] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                0 <span className="text-[11px] font-sans font-medium text-[#666]">aulas</span>
+              </p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-[#666] mt-1">Concluídas</p>
+            </button>
+          </div>
+        </section>
 
         {/* Weekly Moment removed: no real data source; avoiding mock content. */}
 
