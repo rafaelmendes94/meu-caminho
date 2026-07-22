@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { enforceRateLimit } from "../_shared/rate_limit.ts";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -129,10 +130,7 @@ Deno.serve(async (req) => {
       aiModule: "cms-recommend",
     });
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
-      body: JSON.stringify({
+    const aiRes = await openAICompatChatFetch({
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -140,8 +138,7 @@ Deno.serve(async (req) => {
           { role: "user", content: `Contexto do usuário:\n${JSON.stringify(userContext)}\n\nCatálogo disponível:\n${JSON.stringify(pool)}` },
         ],
         response_format: { type: "json_object" },
-      }),
-    });
+      });
 
     if (!aiRes.ok) {
       const text = await aiRes.text();

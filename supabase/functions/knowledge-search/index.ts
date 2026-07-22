@@ -2,8 +2,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { fetchKnowledgeContext } from "../_shared/knowledge_rag.ts";
-
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 
@@ -31,17 +30,13 @@ Deno.serve(async (req) => {
 
     if (mode === "test") {
       // Chat RAG de teste — retorna resposta gerada
-      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({
+      const resp = await openAICompatChatFetch({
           model: "google/gemini-2.5-flash",
           messages: [
             { role: "system", content: "Você é um assistente que responde SOMENTE com base no CONTEXTO fornecido. Se não houver contexto suficiente, responda 'Sem dados suficientes na base de conhecimento'. Sempre cite as fontes por índice [Fonte N]." },
             { role: "user", content: `${ctx.contextBlock}\n\nPergunta: ${query}` },
           ],
-        }),
-      });
+        });
       const j = await resp.json();
       const answer = j?.choices?.[0]?.message?.content ?? "";
       return json({ answer, ...ctx });

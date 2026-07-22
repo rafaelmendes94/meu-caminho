@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { fetchKnowledgeContext } from "../_shared/knowledge_rag.ts";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,17 +65,13 @@ Deno.serve(async (req) => {
       if (rag.contextBlock) messages.push({ role: "user", content: rag.contextBlock });
       messages.push({ role: "user", content: question });
       const t0 = Date.now();
-      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}` },
-        body: JSON.stringify({
+      const r = await openAICompatChatFetch({
           model: v.model,
           temperature: v.temperature ?? 0.4,
           max_tokens: v.max_tokens ?? 1024,
           messages,
           ...(v.response_format_json ? { response_format: { type: "json_object" } } : {}),
-        }),
-      });
+        });
       const lat = Date.now() - t0;
       if (!r.ok) {
         const err = (await r.text()).slice(0, 400);

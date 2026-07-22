@@ -1,9 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const DEFAULT_MODEL = "google/gemini-2.5-pro";
 
 const DEFAULT_SYSTEM = `Você é um analista que gera um Perfil Inteligente a partir de uma entrevista conversacional do colaborador. Baseie-se ESTRITAMENTE no que foi dito. Nunca faça diagnóstico clínico. Nunca use linguagem médica ou psicológica. Se não houver evidência para um campo, deixe vazio e use confidence "low". Responda APENAS com um JSON válido, sem texto adicional.`;
@@ -85,21 +85,14 @@ Deno.serve(async (req) => {
 
     const cfg = await loadProfileConfig(admin);
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const aiRes = await openAICompatChatFetch({
         model: cfg.model,
         messages: [
           { role: "system", content: cfg.system },
           { role: "user", content: `Transcrição da entrevista:\n\n${transcript}\n\nGere o JSON do Perfil Inteligente.` },
         ],
         response_format: { type: "json_object" },
-      }),
-    });
+      });
     if (aiRes.status === 429) return json({ error: "rate_limited" }, 429);
     if (aiRes.status === 402) return json({ error: "credits_exhausted" }, 402);
     if (!aiRes.ok) return json({ error: "ai_error", detail: await aiRes.text() }, 500);

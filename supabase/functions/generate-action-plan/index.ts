@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -116,11 +117,7 @@ async function callModel(model: string, key: string, systemPrompt: string, userP
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
-      body: JSON.stringify({
+    const res = await openAICompatChatFetch({
         model,
         messages: [
           { role: "system", content: systemPrompt },
@@ -129,8 +126,7 @@ async function callModel(model: string, key: string, systemPrompt: string, userP
         temperature: Number(cfg?.model_config?.temperature ?? 0.35),
         max_tokens: Number(cfg?.model_config?.max_tokens ?? 6000),
         response_format: { type: "json_object" },
-      }),
-    });
+      });
     return res;
   } finally { clearTimeout(timer); }
 }

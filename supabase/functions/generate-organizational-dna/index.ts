@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { resolveOrgAiSettings } from "../_shared/org_ai_settings.ts";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -214,13 +215,7 @@ Deno.serve(async (req) => {
 
     const started = Date.now();
     async function callModel(model: string) {
-      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableKey}`,
-        },
-        body: JSON.stringify({
+      return await openAICompatChatFetch({
           model,
           temperature,
           max_tokens: maxTokens,
@@ -235,8 +230,7 @@ Deno.serve(async (req) => {
             },
           ],
           response_format: { type: "json_object" },
-        }),
-      });
+        });
     }
 
     // Call Lovable AI Gateway

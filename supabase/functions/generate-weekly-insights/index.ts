@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { openAICompatChatFetch, openAICompatEmbeddingFetch } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -174,10 +175,7 @@ async function processOrganization(
 
   const started = Date.now();
   async function callModel(model: string) {
-    return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${lovableKey}` },
-      body: JSON.stringify({
+    return await openAICompatChatFetch({
         model, temperature, max_tokens: maxTokens,
         messages: [
           { role: "system", content: systemPrompt },
@@ -188,8 +186,7 @@ async function processOrganization(
           },
         ],
         response_format: { type: "json_object" },
-      }),
-    });
+      });
   }
 
   let usedModel = modelPrimary;
