@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
 import {
-  Brain,
   CreditCard,
   KeyRound,
   Mail,
@@ -19,12 +18,13 @@ import {
   RotateCcw,
   Save,
   PlayCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 type SettingRow = { id: string; key: string; value: any; updated_at: string };
 
 type SectionKey =
-  | "ai"
   | "billing"
   | "oauth"
   | "resend"
@@ -42,19 +42,6 @@ const SECTIONS: {
   icon: any;
   defaults: Record<string, any>;
 }[] = [
-  {
-    key: "ai",
-    label: "IA",
-    description: "Modelos, limites de tokens e provedores.",
-    icon: Brain,
-    defaults: {
-      default_model: "google/gemini-2.5-flash",
-      fallback_model: "google/gemini-2.5-flash-lite",
-      max_tokens_per_request: 4000,
-      streaming_enabled: true,
-      temperature: 0.7,
-    },
-  },
   {
     key: "billing",
     label: "Billing",
@@ -82,18 +69,11 @@ const SECTIONS: {
   {
     key: "resend",
     label: "Resend",
-    description: "Configuração de envio de e-mails transacionais.",
+    description: "Chave da API e remetente padrão para e-mails transacionais.",
     icon: Mail,
     defaults: {
-      connected: false,
       from_email: "no-reply@meucaminho.app",
       from_name: "Meu Caminho",
-      templates: {
-        invite: true,
-        password_reset: true,
-        rh_alert: true,
-        weekly_report: true,
-      },
     },
   },
   {
