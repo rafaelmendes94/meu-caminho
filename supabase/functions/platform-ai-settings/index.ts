@@ -77,15 +77,27 @@ Deno.serve(async (req) => {
         if (!settings.gemini_api_key) {
           return json({ success: false, error: "Chave da API do Gemini não configurada." }, 400);
         }
-        const resp = await chatCompletion({
-          model: settings.default_model,
-          messages: [
-            { role: "system", content: "Responda exatamente e apenas: ok" },
-            { role: "user", content: "ping" },
-          ],
-          max_tokens: 8,
-          temperature: 0,
-        });
+        const tryModel = async (model: string) =>
+          chatCompletion({
+            model,
+            messages: [
+              { role: "system", content: "Responda exatamente e apenas: ok" },
+              { role: "user", content: "ping" },
+            ],
+            max_tokens: 8,
+            temperature: 0,
+          });
+        let resp;
+        try {
+          resp = await tryModel(settings.default_model);
+        } catch (err: any) {
+          const notFound = err?.status === 404 || /not_found|no longer available/i.test(String(err?.detail ?? ""));
+          if (notFound && settings.fallback_model && settings.fallback_model !== settings.default_model) {
+            resp = await tryModel(settings.fallback_model);
+          } else {
+            throw err;
+          }
+        }
         const latency = Date.now() - started;
         const output = resp.choices?.[0]?.message?.content?.trim() ?? "";
         await admin
