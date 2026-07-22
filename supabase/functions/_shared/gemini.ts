@@ -48,8 +48,8 @@ export async function loadPlatformAiSettings(): Promise<PlatformAiSettings> {
   const row = (data ?? {}) as Partial<PlatformAiSettings>;
   cachedSettings = {
     provider: row.provider ?? "gemini",
-    default_model: row.default_model ?? "gemini-2.5-flash",
-    fallback_model: row.fallback_model ?? "gemini-2.5-flash-lite",
+    default_model: row.default_model ?? "gemini-3.1-flash-lite",
+    fallback_model: row.fallback_model ?? "gemini-3.1-flash-lite",
     embedding_model: row.embedding_model ?? "gemini-embedding-001",
     temperature: typeof row.temperature === "number" ? row.temperature : 0.7,
     max_tokens: typeof row.max_tokens === "number" ? row.max_tokens : 2048,
@@ -59,14 +59,25 @@ export async function loadPlatformAiSettings(): Promise<PlatformAiSettings> {
   return cachedSettings;
 }
 
+// Modelos descontinuados / renomeados → substituição automática.
+const LEGACY_MODEL_MAP: Record<string, string> = {
+  "gemini-2.5-flash": "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite": "gemini-3.1-flash-lite",
+  "gemini-2.5-pro": "gemini-3.1-pro-preview",
+};
+
 // Mapeia nomes do formato Lovable/OpenAI para nomes nativos do Gemini.
-// Modelos OpenAI são redirecionados para o fallback_model.
+// - Modelos OpenAI (openai/* ou gpt-*) → fallback_model configurado.
+// - Prefixo google/ é removido.
+// - Modelos Gemini antigos são substituídos por seus equivalentes atuais.
 export function mapModelName(input: string | undefined, settings: PlatformAiSettings): string {
   if (!input) return settings.default_model;
-  const m = String(input).trim();
-  if (m.startsWith("openai/") || m.startsWith("gpt-")) return settings.fallback_model;
-  if (m.startsWith("google/")) return m.slice("google/".length);
-  return m;
+  const raw = String(input).trim();
+  if (raw.startsWith("openai/") || raw.startsWith("gpt-")) {
+    return LEGACY_MODEL_MAP[settings.fallback_model] ?? settings.fallback_model;
+  }
+  const bare = raw.startsWith("google/") ? raw.slice("google/".length) : raw;
+  return LEGACY_MODEL_MAP[bare] ?? bare;
 }
 
 // --------- Conversão de mensagens OpenAI-style -> contents Gemini ---------
@@ -207,9 +218,10 @@ export interface EmbeddingResponse {
 export async function createEmbedding(req: EmbeddingRequest): Promise<EmbeddingResponse> {
   const settings = await loadPlatformAiSettings();
   if (!settings.gemini_api_key) throw new GeminiError(500, "gemini_api_key_not_configured");
-  const model = req.model && !req.model.startsWith("openai/") && !req.model.startsWith("gpt-")
+  const requested = req.model && !req.model.startsWith("openai/") && !req.model.startsWith("gpt-")
     ? req.model.replace(/^google\//, "")
     : settings.embedding_model;
+  const model = LEGACY_MODEL_MAP[requested] ?? requested;
 
   const inputs = Array.isArray(req.input) ? req.input : [req.input];
   const embeddings: Array<{ embedding: number[]; index: number }> = [];
