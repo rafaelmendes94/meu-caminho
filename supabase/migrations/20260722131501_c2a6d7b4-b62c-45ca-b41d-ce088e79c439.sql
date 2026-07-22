@@ -1,0 +1,1 @@
+UPDATE public.platform_ai_settings SET default_model='gemini-3.1-flash-lite', fallback_model='gemini-3.1-flash-lite', embedding_model='gemini-embedding-001' WHERE default_model IN ('gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.5-pro') OR fallback_model IN ('gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.5-pro') OR true;
