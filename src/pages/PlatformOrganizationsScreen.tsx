@@ -370,6 +370,7 @@ const RowActions = ({ row, onAction, onEdit }: {
       )}
     </>
   );
+  // NOTE: unreachable due to early return above; real return below
 };
 
 /* ---------- Modal: Wizard de empresa (criar/editar) ---------- */
