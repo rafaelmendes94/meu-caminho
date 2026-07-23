@@ -458,7 +458,7 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
               }} />
               <Input label="CNPJ" value={form.cnpj} onChange={(v) => setForm({ ...form, cnpj: v })} />
               <Input label="Domínio" value={form.domain} onChange={(v) => setForm({ ...form, domain: v })} placeholder="empresa.com.br" />
-              <Input label="Logo (URL)" value={form.logo_url} onChange={(v) => setForm({ ...form, logo_url: v })} />
+              <LogoUploadField value={form.logo_url} onChange={(v) => setForm({ ...form, logo_url: v })} />
               <Input label="Segmento" value={form.segment} onChange={(v) => setForm({ ...form, segment: v })} />
               <Input label="Tamanho" value={form.company_size} onChange={(v) => setForm({ ...form, company_size: v })} placeholder="ex: 50-200" />
               <Input label="País" value={form.country} onChange={(v) => setForm({ ...form, country: v })} />
@@ -537,6 +537,82 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 const Label = ({ children }: { children: React.ReactNode }) => (
   <label className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">{children}</label>
 );
+
+const LogoUploadField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Envie um arquivo de imagem (PNG, JPG, SVG ou WebP).");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Logo excede 5MB.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const path = `nova/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("org-logos").upload(path, file, {
+        contentType: file.type || undefined,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+      if (upErr) throw upErr;
+      const { data, error: signErr } = await supabase.storage.from("org-logos").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr) throw signErr;
+      onChange(data.signedUrl);
+      toast.success("Logo enviada.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha no upload.");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div>
+      <Label>Logo</Label>
+      <div className="mt-1 flex gap-2 items-start">
+        {value ? (
+          <img src={value} alt="Logo" className="h-11 w-11 rounded-lg object-contain bg-white border border-slate-200 shrink-0" />
+        ) : (
+          <div className="h-11 w-11 rounded-lg border border-dashed border-slate-300 bg-slate-100 shrink-0" />
+        )}
+        <div className="flex-1 flex gap-2">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="URL ou envie um arquivo"
+            className="flex-1 min-w-0 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900 placeholder:text-slate-400 text-sm"
+          />
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleFile(f);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={busy}
+            className="px-3 py-2 rounded-lg bg-[#F88A2B] text-black text-xs font-bold disabled:opacity-50 whitespace-nowrap"
+          >
+            {busy ? "Enviando…" : "Upload"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Input = ({ label, value, onChange, type = "text", placeholder }: {
   label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string;
