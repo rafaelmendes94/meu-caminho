@@ -83,9 +83,9 @@ export function ContentItemsListPage({ type, title, extraActions }: { type: Cont
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar…" className="flex-1 min-w-[200px] max-w-sm px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
           <option value="">Todos status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
+          <option value="draft">Rascunho</option>
+          <option value="published">Publicado</option>
+          <option value="archived">Arquivado</option>
         </select>
         <span className="ml-auto text-white/40 text-sm self-center">{filtered.length} registros</span>
       </div>

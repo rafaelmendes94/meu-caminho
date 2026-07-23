@@ -160,7 +160,7 @@ export function ContentItemForm({ item, onSaved, onClose }: { item: ContentItem;
           <label className="col-span-2 block"><span className="text-xs text-[#64748B]">Slug (auto se vazio)</span><input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm" /></label>
           <label className="block"><span className="text-xs text-[#64748B]">Status</span>
             <select value={form.status} onChange={(e) => set("status", e.target.value as any)} className="w-full mt-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] text-sm">
-              <option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option>
+              <option value="draft">Rascunho</option><option value="published">Publicado</option><option value="archived">Arquivado</option>
             </select>
           </label>
           <label className="block"><span className="text-xs text-[#64748B]">Categoria</span>
