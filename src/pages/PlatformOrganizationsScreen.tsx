@@ -47,6 +47,14 @@ const SORTS = [
 
 const PAGE_SIZE = 20;
 
+type PlanOption = {
+  slug: string;
+  name: string;
+  default_licenses: number;
+  price_monthly_cents: number;
+  currency: string;
+};
+
 const healthColor = (s: string) =>
   s === "healthy" ? "text-emerald-600" :
   s === "attention" ? "text-amber-600" :
