@@ -546,16 +546,16 @@ const TabBilling = ({ data }: { data: Details }) => {
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-        <p className="text-amber-800 font-semibold">Billing ainda não conectado.</p>
+        <p className="text-amber-800 font-semibold">Faturamento ainda não conectado.</p>
         <p className="text-amber-700 text-xs mt-1">Quando o Stripe estiver ativo, os dados aparecerão aqui automaticamente.</p>
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <KPI label="Stripe Customer" value={org.stripe_customer_id ?? "—"} />
-        <KPI label="Stripe Subscription" value={org.stripe_subscription_id ?? "—"} />
+        <KPI label="Cliente Stripe" value={org.stripe_customer_id ?? "—"} />
+        <KPI label="Assinatura Stripe" value={org.stripe_subscription_id ?? "—"} />
         <KPI label="MRR (R$)" value={((org.mrr_cents ?? 0) / 100).toFixed(2)} />
-        <KPI label="Trial termina" value={fmtDate(org.trial_ends_at)} />
+        <KPI label="Teste termina" value={fmtDate(org.trial_ends_at)} />
         <KPI label="Fim do período" value={fmtDate(org.current_period_end)} />
-        <KPI label="Grace period" value={fmtDate(org.grace_period_ends_at)} />
+        <KPI label="Tolerância" value={fmtDate(org.grace_period_ends_at)} />
       </div>
     </div>
   );
