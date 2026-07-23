@@ -145,6 +145,29 @@ Deno.serve(async (req) => {
         await audit({ days });
         return json({ ok: true });
       }
+      case "set_owner_password": {
+        const newPassword: string | undefined = body.password;
+        if (!newPassword || newPassword.length < 8) {
+          return json({ error: "password_min_8" }, 400);
+        }
+        let targetUserId = userId;
+        if (!targetUserId && orgId) {
+          const { data: r } = await admin.from("user_roles")
+            .select("user_id").eq("organization_id", orgId).eq("role", "owner").limit(1).maybeSingle();
+          targetUserId = r?.user_id;
+        }
+        if (!targetUserId && body.email) {
+          const { data: list } = await admin.auth.admin.listUsers();
+          targetUserId = list?.users?.find((u) => u.email?.toLowerCase() === String(body.email).toLowerCase())?.id;
+        }
+        if (!targetUserId) return json({ error: "owner_not_found" }, 404);
+        const { error } = await admin.auth.admin.updateUserById(targetUserId, {
+          password: newPassword, email_confirm: true,
+        });
+        if (error) return json({ error: error.message }, 400);
+        await audit({ target_user_id: targetUserId });
+        return json({ ok: true, user_id: targetUserId });
+      }
       default:
         return json({ error: "unknown_action" }, 400);
     }
