@@ -31,8 +31,8 @@ type Row = {
 const STATUSES = [
   { key: null, label: "Todas" },
   { key: "active", label: "Ativas" },
-  { key: "trialing", label: "Trials" },
-  { key: "past_due", label: "Past due" },
+  { key: "trialing", label: "Em teste" },
+  { key: "past_due", label: "Em atraso" },
   { key: "canceled", label: "Canceladas" },
   { key: "suspended", label: "Suspensas" },
 ] as const;
@@ -55,6 +55,23 @@ const healthColor = (s: string) =>
   s === "archived" ? "text-slate-400" : "text-slate-500";
 
 const fmtDate = (v: string | null) => (v ? new Date(v).toLocaleDateString("pt-BR") : "—");
+
+const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+  trialing: "Em teste",
+  active: "Ativa",
+  past_due: "Em atraso",
+  suspended: "Suspensa",
+  canceled: "Cancelada",
+  grace_period: "Tolerância",
+};
+
+const HEALTH_LABELS: Record<string, string> = {
+  healthy: "Saudável",
+  attention: "Atenção",
+  at_risk: "Em risco",
+  over_limit: "Acima do limite",
+  archived: "Arquivada",
+};
 const fmtRel = (v: string | null) => {
   if (!v) return "—";
   const days = Math.floor((Date.now() - new Date(v).getTime()) / 86400000);
@@ -211,7 +228,7 @@ const PlatformOrganizationsScreen = () => {
                       {r.responsible_name || "—"}
                       {r.responsible_email && <p className="text-[11px] text-slate-400">{r.responsible_email}</p>}
                     </td>
-                    <td className="p-3 text-slate-700">{r.subscription_status ?? "—"}</td>
+                    <td className="p-3 text-slate-700">{r.subscription_status ? (SUBSCRIPTION_STATUS_LABELS[r.subscription_status] ?? r.subscription_status) : "—"}</td>
                     <td className="p-3 text-slate-700">{r.plan ?? "—"}</td>
                     <td className="p-3">{r.licenses_used ?? 0} / {r.licenses_total ?? 0}</td>
                     <td className="p-3">{r.active_users_30d}</td>
@@ -220,7 +237,7 @@ const PlatformOrganizationsScreen = () => {
                     <td className="p-3 text-slate-500 text-xs">{fmtDate(r.last_dna_generated_at)}</td>
                     <td className="p-3">{r.ai_messages_30d}</td>
                     <td className="p-3 text-slate-600 text-xs">{fmtDate(r.created_at)}</td>
-                    <td className={`p-3 font-bold text-xs ${healthColor(r.health_status)}`}>{r.health_status}</td>
+                    <td className={`p-3 font-bold text-xs ${healthColor(r.health_status)}`}>{HEALTH_LABELS[r.health_status] ?? r.health_status}</td>
                     <td className="p-3">
                       <RowActions row={r} onAction={setAction} />
                     </td>
