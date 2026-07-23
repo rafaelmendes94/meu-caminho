@@ -34,7 +34,12 @@ const TABS = [
 type TabKey = (typeof TABS)[number][0];
 
 const fmtDate = (v: string | null | undefined) => (v ? new Date(v).toLocaleDateString("pt-BR") : "—");
-const fmtDT = (v: string | null | undefined) => (v ? new Date(v).toLocaleString("pt-BR") : "—");
+const fmtDT = (v: string | null | undefined) => {
+  if (!v) return "—";
+  const d = new Date(v);
+  if (!Number.isFinite(d.getTime()) || d.getUTCFullYear() < 2000) return "—";
+  return d.toLocaleString("pt-BR");
+};
 
 const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
   trialing: "Em teste",
