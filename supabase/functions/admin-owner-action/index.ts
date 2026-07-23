@@ -15,7 +15,7 @@ function json(body: unknown, status = 200) {
 type Action =
   | "suspend" | "reactivate" | "reset_password" | "resend_invite"
   | "soft_delete" | "impersonate" | "update_licenses" | "update_plan"
-  | "cancel_subscription" | "renew_trial";
+  | "cancel_subscription" | "renew_trial" | "set_owner_password";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
