@@ -583,6 +583,96 @@ const Label = ({ children }: { children: React.ReactNode }) => (
   <label className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">{children}</label>
 );
 
+const maskCnpj = (v: string) => {
+  const d = v.replace(/\D/g, "").slice(0, 14);
+  return d
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+};
+
+type CnpjLookupData = {
+  cnpj?: string; name?: string; domain?: string; segment?: string;
+  company_size?: string; state?: string; city?: string;
+  email?: string; phone?: string;
+};
+
+const CnpjLookupField = ({
+  value, onChange, onLookup,
+}: { value: string; onChange: (v: string) => void; onLookup: (d: CnpjLookupData) => void }) => {
+  const [busy, setBusy] = useState(false);
+  const digits = value.replace(/\D/g, "");
+
+  const fetchCnpj = async (raw: string) => {
+    const only = raw.replace(/\D/g, "");
+    if (only.length !== 14) {
+      toast.error("CNPJ inválido. Informe 14 dígitos.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${only}`);
+      if (!res.ok) {
+        toast.error(res.status === 404 ? "CNPJ não encontrado." : "Falha ao consultar CNPJ.");
+        return;
+      }
+      const d: any = await res.json();
+      const empresa = d.nome_fantasia?.trim() || d.razao_social?.trim() || "";
+      const phoneRaw = d.ddd_telefone_1 || d.ddd_telefone_2 || "";
+      const phone = phoneRaw ? phoneRaw.replace(/^(\d{2})(\d{4,5})(\d{4}).*/, "($1) $2-$3") : "";
+      const sizeMap: Record<string, string> = {
+        "MICRO EMPRESA": "1-19",
+        "EMPRESA DE PEQUENO PORTE": "20-99",
+        "DEMAIS": "100+",
+      };
+      onLookup({
+        cnpj: maskCnpj(only),
+        name: empresa,
+        segment: d.cnae_fiscal_descricao || "",
+        company_size: sizeMap[d.porte?.descricao ?? d.porte ?? ""] || "",
+        state: d.uf || "",
+        city: d.municipio ? d.municipio.charAt(0) + d.municipio.slice(1).toLowerCase() : "",
+        email: d.email || "",
+        phone,
+      });
+      toast.success("Dados preenchidos a partir do CNPJ.");
+    } catch {
+      toast.error("Falha ao consultar CNPJ.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <Label>CNPJ (busca automática)</Label>
+      <div className="mt-1 flex gap-2">
+        <input
+          value={value}
+          onChange={(e) => {
+            const masked = maskCnpj(e.target.value);
+            onChange(masked);
+            if (masked.replace(/\D/g, "").length === 14) void fetchCnpj(masked);
+          }}
+          placeholder="00.000.000/0000-00"
+          inputMode="numeric"
+          className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900 placeholder:text-slate-400"
+        />
+        <button
+          type="button"
+          onClick={() => void fetchCnpj(value)}
+          disabled={busy || digits.length !== 14}
+          className="px-3 py-2 rounded-lg bg-[#F88A2B] text-black text-xs font-bold disabled:opacity-50 whitespace-nowrap"
+        >
+          {busy ? "Buscando…" : "Buscar"}
+        </button>
+      </div>
+      <p className="mt-1 text-[11px] text-slate-500">Ao completar 14 dígitos, os dados públicos são preenchidos automaticamente.</p>
+    </div>
+  );
+};
+
 const LogoUploadField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
