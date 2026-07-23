@@ -94,6 +94,7 @@ const PlatformOrganizationsScreen = () => {
   const [page, setPage] = useState(0);
 
   const [showCreate, setShowCreate] = useState(false);
+  const [editOrgId, setEditOrgId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -239,7 +240,7 @@ const PlatformOrganizationsScreen = () => {
                     <td className="p-3 text-slate-600 text-xs">{fmtDate(r.created_at)}</td>
                     <td className={`p-3 font-bold text-xs ${healthColor(r.health_status)}`}>{HEALTH_LABELS[r.health_status] ?? r.health_status}</td>
                     <td className="p-3">
-                      <RowActions row={r} onAction={setAction} />
+                      <RowActions row={r} onAction={setAction} onEdit={() => setEditOrgId(r.id)} />
                     </td>
                   </tr>
                 ))}
@@ -265,14 +266,16 @@ const PlatformOrganizationsScreen = () => {
         </>
       )}
 
-      {showCreate && <NewOrgModal onClose={() => setShowCreate(false)} onSaved={load} />}
+      {showCreate && <OrgFormModal mode="create" onClose={() => setShowCreate(false)} onSaved={load} />}
+      {editOrgId && <OrgFormModal mode="edit" orgId={editOrgId} onClose={() => setEditOrgId(null)} onSaved={load} />}
     </PlatformAdminLayout>
   );
 };
 
-const RowActions = ({ row, onAction }: {
+const RowActions = ({ row, onAction, onEdit }: {
   row: Row;
   onAction: (id: string, patch: Record<string, any>, label: string) => void;
+  onEdit: () => void;
 }) => {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -311,6 +314,7 @@ const RowActions = ({ row, onAction }: {
       {open && pos && createPortal(
         <div data-row-actions-menu style={{ position: "fixed", top: pos.top, left: pos.left }} className="w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 text-xs">
           <Link to={`/admin/organizations/${row.id}`} className="block px-3 py-2 hover:bg-slate-50 text-slate-700">Ver detalhes</Link>
+          <button onClick={() => { setOpen(false); onEdit(); }} className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700">Editar</button>
           {!isSuspended ? (
             <button onClick={() => {
               if (!window.confirm(`Suspender "${row.name}"? Os dados são preservados.`)) return;
