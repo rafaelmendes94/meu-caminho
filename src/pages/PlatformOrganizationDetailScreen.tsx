@@ -109,7 +109,7 @@ const PlatformOrganizationDetailScreen = () => {
       <div className="flex items-start justify-between mt-4 mb-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900">{org.name}</h1>
-          <p className="text-slate-500 text-sm">{org.slug} · {org.plan ?? "sem plano"} · {org.subscription_status}</p>
+          <p className="text-slate-500 text-sm">{org.slug} · {org.plan ?? "sem plano"} · {subStatusLabel(org.subscription_status)}</p>
         </div>
         <div className="flex gap-2 text-[10px] uppercase tracking-[0.2em]">
           {org.suspended_at && <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded">Suspensa</span>}
@@ -148,7 +148,7 @@ const TabOverview = ({ data }: { data: Details }) => {
   const org = data.organization; const u = data.usage_30d;
   return (
     <div className="grid grid-cols-4 gap-3">
-      <KPI label="Status" value={org.subscription_status} />
+      <KPI label="Status" value={subStatusLabel(org.subscription_status)} />
       <KPI label="Plano" value={org.plan} />
       <KPI label="Licenças" value={`${org.licenses_used ?? 0} / ${org.licenses_total ?? 0}`} />
       <KPI label="Ativos 30d" value={u.active_users} />
