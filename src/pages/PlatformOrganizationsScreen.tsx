@@ -82,7 +82,11 @@ const HEALTH_LABELS: Record<string, string> = {
 };
 const fmtRel = (v: string | null) => {
   if (!v) return "—";
-  const days = Math.floor((Date.now() - new Date(v).getTime()) / 86400000);
+  const t = new Date(v).getTime();
+  if (!Number.isFinite(t) || t <= 0) return "—";
+  // 'epoch' fallback vindo do backend quando não houve atividade real
+  if (new Date(v).getUTCFullYear() < 2000) return "—";
+  const days = Math.floor((Date.now() - t) / 86400000);
   if (days <= 0) return "hoje";
   if (days === 1) return "ontem";
   if (days < 30) return `${days}d atrás`;
