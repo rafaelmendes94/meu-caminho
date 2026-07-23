@@ -466,6 +466,28 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 
           {open==="empresa" && (
             <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <CnpjLookupField
+                  value={form.cnpj}
+                  onChange={(v) => setForm((f) => ({ ...f, cnpj: v }))}
+                  onLookup={(data) => {
+                    setForm((f) => ({
+                      ...f,
+                      cnpj: data.cnpj ?? f.cnpj,
+                      name: f.name || data.name || "",
+                      slug: slugTouched ? f.slug : slugify(data.name || f.name),
+                      domain: f.domain || data.domain || "",
+                      segment: f.segment || data.segment || "",
+                      company_size: f.company_size || data.company_size || "",
+                      country: f.country || "Brasil",
+                      state: f.state || data.state || "",
+                      city: f.city || data.city || "",
+                      responsible_email: f.responsible_email || data.email || "",
+                      responsible_phone: f.responsible_phone || data.phone || "",
+                    }));
+                  }}
+                />
+              </div>
               <Input label="Nome *" value={form.name} onChange={(v) => {
                 setForm((f) => ({ ...f, name: v, slug: slugTouched ? f.slug : slugify(v) }));
               }} />
@@ -473,7 +495,6 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
                 setSlugTouched(true);
                 setForm((f) => ({ ...f, slug: slugify(v) }));
               }} />
-              <Input label="CNPJ" value={form.cnpj} onChange={(v) => setForm({ ...form, cnpj: v })} />
               <Input label="Domínio" value={form.domain} onChange={(v) => setForm({ ...form, domain: v })} placeholder="empresa.com.br" />
               <LogoUploadField value={form.logo_url} onChange={(v) => setForm({ ...form, logo_url: v })} />
               <Input label="Segmento" value={form.segment} onChange={(v) => setForm({ ...form, segment: v })} />
