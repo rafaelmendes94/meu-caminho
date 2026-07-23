@@ -26,7 +26,7 @@ const TABS = [
   ["rh", "Config RH"],
   ["usage", "Uso"],
   ["ai", "IA"],
-  ["billing", "Billing"],
+  ["billing", "Faturamento"],
   ["support", "Suporte"],
   ["audit", "Auditoria"],
   ["notes", "Observações"],
@@ -35,6 +35,17 @@ type TabKey = (typeof TABS)[number][0];
 
 const fmtDate = (v: string | null | undefined) => (v ? new Date(v).toLocaleDateString("pt-BR") : "—");
 const fmtDT = (v: string | null | undefined) => (v ? new Date(v).toLocaleString("pt-BR") : "—");
+
+const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+  trialing: "Em teste",
+  active: "Ativa",
+  past_due: "Em atraso",
+  suspended: "Suspensa",
+  canceled: "Cancelada",
+  grace_period: "Tolerância",
+};
+const subStatusLabel = (s?: string | null) =>
+  s ? (SUBSCRIPTION_STATUS_LABELS[s] ?? s) : "—";
 
 const KPI = ({ label, value }: { label: string; value: any }) => (
   <div className="bg-white border border-slate-200 rounded-xl p-4">
