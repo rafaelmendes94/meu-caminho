@@ -327,6 +327,20 @@ const RowActions = ({ row, onAction, onEdit }: {
         <div data-row-actions-menu style={{ position: "fixed", top: pos.top, left: pos.left }} className="w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 text-xs">
           <Link to={`/admin/organizations/${row.id}`} className="block px-3 py-2 hover:bg-slate-50 text-slate-700">Ver detalhes</Link>
           <button onClick={() => { setOpen(false); onEdit(); }} className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700">Editar</button>
+          <button onClick={async () => {
+            setOpen(false);
+            const pwd = window.prompt(`Definir nova senha do RH de "${row.name}" (mín. 8 caracteres):`, "");
+            if (!pwd) return;
+            if (pwd.length < 8) { toast.error("Senha precisa ter no mínimo 8 caracteres."); return; }
+            const { data, error } = await supabase.functions.invoke("admin-owner-action", {
+              body: { action: "set_owner_password", organization_id: row.id, password: pwd },
+            });
+            if (error || (data as any)?.error) {
+              toast.error((data as any)?.error || error?.message || "Falha ao definir senha.");
+              return;
+            }
+            toast.success("Senha do RH atualizada.");
+          }} className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700">Definir senha do RH</button>
           {!isSuspended ? (
             <button onClick={() => {
               if (!window.confirm(`Suspender "${row.name}"? Os dados são preservados.`)) return;
