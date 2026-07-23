@@ -166,7 +166,7 @@ export const EnterpriseRHBottomNav = () => {
           </SheetHeader>
           <div className="space-y-6">
             <SidebarItem to="/enterprise/rh/central-admin" icon={Settings} label="Central Admin" />
-            <SidebarItem to="/enterprise/rh/billing" icon={FileText} label="Billing" />
+            <SidebarItem to="/enterprise/rh/billing" icon={FileText} label="Faturamento" />
             <SidebarItem to="/enterprise/rh/suporte" icon={MessageSquare} label="Suporte" />
           </div>
         </SheetContent>
@@ -325,7 +325,7 @@ const rhGroups: RHNavGroup[] = [
     items: [
       { to: "/enterprise/rh/configuracoes", label: "Configurações da Empresa", icon: Settings },
       { to: "/enterprise/rh/integracoes", label: "Integrações", icon: Plug },
-      { to: "/enterprise/rh/billing", label: "Billing", icon: Wallet },
+      { to: "/enterprise/rh/billing", label: "Faturamento", icon: Wallet },
     ],
   },
 ];

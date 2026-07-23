@@ -43,7 +43,7 @@ const statusPill = (o: Owner) => {
   if (o.deleted_at) return { label: "Excluído", cls: "bg-white/10 text-white/50" };
   if (o.suspended_at) return { label: "Suspenso", cls: "bg-red-500/20 text-red-300" };
   if (!o.invite_accepted_at) return { label: "Sem acesso", cls: "bg-amber-500/20 text-amber-300" };
-  if (o.subscription_status === "trialing") return { label: "Trial", cls: "bg-blue-500/20 text-blue-300" };
+  if (o.subscription_status === "trialing") return { label: "Em teste", cls: "bg-blue-500/20 text-blue-300" };
   if (o.subscription_status === "active") return { label: "Ativo", cls: "bg-emerald-500/20 text-emerald-300" };
   if (o.subscription_status === "past_due") return { label: "Past Due", cls: "bg-orange-500/20 text-orange-300" };
   if (o.subscription_status === "canceled") return { label: "Cancelado", cls: "bg-white/10 text-white/50" };
@@ -149,7 +149,7 @@ const PlatformOwnersScreen = () => {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
         <Card label="Ativos" value={kpis?.active ?? "—"} />
-        <Card label="Trial" value={kpis?.trialing ?? "—"} />
+        <Card label="Em teste" value={kpis?.trialing ?? "—"} />
         <Card label="Suspensos" value={kpis?.suspended ?? "—"} />
         <Card label="Sem acesso" value={kpis?.never_accessed ?? "—"} />
         <Card label="Licenças" value={kpis ? `${kpis.licenses_used}/${kpis.licenses_total}` : "—"} hint={kpis ? `${kpis.licenses_free} livres` : ""} />

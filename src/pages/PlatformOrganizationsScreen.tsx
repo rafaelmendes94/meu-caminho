@@ -515,8 +515,8 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
                 </select>
               </div>
               <Input label="Licenças contratadas" type="number" value={String(form.licenses_total)} onChange={(v) => setForm({ ...form, licenses_total: Number(v) })} />
-              <Input label="Trial até" type="date" value={form.trial_ends_at} onChange={(v) => setForm({ ...form, trial_ends_at: v })} />
-              <Input label="Grace period até" type="date" value={form.grace_period_ends_at} onChange={(v) => setForm({ ...form, grace_period_ends_at: v })} />
+              <Input label="Teste até" type="date" value={form.trial_ends_at} onChange={(v) => setForm({ ...form, trial_ends_at: v })} />
+              <Input label="Tolerância até" type="date" value={form.grace_period_ends_at} onChange={(v) => setForm({ ...form, grace_period_ends_at: v })} />
             </div>
           )}
 

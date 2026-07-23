@@ -54,7 +54,7 @@ const PlatformSubscriptionsScreen = () => {
 
       {!stripeConnected && (
         <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-200 text-sm">
-          Billing ainda não conectado — Stripe não configurado. Métricas de MRR/ARR aparecerão quando a integração for ativada.
+          Faturamento ainda não conectado — Stripe não configurado. Métricas de MRR/ARR aparecerão quando a integração for ativada.
         </div>
       )}
 
