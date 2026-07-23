@@ -657,7 +657,38 @@ const OrgFormModal = ({
 
           {step==="plano" && (
             <div className="grid grid-cols-2 gap-3">
-              <Input label="Plano" value={form.plan} onChange={(v) => setForm({ ...form, plan: v })} placeholder="ex: enterprise" />
+              <div>
+                <Label>Plano</Label>
+                <select
+                  value={form.plan}
+                  onChange={(e) => {
+                    const slug = e.target.value;
+                    const p = plans.find((pl) => pl.slug === slug);
+                    setForm({
+                      ...form,
+                      plan: slug,
+                      licenses_total: p && p.default_licenses > 0 ? p.default_licenses : form.licenses_total,
+                    });
+                  }}
+                  className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900"
+                >
+                  <option value="">Selecione um plano…</option>
+                  {plans.map((p) => (
+                    <option key={p.slug} value={p.slug}>
+                      {p.name}
+                      {p.price_monthly_cents > 0
+                        ? ` — ${(p.price_monthly_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: p.currency })}/mês`
+                        : ""}
+                    </option>
+                  ))}
+                  {form.plan && !plans.some((p) => p.slug === form.plan) && (
+                    <option value={form.plan}>{form.plan} (atual)</option>
+                  )}
+                </select>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Planos gerenciados em <Link to="/plataforma/planos" className="underline">Planos da plataforma</Link>.
+                </p>
+              </div>
               <div>
                 <Label>Status</Label>
                 <select value={form.subscription_status}
