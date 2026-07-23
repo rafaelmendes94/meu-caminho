@@ -76,9 +76,9 @@ export default function PlatformContentLibraryScreen() {
         </select>
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
           <option value="">Todos status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
+          <option value="draft">Rascunho</option>
+          <option value="published">Publicado</option>
+          <option value="archived">Arquivado</option>
         </select>
         <label className="flex items-center gap-2 text-white/70 text-sm px-3"><input type="checkbox" checked={featuredOnly} onChange={(e) => setFeaturedOnly(e.target.checked)} />Destaque</label>
         <label className="flex items-center gap-2 text-white/70 text-sm px-3"><input type="checkbox" checked={premiumOnly} onChange={(e) => setPremiumOnly(e.target.checked)} />Premium</label>

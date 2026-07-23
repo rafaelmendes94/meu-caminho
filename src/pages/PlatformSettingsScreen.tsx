@@ -44,7 +44,7 @@ const SECTIONS: {
 }[] = [
   {
     key: "billing",
-    label: "Billing",
+    label: "Faturamento",
     description: "Cobrança e integrações financeiras.",
     icon: CreditCard,
     defaults: {
@@ -570,7 +570,7 @@ function FeatureFlagsSection({ v, set }: { v: any; set: (p: any) => void }) {
     { key: "impact_engine", label: "Motor de Impacto" },
     { key: "canal_direto", label: "Canal Direto" },
     { key: "b2c", label: "B2C" },
-    { key: "billing", label: "Billing" },
+    { key: "billing", label: "Faturamento" },
   ];
   return (
     <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">

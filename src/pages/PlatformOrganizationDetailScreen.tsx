@@ -26,7 +26,7 @@ const TABS = [
   ["rh", "Config RH"],
   ["usage", "Uso"],
   ["ai", "IA"],
-  ["billing", "Billing"],
+  ["billing", "Faturamento"],
   ["support", "Suporte"],
   ["audit", "Auditoria"],
   ["notes", "Observações"],
@@ -35,6 +35,17 @@ type TabKey = (typeof TABS)[number][0];
 
 const fmtDate = (v: string | null | undefined) => (v ? new Date(v).toLocaleDateString("pt-BR") : "—");
 const fmtDT = (v: string | null | undefined) => (v ? new Date(v).toLocaleString("pt-BR") : "—");
+
+const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+  trialing: "Em teste",
+  active: "Ativa",
+  past_due: "Em atraso",
+  suspended: "Suspensa",
+  canceled: "Cancelada",
+  grace_period: "Tolerância",
+};
+const subStatusLabel = (s?: string | null) =>
+  s ? (SUBSCRIPTION_STATUS_LABELS[s] ?? s) : "—";
 
 const KPI = ({ label, value }: { label: string; value: any }) => (
   <div className="bg-white border border-slate-200 rounded-xl p-4">
@@ -98,7 +109,7 @@ const PlatformOrganizationDetailScreen = () => {
       <div className="flex items-start justify-between mt-4 mb-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900">{org.name}</h1>
-          <p className="text-slate-500 text-sm">{org.slug} · {org.plan ?? "sem plano"} · {org.subscription_status}</p>
+          <p className="text-slate-500 text-sm">{org.slug} · {org.plan ?? "sem plano"} · {subStatusLabel(org.subscription_status)}</p>
         </div>
         <div className="flex gap-2 text-[10px] uppercase tracking-[0.2em]">
           {org.suspended_at && <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded">Suspensa</span>}
@@ -137,7 +148,7 @@ const TabOverview = ({ data }: { data: Details }) => {
   const org = data.organization; const u = data.usage_30d;
   return (
     <div className="grid grid-cols-4 gap-3">
-      <KPI label="Status" value={org.subscription_status} />
+      <KPI label="Status" value={subStatusLabel(org.subscription_status)} />
       <KPI label="Plano" value={org.plan} />
       <KPI label="Licenças" value={`${org.licenses_used ?? 0} / ${org.licenses_total ?? 0}`} />
       <KPI label="Ativos 30d" value={u.active_users} />
@@ -368,8 +379,15 @@ const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
           <Label>Status</Label>
           <select value={c.status} onChange={(e) => set({ status: e.target.value as any })}
             className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
-            {["trialing","active","past_due","suspended","canceled","expired"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+            {[
+              { v: "trialing", l: "Em teste" },
+              { v: "active", l: "Ativa" },
+              { v: "past_due", l: "Em atraso" },
+              { v: "suspended", l: "Suspensa" },
+              { v: "canceled", l: "Cancelada" },
+              { v: "expired", l: "Expirada" },
+            ].map((s) => (
+              <option key={s.v} value={s.v}>{s.l}</option>
             ))}
           </select>
         </div>
@@ -390,8 +408,8 @@ const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
           </select>
         </div>
 
-        <Input label="Trial até" type="date" value={c.trial_ends_at ? c.trial_ends_at.slice(0,10) : ""} onChange={(v) => set({ trial_ends_at: v ? new Date(v).toISOString() : null })} />
-        <Input label="Grace period até" type="date" value={c.grace_period_ends_at ? c.grace_period_ends_at.slice(0,10) : ""} onChange={(v) => set({ grace_period_ends_at: v ? new Date(v).toISOString() : null })} />
+        <Input label="Teste até" type="date" value={c.trial_ends_at ? c.trial_ends_at.slice(0,10) : ""} onChange={(v) => set({ trial_ends_at: v ? new Date(v).toISOString() : null })} />
+        <Input label="Tolerância até" type="date" value={c.grace_period_ends_at ? c.grace_period_ends_at.slice(0,10) : ""} onChange={(v) => set({ grace_period_ends_at: v ? new Date(v).toISOString() : null })} />
         <KPI label="Licenças usadas" value={org.licenses_used ?? 0} />
 
         <Input label="Início do contrato" type="date" value={c.contract_start ?? ""} onChange={(v) => set({ contract_start: v || null })} />
@@ -528,16 +546,16 @@ const TabBilling = ({ data }: { data: Details }) => {
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-        <p className="text-amber-800 font-semibold">Billing ainda não conectado.</p>
+        <p className="text-amber-800 font-semibold">Faturamento ainda não conectado.</p>
         <p className="text-amber-700 text-xs mt-1">Quando o Stripe estiver ativo, os dados aparecerão aqui automaticamente.</p>
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <KPI label="Stripe Customer" value={org.stripe_customer_id ?? "—"} />
-        <KPI label="Stripe Subscription" value={org.stripe_subscription_id ?? "—"} />
+        <KPI label="Cliente Stripe" value={org.stripe_customer_id ?? "—"} />
+        <KPI label="Assinatura Stripe" value={org.stripe_subscription_id ?? "—"} />
         <KPI label="MRR (R$)" value={((org.mrr_cents ?? 0) / 100).toFixed(2)} />
-        <KPI label="Trial termina" value={fmtDate(org.trial_ends_at)} />
+        <KPI label="Teste termina" value={fmtDate(org.trial_ends_at)} />
         <KPI label="Fim do período" value={fmtDate(org.current_period_end)} />
-        <KPI label="Grace period" value={fmtDate(org.grace_period_ends_at)} />
+        <KPI label="Tolerância" value={fmtDate(org.grace_period_ends_at)} />
       </div>
     </div>
   );
