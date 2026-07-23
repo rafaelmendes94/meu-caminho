@@ -47,6 +47,14 @@ const SORTS = [
 
 const PAGE_SIZE = 20;
 
+type PlanOption = {
+  slug: string;
+  name: string;
+  default_licenses: number;
+  price_monthly_cents: number;
+  currency: string;
+};
+
 const healthColor = (s: string) =>
   s === "healthy" ? "text-emerald-600" :
   s === "attention" ? "text-amber-600" :
@@ -383,6 +391,27 @@ const OrgFormModal = ({
     Object.fromEntries(RH_FLAG_KEYS.map((k) => [k, true]))
   );
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
+  const [plans, setPlans] = useState<PlanOption[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from("platform_plans" as any)
+        .select("slug,name,default_licenses,price_monthly_cents,currency,sort_order,is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (!alive) return;
+      if (error) { console.error(error); return; }
+      setPlans((data as any[])?.map((p) => ({
+        slug: p.slug, name: p.name,
+        default_licenses: p.default_licenses ?? 0,
+        price_monthly_cents: p.price_monthly_cents ?? 0,
+        currency: p.currency ?? "BRL",
+      })) ?? []);
+    })();
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     if (mode !== "edit" || !orgId) return;
@@ -628,7 +657,38 @@ const OrgFormModal = ({
 
           {step==="plano" && (
             <div className="grid grid-cols-2 gap-3">
-              <Input label="Plano" value={form.plan} onChange={(v) => setForm({ ...form, plan: v })} placeholder="ex: enterprise" />
+              <div>
+                <Label>Plano</Label>
+                <select
+                  value={form.plan}
+                  onChange={(e) => {
+                    const slug = e.target.value;
+                    const p = plans.find((pl) => pl.slug === slug);
+                    setForm({
+                      ...form,
+                      plan: slug,
+                      licenses_total: p && p.default_licenses > 0 ? p.default_licenses : form.licenses_total,
+                    });
+                  }}
+                  className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900"
+                >
+                  <option value="">Selecione um plano…</option>
+                  {plans.map((p) => (
+                    <option key={p.slug} value={p.slug}>
+                      {p.name}
+                      {p.price_monthly_cents > 0
+                        ? ` — ${(p.price_monthly_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: p.currency })}/mês`
+                        : ""}
+                    </option>
+                  ))}
+                  {form.plan && !plans.some((p) => p.slug === form.plan) && (
+                    <option value={form.plan}>{form.plan} (atual)</option>
+                  )}
+                </select>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Planos gerenciados em <Link to="/plataforma/planos" className="underline">Planos da plataforma</Link>.
+                </p>
+              </div>
               <div>
                 <Label>Status</Label>
                 <select value={form.subscription_status}
