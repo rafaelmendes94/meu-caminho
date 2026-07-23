@@ -368,6 +368,66 @@ const RowActions = ({ row, onAction, onEdit }: {
         </div>,
         document.body
       )}
+      {pwdModal && createPortal(
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !saving && setPwdModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-slate-900">Definir senha do RH</h3>
+            <p className="text-xs text-slate-500 mt-1">Empresa: <span className="font-semibold text-slate-700">{row.name}</span></p>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Nova senha</label>
+                <div className="relative mt-1">
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    value={pwd}
+                    onChange={(e) => setPwd(e.target.value)}
+                    autoComplete="new-password"
+                    placeholder="Mínimo 8 caracteres"
+                    className="w-full h-10 px-3 pr-10 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none text-sm"
+                  />
+                  <button type="button" onClick={() => setShowPwd((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-800 px-2 py-1">
+                    {showPwd ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Confirmar senha</label>
+                <input
+                  type={showPwd ? "text" : "password"}
+                  value={pwd2}
+                  onChange={(e) => setPwd2(e.target.value)}
+                  autoComplete="new-password"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none text-sm mt-1"
+                />
+              </div>
+              {pwd && pwd2 && pwd !== pwd2 && (
+                <p className="text-xs text-red-600">As senhas não coincidem.</p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button disabled={saving} onClick={() => setPwdModal(false)} className="px-4 h-10 rounded-lg bg-white border border-slate-200 text-sm text-slate-700 hover:bg-slate-50">Cancelar</button>
+              <button
+                disabled={saving || pwd.length < 8 || pwd !== pwd2}
+                onClick={async () => {
+                  setSaving(true);
+                  const { data, error } = await supabase.functions.invoke("admin-owner-action", {
+                    body: { action: "set_owner_password", organization_id: row.id, password: pwd },
+                  });
+                  setSaving(false);
+                  if (error || (data as any)?.error) {
+                    toast.error((data as any)?.error || error?.message || "Falha ao definir senha.");
+                    return;
+                  }
+                  toast.success("Senha do RH atualizada.");
+                  setPwdModal(false);
+                }}
+                className="px-4 h-10 rounded-lg bg-[#0F172A] text-white text-sm font-bold hover:bg-[#1e293b] disabled:opacity-50"
+              >{saving ? "Salvando…" : "Salvar senha"}</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 };
