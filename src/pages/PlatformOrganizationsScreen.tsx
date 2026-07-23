@@ -391,6 +391,27 @@ const OrgFormModal = ({
     Object.fromEntries(RH_FLAG_KEYS.map((k) => [k, true]))
   );
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
+  const [plans, setPlans] = useState<PlanOption[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from("platform_plans" as any)
+        .select("slug,name,default_licenses,price_monthly_cents,currency,sort_order,is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (!alive) return;
+      if (error) { console.error(error); return; }
+      setPlans((data as any[])?.map((p) => ({
+        slug: p.slug, name: p.name,
+        default_licenses: p.default_licenses ?? 0,
+        price_monthly_cents: p.price_monthly_cents ?? 0,
+        currency: p.currency ?? "BRL",
+      })) ?? []);
+    })();
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     if (mode !== "edit" || !orgId) return;
