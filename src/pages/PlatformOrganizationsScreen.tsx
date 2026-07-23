@@ -550,7 +550,34 @@ const OrgFormModal = ({
       action: mode === "create" ? "org.create" : "org.update",
       entity_type: "organization", entity_id: savedId, metadata: payload,
     });
-    toast.success(mode === "create" ? "Empresa criada." : "Empresa atualizada.");
+
+    // Ao criar: provisiona o Owner (RH) e envia e-mail de boas-vindas
+    if (mode === "create" && savedId && form.responsible_email && form.responsible_name) {
+      try {
+        const { data: ownerRes, error: ownerErr } = await supabase.functions.invoke("admin-create-owner", {
+          body: {
+            full_name: form.responsible_name,
+            email: form.responsible_email,
+            phone: form.responsible_phone || null,
+            organization_id: savedId,
+            plan: form.plan || "starter",
+            licenses_total: Number(form.licenses_total) || 0,
+            subscription_status: form.subscription_status,
+          },
+        });
+        if (ownerErr || (ownerRes as any)?.error) {
+          toast.success("Empresa criada.");
+          toast.warning("Não foi possível enviar o e-mail de acesso ao RH. Use 'Definir senha do RH' no menu de ações.");
+        } else {
+          toast.success("Empresa criada. Convite enviado ao RH por e-mail.");
+        }
+      } catch {
+        toast.success("Empresa criada.");
+        toast.warning("Falha ao provisionar acesso do RH. Use 'Definir senha do RH' no menu de ações.");
+      }
+    } else {
+      toast.success(mode === "create" ? "Empresa criada." : "Empresa atualizada.");
+    }
     setSaving(false);
     onSaved();
     onClose();
