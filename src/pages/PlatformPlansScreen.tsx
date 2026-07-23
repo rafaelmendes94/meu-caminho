@@ -2,6 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PlatformAdminLayout from "@/components/layouts/PlatformAdminLayout";
+import { RH_FLAG_KEYS, FEATURE_FLAG_LABELS } from "@/lib/orgSettings";
+
+const AI_LIMIT_FIELDS: { key: string; label: string; hint?: string }[] = [
+  { key: "chat_messages_per_month", label: "Mensagens de chat / mês" },
+  { key: "action_plans_per_month", label: "Planos de ação / mês" },
+  { key: "rituals_per_month", label: "Rituais inteligentes / mês" },
+  { key: "insights_per_month", label: "Insights semanais / mês" },
+  { key: "dna_reports_per_month", label: "Relatórios de DNA / mês" },
+  { key: "tokens_per_month", label: "Tokens de IA / mês", hint: "0 = ilimitado" },
+];
 
 type Plan = {
   id: string;
@@ -179,13 +189,18 @@ const PlanEditor = ({ plan, onClose, onSaved }: { plan: Plan; onClose: () => voi
   const [saving, setSaving] = useState(false);
   const isNew = !plan.id;
 
-  const setJSON = (key: "included_modules" | "ai_limits", raw: string) => {
-    try {
-      const parsed = raw.trim() ? JSON.parse(raw) : {};
-      setF({ ...f, [key]: parsed });
-    } catch {
-      /* keep last value; will validate on save */
-    }
+  const toggleModule = (mod: string, on: boolean) => {
+    const next = { ...(f.included_modules || {}) };
+    if (on) next[mod] = true;
+    else delete next[mod];
+    setF({ ...f, included_modules: next });
+  };
+
+  const setLimit = (key: string, raw: string) => {
+    const next = { ...(f.ai_limits || {}) };
+    if (raw === "") delete next[key];
+    else next[key] = Number(raw);
+    setF({ ...f, ai_limits: next });
   };
 
   const save = async () => {
@@ -263,13 +278,41 @@ const PlanEditor = ({ plan, onClose, onSaved }: { plan: Plan; onClose: () => voi
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <Field label="Módulos incluídos (JSON)">
-            <textarea defaultValue={JSON.stringify(f.included_modules ?? {}, null, 2)} onChange={(e) => setJSON("included_modules", e.target.value)} rows={5} className={`${inputCls} font-mono text-xs`} />
-          </Field>
-          <Field label="Limites IA (JSON)">
-            <textarea defaultValue={JSON.stringify(f.ai_limits ?? {}, null, 2)} onChange={(e) => setJSON("ai_limits", e.target.value)} rows={5} className={`${inputCls} font-mono text-xs`} />
-          </Field>
+        <div className="mt-6">
+          <Label>Módulos incluídos</Label>
+          <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2 bg-white border border-slate-200 rounded-xl p-3">
+            {RH_FLAG_KEYS.map((mod) => {
+              const checked = !!(f.included_modules as any)?.[mod];
+              return (
+                <label key={mod} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => toggleModule(mod, e.target.checked)}
+                  />
+                  {FEATURE_FLAG_LABELS[mod] ?? mod}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <Label>Limites de IA</Label>
+          <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-3 bg-white border border-slate-200 rounded-xl p-3">
+            {AI_LIMIT_FIELDS.map((lim) => (
+              <Field key={lim.key} label={lim.label}>
+                <input
+                  type="number"
+                  min={0}
+                  value={(f.ai_limits as any)?.[lim.key] ?? ""}
+                  onChange={(e) => setLimit(lim.key, e.target.value)}
+                  placeholder={lim.hint ?? "0 = ilimitado"}
+                  className={inputCls}
+                />
+              </Field>
+            ))}
+          </div>
         </div>
 
         <div className="flex gap-4 mt-4 text-sm text-slate-700">
