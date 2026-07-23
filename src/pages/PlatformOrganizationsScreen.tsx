@@ -94,6 +94,7 @@ const PlatformOrganizationsScreen = () => {
   const [page, setPage] = useState(0);
 
   const [showCreate, setShowCreate] = useState(false);
+  const [editOrgId, setEditOrgId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -239,7 +240,7 @@ const PlatformOrganizationsScreen = () => {
                     <td className="p-3 text-slate-600 text-xs">{fmtDate(r.created_at)}</td>
                     <td className={`p-3 font-bold text-xs ${healthColor(r.health_status)}`}>{HEALTH_LABELS[r.health_status] ?? r.health_status}</td>
                     <td className="p-3">
-                      <RowActions row={r} onAction={setAction} />
+                      <RowActions row={r} onAction={setAction} onEdit={() => setEditOrgId(r.id)} />
                     </td>
                   </tr>
                 ))}
@@ -265,14 +266,16 @@ const PlatformOrganizationsScreen = () => {
         </>
       )}
 
-      {showCreate && <NewOrgModal onClose={() => setShowCreate(false)} onSaved={load} />}
+      {showCreate && <OrgFormModal mode="create" onClose={() => setShowCreate(false)} onSaved={load} />}
+      {editOrgId && <OrgFormModal mode="edit" orgId={editOrgId} onClose={() => setEditOrgId(null)} onSaved={load} />}
     </PlatformAdminLayout>
   );
 };
 
-const RowActions = ({ row, onAction }: {
+const RowActions = ({ row, onAction, onEdit }: {
   row: Row;
   onAction: (id: string, patch: Record<string, any>, label: string) => void;
+  onEdit: () => void;
 }) => {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -311,6 +314,7 @@ const RowActions = ({ row, onAction }: {
       {open && pos && createPortal(
         <div data-row-actions-menu style={{ position: "fixed", top: pos.top, left: pos.left }} className="w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 text-xs">
           <Link to={`/admin/organizations/${row.id}`} className="block px-3 py-2 hover:bg-slate-50 text-slate-700">Ver detalhes</Link>
+          <button onClick={() => { setOpen(false); onEdit(); }} className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700">Editar</button>
           {!isSuspended ? (
             <button onClick={() => {
               if (!window.confirm(`Suspender "${row.name}"? Os dados são preservados.`)) return;
@@ -347,13 +351,26 @@ const RowActions = ({ row, onAction }: {
   );
 };
 
-/* ---------- Modal: Nova empresa ---------- */
+/* ---------- Modal: Wizard de empresa (criar/editar) ---------- */
 
 type Section = "empresa" | "responsavel" | "plano" | "rh" | "notas";
+const STEPS: { id: Section; label: string }[] = [
+  { id: "empresa", label: "1. Dados" },
+  { id: "responsavel", label: "2. Responsável" },
+  { id: "plano", label: "3. Plano" },
+  { id: "rh", label: "4. Config RH" },
+  { id: "notas", label: "5. Notas" },
+];
 
-const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) => {
+const OrgFormModal = ({
+  mode, orgId, onClose, onSaved,
+}: { mode: "create" | "edit"; orgId?: string; onClose: () => void; onSaved: () => void }) => {
   const [saving, setSaving] = useState(false);
-  const [open, setOpen] = useState<Section>("empresa");
+  const [loading, setLoading] = useState(mode === "edit");
+  const [stepIdx, setStepIdx] = useState(0);
+  const step = STEPS[stepIdx].id;
+  const isLast = stepIdx === STEPS.length - 1;
+  const isFirst = stepIdx === 0;
   const [form, setForm] = useState({
     name: "", slug: "", cnpj: "", domain: "", logo_url: "",
     segment: "", company_size: "", country: "Brasil", state: "", city: "",
@@ -365,7 +382,50 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   const [flags, setFlags] = useState<Record<string, boolean>>(
     Object.fromEntries(RH_FLAG_KEYS.map((k) => [k, true]))
   );
-  const [slugTouched, setSlugTouched] = useState(false);
+  const [slugTouched, setSlugTouched] = useState(mode === "edit");
+
+  useEffect(() => {
+    if (mode !== "edit" || !orgId) return;
+    let alive = true;
+    (async () => {
+      const { data: org, error } = await supabase
+        .from("organizations").select("*").eq("id", orgId).maybeSingle();
+      if (!alive) return;
+      if (error || !org) { toast.error("Falha ao carregar empresa."); onClose(); return; }
+      const toDate = (v: any) => (v ? String(v).slice(0, 10) : "");
+      setForm((f) => ({
+        ...f,
+        name: org.name ?? "", slug: org.slug ?? "",
+        cnpj: org.cnpj ?? "", domain: org.domain ?? "", logo_url: org.logo_url ?? "",
+        segment: org.segment ?? "", company_size: org.company_size ?? "",
+        country: org.country ?? "Brasil", state: org.state ?? "", city: org.city ?? "",
+        responsible_name: org.responsible_name ?? "",
+        responsible_email: org.responsible_email ?? "",
+        responsible_phone: org.responsible_phone ?? "",
+        responsible_role: org.responsible_role ?? "",
+        plan: org.plan ?? "",
+        subscription_status: org.subscription_status ?? "trialing",
+        licenses_total: org.licenses_total ?? 0,
+        trial_ends_at: toDate(org.trial_ends_at),
+        grace_period_ends_at: toDate(org.grace_period_ends_at),
+        internal_notes: org.internal_notes ?? "",
+        internal_status: org.internal_status ?? "",
+        customer_success_owner: org.customer_success_owner ?? "",
+        onboarding_status: org.onboarding_status ?? "",
+      }));
+      const { data: settings } = await supabase
+        .from("organization_settings" as any).select("key,value").eq("organization_id", orgId);
+      if (settings && alive) {
+        const next: Record<string, boolean> = { ...Object.fromEntries(RH_FLAG_KEYS.map((k) => [k, true])) };
+        for (const row of settings as any[]) {
+          if (RH_FLAG_KEYS.includes(row.key)) next[row.key] = !!row.value?.enabled;
+        }
+        setFlags(next);
+      }
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [mode, orgId, onClose]);
 
   const slugify = (s: string) =>
     s.toLowerCase()
@@ -374,14 +434,32 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
       .replace(/^-+|-+$/g, "")
       .slice(0, 60);
 
+  const validateStep = (idx: number): string | null => {
+    if (idx === 0) {
+      if (!form.name.trim()) return "Informe o nome da empresa.";
+      if (!form.slug.trim()) return "Informe o slug.";
+    }
+    return null;
+  };
+
+  const next = () => {
+    const err = validateStep(stepIdx);
+    if (err) { toast.error(err); return; }
+    setStepIdx((i) => Math.min(STEPS.length - 1, i + 1));
+  };
+  const prev = () => setStepIdx((i) => Math.max(0, i - 1));
+
   const save = async () => {
-    if (!form.name || !form.slug) { toast.error("Nome e slug são obrigatórios."); setOpen("empresa"); return; }
+    for (let i = 0; i < STEPS.length; i++) {
+      const err = validateStep(i);
+      if (err) { toast.error(err); setStepIdx(i); return; }
+    }
     setSaving(true);
     // Slug duplicado?
     const { data: dup } = await supabase.from("organizations").select("id").eq("slug", form.slug).maybeSingle();
-    if (dup?.id) {
+    if (dup?.id && dup.id !== orgId) {
       toast.error("Slug já em uso. Escolha outro.");
-      setSaving(false); setOpen("empresa"); return;
+      setSaving(false); setStepIdx(0); return;
     }
     const payload: any = {
       name: form.name, slug: form.slug,
@@ -402,69 +480,102 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
       customer_success_owner: form.customer_success_owner || null,
       onboarding_status: form.onboarding_status || null,
     };
-    const { data, error } = await supabase.from("organizations").insert(payload).select("id").maybeSingle();
-    if (error || !data?.id) {
-      const msg = error?.message || "";
-      if (msg.includes("organizations_slug_key") || msg.toLowerCase().includes("duplicate")) {
-        toast.error("Slug já em uso. Escolha outro.");
-        setOpen("empresa");
-      } else {
-        toast.error(msg || "Falha ao criar.");
+    let savedId = orgId ?? null;
+    if (mode === "create") {
+      const { data, error } = await supabase.from("organizations").insert(payload).select("id").maybeSingle();
+      if (error || !data?.id) {
+        const msg = error?.message || "";
+        if (msg.includes("organizations_slug_key") || msg.toLowerCase().includes("duplicate")) {
+          toast.error("Slug já em uso. Escolha outro."); setStepIdx(0);
+        } else {
+          toast.error(msg || "Falha ao criar.");
+        }
+        setSaving(false); return;
       }
-      setSaving(false); return;
+      savedId = data.id as string;
+    } else {
+      const { error } = await supabase.from("organizations").update(payload).eq("id", orgId!);
+      if (error) {
+        const msg = error.message || "";
+        if (msg.includes("organizations_slug_key") || msg.toLowerCase().includes("duplicate")) {
+          toast.error("Slug já em uso. Escolha outro."); setStepIdx(0);
+        } else {
+          toast.error(msg || "Falha ao salvar.");
+        }
+        setSaving(false); return;
+      }
     }
-    const orgId = data.id as string;
 
     const settingsRows = RH_FLAG_KEYS.map((key) => ({
-      organization_id: orgId, key, value: { enabled: !!flags[key] } as any,
+      organization_id: savedId!, key, value: { enabled: !!flags[key] } as any,
     }));
     await supabase.from("organization_settings" as any).upsert(settingsRows, {
       onConflict: "organization_id,key",
     });
 
     await supabase.from("platform_audit_logs" as any).insert({
-      action: "org.create", entity_type: "organization", entity_id: orgId, metadata: payload,
+      action: mode === "create" ? "org.create" : "org.update",
+      entity_type: "organization", entity_id: savedId, metadata: payload,
     });
-    toast.success("Empresa criada.");
+    toast.success(mode === "create" ? "Empresa criada." : "Empresa atualizada.");
     setSaving(false);
     onSaved();
     onClose();
   };
 
-  const Sec = ({ id, title, children }: { id: Section; title: string; children: React.ReactNode }) => (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-      <button onClick={() => setOpen(open === id ? id : id)} className="w-full flex items-center justify-between px-4 py-3 text-left">
-        <span className="font-bold text-slate-800 text-sm">{title}</span>
-        <span className="text-slate-400 text-xs">{open === id ? "▾" : "▸"}</span>
-      </button>
-      {open === id && <div className="px-4 pb-4 space-y-3">{children}</div>}
-      {open !== id && <button onClick={() => setOpen(id)} className="hidden" />}
-    </div>
-  );
-
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-6" onClick={onClose}>
       <div className="bg-slate-50 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-black text-slate-900">Nova empresa</h2>
+          <div>
+            <h2 className="text-xl font-black text-slate-900">
+              {mode === "create" ? "Nova empresa" : "Editar empresa"}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Etapa {stepIdx + 1} de {STEPS.length} · {STEPS[stepIdx].label.replace(/^\d+\.\s*/, "")}
+            </p>
+          </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
         </div>
 
-        <div className="space-y-3">
-          {/* Simple accordion via click */}
-          <div className="flex gap-1 mb-2 flex-wrap">
-            {([
-              ["empresa","1. Dados"],["responsavel","2. Responsável"],
-              ["plano","3. Plano"],["rh","4. Config RH"],["notas","5. Notas"]
-            ] as [Section,string][]).map(([k,l]) => (
-              <button key={k} onClick={() => setOpen(k)}
-                className={`text-xs px-3 py-1.5 rounded-full font-semibold border ${open===k?"bg-[#F88A2B] text-black border-[#F88A2B]":"bg-white text-slate-600 border-slate-200"}`}>
-                {l}
+        {/* Progress bar */}
+        <div className="mb-4">
+          <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div className="h-full bg-[#F88A2B] transition-all"
+                 style={{ width: `${((stepIdx + 1) / STEPS.length) * 100}%` }} />
+          </div>
+          <div className="flex gap-1 mt-3 flex-wrap">
+            {STEPS.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => {
+                  // permite voltar livremente; ao avançar, valida etapas anteriores
+                  if (i <= stepIdx) { setStepIdx(i); return; }
+                  for (let j = stepIdx; j < i; j++) {
+                    const err = validateStep(j);
+                    if (err) { toast.error(err); setStepIdx(j); return; }
+                  }
+                  setStepIdx(i);
+                }}
+                className={`text-[11px] px-3 py-1.5 rounded-full font-semibold border transition-colors ${
+                  i === stepIdx
+                    ? "bg-[#F88A2B] text-black border-[#F88A2B]"
+                    : i < stepIdx
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-white text-slate-500 border-slate-200"
+                }`}
+              >
+                {s.label}
               </button>
             ))}
           </div>
+        </div>
 
-          {open==="empresa" && (
+        {loading ? (
+          <div className="py-12 text-center text-slate-400 text-sm">Carregando dados da empresa…</div>
+        ) : (
+        <div className="space-y-3">
+          {step==="empresa" && (
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <CnpjLookupField
@@ -505,7 +616,7 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
             </div>
           )}
 
-          {open==="responsavel" && (
+          {step==="responsavel" && (
             <div className="grid grid-cols-2 gap-3">
               <Input label="Nome" value={form.responsible_name} onChange={(v) => setForm({ ...form, responsible_name: v })} />
               <Input label="E-mail" value={form.responsible_email} onChange={(v) => setForm({ ...form, responsible_email: v })} />
@@ -515,7 +626,7 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
             </div>
           )}
 
-          {open==="plano" && (
+          {step==="plano" && (
             <div className="grid grid-cols-2 gap-3">
               <Input label="Plano" value={form.plan} onChange={(v) => setForm({ ...form, plan: v })} placeholder="ex: enterprise" />
               <div>
@@ -541,7 +652,7 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
             </div>
           )}
 
-          {open==="rh" && (
+          {step==="rh" && (
             <div className="grid grid-cols-2 gap-2">
               {RH_FLAG_KEYS.map((k) => (
                 <label key={k} className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
@@ -552,7 +663,7 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
             </div>
           )}
 
-          {open==="notas" && (
+          {step==="notas" && (
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <Label>Observações internas</Label>
@@ -567,12 +678,37 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
             </div>
           )}
         </div>
+        )}
 
         <div className="flex gap-2 mt-6">
-          <button onClick={onClose} className="flex-1 py-2 rounded-lg border border-slate-200 text-sm text-slate-700">Cancelar</button>
-          <button disabled={saving} onClick={save} className="flex-1 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-bold disabled:opacity-50">
-            {saving ? "Salvando…" : "Criar empresa"}
+          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-700">
+            Cancelar
           </button>
+          <button
+            onClick={prev}
+            disabled={isFirst || loading}
+            className="px-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 disabled:opacity-40"
+          >
+            ← Anterior
+          </button>
+          <div className="flex-1" />
+          {!isLast ? (
+            <button
+              onClick={next}
+              disabled={loading}
+              className="px-6 py-2 rounded-lg bg-slate-900 text-white text-sm font-bold disabled:opacity-50"
+            >
+              Próximo →
+            </button>
+          ) : (
+            <button
+              disabled={saving || loading}
+              onClick={save}
+              className="px-6 py-2 rounded-lg bg-[#F88A2B] text-black text-sm font-bold disabled:opacity-50"
+            >
+              {saving ? "Salvando…" : mode === "create" ? "Criar empresa" : "Salvar alterações"}
+            </button>
+          )}
         </div>
       </div>
     </div>
