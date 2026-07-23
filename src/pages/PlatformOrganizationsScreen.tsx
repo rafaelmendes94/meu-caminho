@@ -485,8 +485,15 @@ const NewOrgModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
                 <select value={form.subscription_status}
                   onChange={(e) => setForm({ ...form, subscription_status: e.target.value })}
                   className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
-                  {["trialing","active","past_due","suspended","canceled","grace_period"].map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                  {[
+                    { v: "trialing", l: "Em teste" },
+                    { v: "active", l: "Ativa" },
+                    { v: "past_due", l: "Pagamento em atraso" },
+                    { v: "suspended", l: "Suspensa" },
+                    { v: "canceled", l: "Cancelada" },
+                    { v: "grace_period", l: "Período de tolerância" },
+                  ].map((s) => (
+                    <option key={s.v} value={s.v}>{s.l}</option>
                   ))}
                 </select>
               </div>
