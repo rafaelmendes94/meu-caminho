@@ -379,8 +379,15 @@ const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
           <Label>Status</Label>
           <select value={c.status} onChange={(e) => set({ status: e.target.value as any })}
             className="w-full mt-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-900">
-            {["trialing","active","past_due","suspended","canceled","expired"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+            {[
+              { v: "trialing", l: "Em teste" },
+              { v: "active", l: "Ativa" },
+              { v: "past_due", l: "Em atraso" },
+              { v: "suspended", l: "Suspensa" },
+              { v: "canceled", l: "Cancelada" },
+              { v: "expired", l: "Expirada" },
+            ].map((s) => (
+              <option key={s.v} value={s.v}>{s.l}</option>
             ))}
           </select>
         </div>
@@ -401,8 +408,8 @@ const TabPlan = ({ data, onSaved }: { data: Details; onSaved: () => void }) => {
           </select>
         </div>
 
-        <Input label="Trial até" type="date" value={c.trial_ends_at ? c.trial_ends_at.slice(0,10) : ""} onChange={(v) => set({ trial_ends_at: v ? new Date(v).toISOString() : null })} />
-        <Input label="Grace period até" type="date" value={c.grace_period_ends_at ? c.grace_period_ends_at.slice(0,10) : ""} onChange={(v) => set({ grace_period_ends_at: v ? new Date(v).toISOString() : null })} />
+        <Input label="Teste até" type="date" value={c.trial_ends_at ? c.trial_ends_at.slice(0,10) : ""} onChange={(v) => set({ trial_ends_at: v ? new Date(v).toISOString() : null })} />
+        <Input label="Tolerância até" type="date" value={c.grace_period_ends_at ? c.grace_period_ends_at.slice(0,10) : ""} onChange={(v) => set({ grace_period_ends_at: v ? new Date(v).toISOString() : null })} />
         <KPI label="Licenças usadas" value={org.licenses_used ?? 0} />
 
         <Input label="Início do contrato" type="date" value={c.contract_start ?? ""} onChange={(v) => set({ contract_start: v || null })} />
