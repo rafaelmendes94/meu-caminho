@@ -165,7 +165,7 @@ const PlatformOwnersScreen = () => {
           className="h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-sm">
           <option value="all">Todos</option>
           <option value="active">Ativos</option>
-          <option value="trialing">Trial</option>
+          <option value="trialing">Em teste</option>
           <option value="suspended">Suspensos</option>
           <option value="no_access">Sem acesso</option>
           <option value="deleted">Excluídos</option>
@@ -347,10 +347,10 @@ const CreateOwnerModal = ({ onClose, onDone }: { onClose: () => void; onDone: ()
         <Field label="Licenças"><input type="number" className={input} value={form.licenses_total} onChange={(e) => setForm({ ...form, licenses_total: Number(e.target.value) })} /></Field>
         <Field label="Status">
           <select className={input} value={form.subscription_status} onChange={(e) => setForm({ ...form, subscription_status: e.target.value })}>
-            <option value="trialing">Trial</option>
-            <option value="active">Ativo</option>
-            <option value="past_due">Past Due</option>
-            <option value="canceled">Cancelado</option>
+            <option value="trialing">Em teste</option>
+            <option value="active">Ativa</option>
+            <option value="past_due">Em atraso</option>
+            <option value="canceled">Cancelada</option>
           </select>
         </Field>
       </div>
@@ -415,7 +415,7 @@ const EditOwnerModal = ({ owner, onClose, onDone }: { owner: Owner; onClose: () 
         <Field label="Licenças"><input type="number" className={input} value={f.licenses_total} onChange={(e) => setF({ ...f, licenses_total: Number(e.target.value) })} /></Field>
         <Field label="Status">
           <select className={input} value={f.subscription_status} onChange={(e) => setF({ ...f, subscription_status: e.target.value })}>
-            <option value="trialing">Trial</option><option value="active">Ativo</option><option value="past_due">Past Due</option><option value="canceled">Cancelado</option>
+            <option value="trialing">Em teste</option><option value="active">Ativa</option><option value="past_due">Em atraso</option><option value="canceled">Cancelada</option>
           </select>
         </Field>
       </div>
@@ -443,7 +443,7 @@ const LicensesModal = ({ owner, onClose, onDone, callAction }: {
   };
   const renew = async () => {
     const ok = await callAction({ action: "renew_trial", organization_id: owner.organization_id, user_id: owner.user_id, days: 14 });
-    if (ok) { toast.success("Trial renovado por 14 dias."); onDone(); }
+    if (ok) { toast.success("Período de teste renovado por 14 dias."); onDone(); }
   };
   const cancel = async () => {
     if (!confirm("Cancelar assinatura?")) return;
@@ -464,7 +464,7 @@ const LicensesModal = ({ owner, onClose, onDone, callAction }: {
         <button onClick={() => changePlan("growth")} className="h-10 rounded-lg bg-white/5 border border-white/10 text-sm hover:bg-white/10">Upgrade → Growth</button>
         <button onClick={() => changePlan("enterprise")} className="h-10 rounded-lg bg-white/5 border border-white/10 text-sm hover:bg-white/10">Upgrade → Enterprise</button>
         <button onClick={() => changePlan("starter")} className="h-10 rounded-lg bg-white/5 border border-white/10 text-sm hover:bg-white/10">Downgrade → Starter</button>
-        <button onClick={renew} className="h-10 rounded-lg bg-white/5 border border-white/10 text-sm hover:bg-white/10">Renovar trial (14d)</button>
+        <button onClick={renew} className="h-10 rounded-lg bg-white/5 border border-white/10 text-sm hover:bg-white/10">Renovar teste (14d)</button>
       </div>
       <button onClick={cancel} className="w-full h-10 rounded-lg bg-red-500/20 text-red-300 text-sm font-bold hover:bg-red-500/30">Cancelar assinatura</button>
     </Modal>
@@ -489,13 +489,13 @@ const SuspendModal = ({ owner, onClose, onConfirm }: { owner: Owner; onClose: ()
 const SubscriptionModal = ({ owner, onClose }: { owner: Owner; onClose: () => void }) => (
   <Modal title={`Assinatura — ${owner.organization_name ?? "—"}`} onClose={onClose}>
     <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-      <dt className="text-white/50">Stripe Customer</dt><dd className="text-white/80 truncate">{owner.stripe_customer_id ?? "—"}</dd>
-      <dt className="text-white/50">Subscription</dt><dd className="text-white/80 truncate">{owner.stripe_subscription_id ?? "—"}</dd>
+      <dt className="text-white/50">Cliente Stripe</dt><dd className="text-white/80 truncate">{owner.stripe_customer_id ?? "—"}</dd>
+      <dt className="text-white/50">Assinatura</dt><dd className="text-white/80 truncate">{owner.stripe_subscription_id ?? "—"}</dd>
       <dt className="text-white/50">Plano</dt><dd className="text-white/80">{owner.plan ?? "—"}</dd>
-      <dt className="text-white/50">Status</dt><dd className="text-white/80">{owner.subscription_status ?? "—"}</dd>
+      <dt className="text-white/50">Status</dt><dd className="text-white/80">{owner.subscription_status ? ({trialing:"Em teste",active:"Ativa",past_due:"Em atraso",suspended:"Suspensa",canceled:"Cancelada",grace_period:"Tolerância"} as any)[owner.subscription_status] ?? owner.subscription_status : "—"}</dd>
       <dt className="text-white/50">MRR</dt><dd className="text-white/80">{owner.mrr_cents ? fmtMoney(owner.mrr_cents) : "—"}</dd>
       <dt className="text-white/50">Próxima cobrança</dt><dd className="text-white/80">{fmtDate(owner.current_period_end)}</dd>
-      <dt className="text-white/50">Trial até</dt><dd className="text-white/80">{fmtDate(owner.trial_ends_at)}</dd>
+      <dt className="text-white/50">Teste até</dt><dd className="text-white/80">{fmtDate(owner.trial_ends_at)}</dd>
     </dl>
     <p className="text-[11px] text-white/40 mt-4">
       Cobranças e faturas são gerenciadas via Stripe. Use o Stripe Dashboard para emissão/estorno.
