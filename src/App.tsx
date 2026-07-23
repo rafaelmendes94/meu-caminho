@@ -189,7 +189,7 @@ const PlatformContentAuthorsScreen = lazy(() => import("./pages/PlatformContentA
 const PlatformContentCategoriesScreen = lazy(() => import("./pages/PlatformContentCategoriesScreen.tsx"));
 const PlatformContentTagsScreen = lazy(() => import("./pages/PlatformContentTagsScreen.tsx"));
 const PlatformContentBooksScreen = lazy(() => import("./pages/PlatformContentBooksScreen.tsx"));
-const BookReaderScreen = lazy(() => import("./pages/BookReaderScreen.tsx"));
+const KindleBookReaderScreen = lazy(() => import("./pages/BookReaderScreen.tsx"));
 const PlatformContentCoursesScreen = lazy(() => import("./pages/PlatformContentCoursesScreen.tsx"));
 const PlatformContentCourseBuilderScreen = lazy(() => import("./pages/PlatformContentCourseBuilderScreen.tsx"));
 const PlatformContentTracksScreen = lazy(() => import("./pages/PlatformContentTracksScreen.tsx"));
@@ -504,7 +504,7 @@ const App = () => (
           <Route path="/admin/content/categories" element={<PlatformAdmin><PlatformContentCategoriesScreen /></PlatformAdmin>} />
           <Route path="/admin/content/tags" element={<PlatformAdmin><PlatformContentTagsScreen /></PlatformAdmin>} />
           <Route path="/admin/content/books" element={<PlatformAdmin><PlatformContentBooksScreen /></PlatformAdmin>} />
-          <Route path="/livros/:bookId/ler" element={<ProtectedRoute><BookReaderScreen /></ProtectedRoute>} />
+          <Route path="/livros/:bookId/ler" element={<ProtectedRoute><KindleBookReaderScreen /></ProtectedRoute>} />
           <Route path="/admin/content/courses" element={<PlatformAdmin><PlatformContentCoursesScreen /></PlatformAdmin>} />
           <Route path="/admin/content/courses/:id" element={<PlatformAdmin><PlatformContentCourseBuilderScreen /></PlatformAdmin>} />
           <Route path="/admin/content/tracks" element={<PlatformAdmin><PlatformContentTracksScreen /></PlatformAdmin>} />
