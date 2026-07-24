@@ -1,4 +1,4 @@
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ChevronLeft, Bookmark, MoreVertical, Play, Maximize2, Heart, Download, Share2 } from "lucide-react";
 import { MediaDesktopLayout, SidePanelCard, SidePanelList } from "./layouts/MediaDesktopLayout";
@@ -11,16 +11,34 @@ const serif = { fontFamily: "'Playfair Display', Georgia, serif", letterSpacing:
 
 const VideoContentScreen = () => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const isEnterprise = pathname.startsWith('/enterprise');
   const al = useAudienceLink();
   const backTo = isEnterprise ? "/enterprise/feed" : "/feed";
   const [params] = useSearchParams();
   const vturbSrc = params.get("v") ?? "";
   const lessonId = params.get("lesson");
+  const contentId = params.get("id");
+  const contentSlug = params.get("slug");
   const [lessonMedia, setLessonMedia] = useState<string>("");
   const [lessonTitle, setLessonTitle] = useState<string>("");
+  const [videoItem, setVideoItem] = useState<any | null>(null);
+
+  // Vídeo informativo (type='video') via slug ou id
   useEffect(() => {
-    if (!lessonId) return;
+    if (!contentId && !contentSlug) return;
+    (async () => {
+      let q = supabase.from("content_items").select("*").eq("type", "video");
+      if (contentId) q = q.eq("id", contentId);
+      else if (contentSlug) q = q.eq("slug", contentSlug);
+      const { data } = await q.maybeSingle();
+      if (data) setVideoItem(data);
+    })();
+  }, [contentId, contentSlug]);
+
+  // Compat legado: quando vem ?lesson= (curso). NÃO buscar course_lessons para vídeo informativo.
+  useEffect(() => {
+    if (!lessonId || contentId || contentSlug) return;
     (async () => {
       const { data } = await supabase
         .from("course_lessons")
@@ -32,10 +50,27 @@ const VideoContentScreen = () => {
         setLessonTitle((data as any).title ?? "");
       }
     })();
-  }, [lessonId]);
-  const videoSource = vturbSrc || lessonMedia;
+  }, [lessonId, contentId, contentSlug]);
 
-  const topics: string[] = [];
+  const isInformational = !!videoItem;
+  const meta = (videoItem?.metadata ?? {}) as any;
+  const videoSource = vturbSrc || videoItem?.media_url || lessonMedia;
+  const title = videoItem?.title || lessonTitle || (videoSource ? "Vídeo" : "Vídeo em preparação");
+  const shortDesc = videoItem?.short_description ?? "";
+  const longDesc = videoItem?.long_description ?? "";
+  const topics: string[] = Array.isArray(meta.topics) ? meta.topics : [];
+  const ctaLabel: string = meta.cta_label ?? meta?.cta_suggestion?.label ?? "";
+  const ctaUrl: string = meta.cta_url ?? meta?.cta_suggestion?.url ?? "";
+
+  const openCta = () => {
+    if (!ctaUrl) return;
+    if (/^https?:\/\//i.test(ctaUrl)) {
+      window.open(ctaUrl, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(ctaUrl);
+    }
+  };
+
   const metaData: { icon: React.ReactNode; label: string }[] = [];
 
   const sidePanel = (
@@ -81,9 +116,12 @@ const VideoContentScreen = () => {
           <div className="flex-1 w-full">
             <div className="mb-8">
               <h1 style={serif} className="text-3xl lg:text-4xl font-bold text-[#111] leading-tight mb-4">
-                {lessonTitle || (videoSource ? "Vídeo" : "Vídeo em preparação")}
+                {title}
               </h1>
-              
+              {shortDesc && <p className="text-lg text-[#555] leading-relaxed mb-3">{shortDesc}</p>}
+              {videoItem?.duration_minutes ? (
+                <p className="text-xs uppercase tracking-widest text-[#999] font-bold">{videoItem.duration_minutes} min</p>
+              ) : null}
               <div className="flex flex-wrap items-center gap-6">
                 {metaData.length > 0 && (
                   <div className="flex items-center gap-4">
@@ -100,15 +138,15 @@ const VideoContentScreen = () => {
 
             <div className="space-y-8 mb-12">
               <div>
-                <h3 className="text-sm font-bold text-[#111] uppercase tracking-[0.2em] mb-4 border-b border-black/5 pb-2 inline-block">Sobre a Aula</h3>
+                <h3 className="text-sm font-bold text-[#111] uppercase tracking-[0.2em] mb-4 border-b border-black/5 pb-2 inline-block">Sobre este vídeo</h3>
                 <p className="text-lg leading-relaxed text-[#555]">
-                  Descrição do vídeo será publicada em breve.
+                  {longDesc || shortDesc || "Descrição do vídeo será publicada em breve."}
                 </p>
               </div>
 
               {topics.length > 0 && (
                 <div className="bg-[#F7F4F2] rounded-[32px] p-8 lg:p-10 border border-black/5">
-                  <h3 className="text-sm font-bold text-[#111] uppercase tracking-[0.2em] mb-6">Tópicos abordados</h3>
+                  <h3 className="text-sm font-bold text-[#111] uppercase tracking-[0.2em] mb-6">Tópicos</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     {topics.map((t, i) => (
                       <div key={i} className="flex items-start gap-4">
@@ -119,20 +157,34 @@ const VideoContentScreen = () => {
                   </div>
                 </div>
               )}
+
+              {ctaLabel && ctaUrl && (
+                <div className="bg-[#0F172A] text-white rounded-[24px] p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1">Próximo passo</p>
+                    <p className="text-lg font-semibold">{ctaLabel}</p>
+                  </div>
+                  <button onClick={openCta} className="px-6 h-12 rounded-full bg-[#F88A2B] text-black font-bold">
+                    {ctaLabel}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="w-full lg:w-[280px] shrink-0 pt-2 lg:sticky lg:top-8">
             <div className="space-y-3">
-              <button className="w-full h-14 rounded-full bg-[#F88A2B] text-white font-bold text-base shadow-xl shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
-                <Download size={20} />
-                Baixar Vídeo
-              </button>
+              {ctaLabel && ctaUrl && (
+                <button onClick={openCta} className="w-full h-14 rounded-full bg-[#F88A2B] text-white font-bold text-base shadow-xl shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
+                  <Play size={20} />
+                  {ctaLabel}
+                </button>
+              )}
               <button className="w-full h-14 rounded-full bg-white border-2 border-black/5 text-[#111] font-bold text-base hover:bg-black/5 active:scale-95 transition-all flex items-center justify-center gap-3">
                 <Heart size={20} className="text-[#F88A2B]" />
                 Favoritar
               </button>
-              <button className="w-full h-14 rounded-full bg-white border-2 border-black/5 text-[#111] font-bold text-base hover:bg-black/5 active:scale-95 transition-all flex items-center justify-center gap-3">
+              <button onClick={() => { if (navigator.share) navigator.share({ title, url: window.location.href }).catch(() => {}); }} className="w-full h-14 rounded-full bg-white border-2 border-black/5 text-[#111] font-bold text-base hover:bg-black/5 active:scale-95 transition-all flex items-center justify-center gap-3">
                 <Share2 size={20} />
                 Compartilhar
               </button>
