@@ -329,7 +329,7 @@ export function VideoForm({ item, onSaved, onClose }: { item: VideoItem; onSaved
                   <div className="bg-white border border-[#E2E8F0] rounded px-2 py-1"><span className="text-[#64748B]">Player ID</span><p className="font-mono truncate">{vturbInfo.player}</p></div>
                 </div>
               )}
-              {showPreview && parseVTurbSource(scriptUrl)?.playerId && (
+              {showPreview && (parseVTurbSource(scriptUrl) as any)?.playerId && (
                 <div className="mt-3 rounded-lg overflow-hidden border border-[#E2E8F0]">
                   <VTurbPlayer source={scriptUrl} className="w-full" />
                 </div>
