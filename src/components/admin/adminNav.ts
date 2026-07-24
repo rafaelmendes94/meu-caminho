@@ -3,7 +3,7 @@ import {
   BookOpen, GraduationCap, Video, Podcast, Route as RouteIcon, ListChecks,
   Tags, Users, FolderKanban, Brain, MessageSquare, Dna, CalendarClock,
   Sparkles, Wand2, FileText, FlaskConical, Activity, Settings, ShieldCheck,
-  DatabaseBackup, Gauge, ClipboardCheck, BarChart3, LifeBuoy, Layers, Import, Music,
+  DatabaseBackup, Gauge, ClipboardCheck, BarChart3, LifeBuoy, Layers, Import, Music, Cloud,
   Award, HelpCircle, History, Heart, Sparkle, MessageCircle,
   Trophy,
 } from "lucide-react";
@@ -126,6 +126,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: "/admin/system/qa", label: "QA", icon: ClipboardCheck },
       { to: "/admin/system/performance", label: "Performance", icon: Gauge },
       { to: "/admin/system/backup", label: "Backup", icon: DatabaseBackup },
+      { to: "/admin/storage/r2", label: "Storage R2 (Áudios)", icon: Cloud, keywords: "cloudflare r2 áudio bucket" },
       { to: "/admin/support", label: "Suporte", icon: LifeBuoy },
     ],
   },
