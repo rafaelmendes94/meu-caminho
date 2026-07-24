@@ -318,7 +318,7 @@ export function BookForm({ item, onSaved, onClose }: { item: ContentItem; onSave
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E2E8F0]">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-[#64748B] hover:text-[#0F172A]">Cancelar</button>
-          <button type="button" onClick={saveAndClose} disabled={saving} className="px-5 py-2 bg-[#0F172A] text-white text-sm font-bold rounded-lg disabled:opacity-50">
+          <button type="button" onClick={saveAndClose} disabled={saving} className="px-5 py-2 bg-[#F88A2B] !text-black text-sm font-bold rounded-lg disabled:opacity-50 hover:bg-[#F88A2B]/90">
             {saving ? "Salvando…" : "Salvar livro"}
           </button>
         </div>
