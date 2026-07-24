@@ -1,6 +1,7 @@
-import { useEffect, useState } from"react";
-import { Link } from"react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { MediaDesktopLayout } from "./layouts/MediaDesktopLayout";
+import { supabase } from "@/integrations/supabase/client";
 
 const serif = { fontFamily:"'Playfair Display', Georgia, serif", letterSpacing:"-0.015em" } as const;
 
@@ -92,20 +93,50 @@ const fmt = (s: number) => {
 };
 
 const AudioPlayerScreen = () => {
-  // Sem trilha real conectada — não simular tempo/reprodução.
-  const total = 0;
+  const [params] = useSearchParams();
+  const id = params.get("id");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [item, setItem] = useState<any | null>(null);
   const [t, setT] = useState(0);
+  const [total, setTotal] = useState(0);
   const [playing, setPlaying] = useState(false);
  const [saved, setSaved] = useState(false);
  const [liked, setLiked] = useState(false);
  const [speed, setSpeed] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-  if (!playing || total <= 0) return;
-  const id = setInterval(() => setT((v) => (v + speed >= total ? 0 : v + speed)), 1000);
-  return () => clearInterval(id);
-  }, [playing, speed, total]);
+    if (!id) return;
+    (async () => {
+      const { data, error } = await supabase.from("content_items").select("*").eq("id", id).eq("type", "audio").maybeSingle();
+      if (error) setError(error.message);
+      else if (!data) setError("Áudio não encontrado.");
+      else setItem(data);
+    })();
+  }, [id]);
 
+  useEffect(() => {
+    const a = audioRef.current; if (!a) return;
+    a.playbackRate = speed;
+  }, [speed, item]);
+
+  const togglePlay = () => {
+    const a = audioRef.current; if (!a) return;
+    if (a.paused) { a.play().catch(() => {}); } else { a.pause(); }
+  };
+  const seek = (delta: number) => {
+    const a = audioRef.current; if (!a || !total) return;
+    a.currentTime = Math.max(0, Math.min(total, a.currentTime + delta));
+  };
+  const seekTo = (pct: number) => {
+    const a = audioRef.current; if (!a || !total) return;
+    a.currentTime = Math.max(0, Math.min(total, pct * total));
+  };
+
+  const cover = item?.cover_url ?? "";
+  const title = item?.title ?? (id ? "Carregando…" : "Áudio indisponível");
+  const subtitle = item?.short_description ?? (error ?? "Conteúdo será liberado em breve.");
+  const src = item?.media_url ?? null;
   const progress = total > 0 ? t / total : 0;
 
   return (
@@ -126,8 +157,8 @@ const AudioPlayerScreen = () => {
 
  <div className="relative w-full h-[100dvh] overflow-hidden bg-[#0E0B14] flex flex-col">
  {/* Atmospheric blurred cover background */}
- <div className="absolute inset-0">
- {COVER && <img src={COVER} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(36px) saturate(1.1)" }} />}
+  <div className="absolute inset-0">
+  {cover && <img src={cover} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(36px) saturate(1.1)" }} />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(14,11,20,0.55) 0%, rgba(14,11,20,0.75) 45%, rgba(14,11,20,0.95) 100%)" }} />
  {/* Glow */}
  <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.35) 0%, rgba(248,138,43,0) 65%)" }} />
@@ -149,7 +180,7 @@ const AudioPlayerScreen = () => {
  </Link>
  <div className="text-center leading-tight">
  <p className="text-[10.5px] uppercase tracking-[0.22em] text-white/60 font-semibold">Tocando agora</p>
- <p className="text-[12.5px] font-semibold tracking-tight" style={{ ...serif }}>—</p>
+  <p className="text-[12.5px] font-semibold tracking-tight truncate max-w-[180px]" style={{ ...serif }}>{title}</p>
  </div>
  <button aria-label="Mais" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur ring-1 ring-white/15 flex items-center justify-center text-white active:scale-95 transition">
  <MoreIcon />
@@ -162,8 +193,8 @@ const AudioPlayerScreen = () => {
  <div className="relative mt-2 mx-auto w-[260px] h-[260px]">
  <div className="absolute inset-0 rounded-[36px]" style={{ background:"radial-gradient(circle at 50% 50%, rgba(248,138,43,0.45) 0%, rgba(248,138,43,0) 70%)", filter:"blur(20px)" }} />
  <div className="relative w-full h-full rounded-[32px] overflow-hidden ring-1 ring-white/10" style={{ boxShadow:"0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.06)" }}>
- {COVER ? (
-   <img src={COVER} alt="Capa do áudio" className={`w-full h-full object-cover ${playing ?"" :""}`} />
+  {cover ? (
+    <img src={cover} alt="Capa do áudio" className="w-full h-full object-cover" />
  ) : (
    <div className="w-full h-full bg-white/5" />
  )}
@@ -173,36 +204,52 @@ const AudioPlayerScreen = () => {
 
  {/* Title */}
  <div className="mt-7 text-center text-white">
- <h1 className="text-[26px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>
-  Áudio indisponível
- </h1>
- <p className="mt-2 text-[12.5px] text-white/60">Conteúdo será liberado em breve.</p>
+  <h1 className="text-[26px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>{title}</h1>
+  <p className="mt-2 text-[12.5px] text-white/60">{subtitle}</p>
  </div>
 
  {/* Waveform */}
- <div className="mt-7">
+  <div className="mt-7" onClick={(e) => {
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    seekTo((e.clientX - rect.left) / rect.width);
+  }} style={{ cursor: total ? "pointer" : "default" }}>
  <Waveform progress={progress} />
  <div className="mt-2 flex items-center justify-between text-[11.5px] font-semibold text-white/70 tabular-nums">
  <span>{fmt(t)}</span>
- <span>-{fmt(total - t)}</span>
+  <span>-{fmt(Math.max(0, total - t))}</span>
  </div>
  </div>
 
  {/* Transport */}
  <div className="mt-5 flex items-center justify-center gap-5 text-white">
- <button className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition opacity-80" aria-label="Voltar 15s"><Back15 /></button>
- <button className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition" aria-label="Anterior"><SkipBack /></button>
+  <button onClick={() => seek(-15)} disabled={!src} className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition opacity-80 disabled:opacity-30" aria-label="Voltar 15s"><Back15 /></button>
+  <button onClick={() => seek(-30)} disabled={!src} className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition disabled:opacity-30" aria-label="Anterior"><SkipBack /></button>
  <button
- onClick={() => setPlaying((v) => !v)}
+  onClick={togglePlay}
+  disabled={!src}
  aria-label={playing ?"Pausar" :"Tocar"}
- className="w-[78px] h-[78px] rounded-full flex items-center justify-center active:scale-95 transition play-pulse"
+  className="w-[78px] h-[78px] rounded-full flex items-center justify-center active:scale-95 transition play-pulse disabled:opacity-40"
  style={{ background:"linear-gradient(180deg, #FFA158 0%, #F88A2B 100%)", boxShadow:"0 20px 50px -10px rgba(248,138,43,0.6), inset 0 1px 0 rgba(255,255,255,0.4)" }}
  >
  {playing ? <PauseIcon /> : <PlayIcon />}
  </button>
- <button className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition" aria-label="Próximo"><SkipFwd /></button>
- <button className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition opacity-80" aria-label="Avançar 15s"><Fwd15 /></button>
+  <button onClick={() => seek(30)} disabled={!src} className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition disabled:opacity-30" aria-label="Próximo"><SkipFwd /></button>
+  <button onClick={() => seek(15)} disabled={!src} className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition opacity-80 disabled:opacity-30" aria-label="Avançar 15s"><Fwd15 /></button>
  </div>
+
+  {src && (
+    <audio
+      ref={audioRef}
+      src={src}
+      preload="metadata"
+      onLoadedMetadata={(e) => setTotal((e.currentTarget.duration || 0))}
+      onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
+      onPlay={() => setPlaying(true)}
+      onPause={() => setPlaying(false)}
+      onEnded={() => setPlaying(false)}
+      className="hidden"
+    />
+  )}
 
  {/* Tools row */}
  <div className="mt-6 flex items-center justify-between text-white/85">
