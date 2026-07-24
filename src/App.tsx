@@ -197,6 +197,7 @@ const PlatformContentTrackBuilderScreen = lazy(() => import("./pages/PlatformCon
 const PlatformContentPodcastsScreen = lazy(() => import("./pages/PlatformContentPodcastsScreen.tsx"));
 const PlatformContentVideosScreen = lazy(() => import("./pages/PlatformContentVideosScreen.tsx"));
 const PlatformContentAudiosScreen = lazy(() => import("./pages/PlatformContentAudiosScreen.tsx"));
+const PlatformStorageR2Screen = lazy(() => import("./pages/PlatformStorageR2Screen.tsx"));
 const PlatformContentMaterialsScreen = lazy(() => import("./pages/PlatformContentMaterialsScreen.tsx"));
 const PlatformContentCollectionsScreen = lazy(() => import("./pages/PlatformContentCollectionsScreen.tsx"));
 const PlatformContentCollectionBuilderScreen = lazy(() => import("./pages/PlatformContentCollectionBuilderScreen.tsx"));
@@ -512,6 +513,7 @@ const App = () => (
          <Route path="/admin/content/podcasts" element={<PlatformAdmin><PlatformContentPodcastsScreen /></PlatformAdmin>} />
          <Route path="/admin/content/videos" element={<PlatformAdmin><PlatformContentVideosScreen /></PlatformAdmin>} />
          <Route path="/admin/content/audios" element={<PlatformAdmin><PlatformContentAudiosScreen /></PlatformAdmin>} />
+        <Route path="/admin/storage/r2" element={<PlatformAdmin><PlatformStorageR2Screen /></PlatformAdmin>} />
          <Route path="/admin/content/materials" element={<PlatformAdmin><PlatformContentMaterialsScreen /></PlatformAdmin>} />
          <Route path="/admin/content/collections" element={<PlatformAdmin><PlatformContentCollectionsScreen /></PlatformAdmin>} />
          <Route path="/admin/content/collections/:id" element={<PlatformAdmin><PlatformContentCollectionBuilderScreen /></PlatformAdmin>} />
