@@ -43,7 +43,7 @@ const PlayIco = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none
 const ClockBig = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={lilac} strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>;
 const Lotus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={sage} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c0-3 1.5-5 3-6 .5 2 0 5-3 6z"/><path d="M12 12c0-3-1.5-5-3-6-.5 2 0 5 3 6z"/><path d="M12 12c-2 0-4 1-5 3 2 .5 4 0 5-3z"/><path d="M12 12c2 0 4 1 5 3-2 .5-4 0-5-3z"/><path d="M12 12c0 2-1 4-3 5-.5-2 0-4 3-5z"/><path d="M12 12c0 2 1 4 3 5 .5-2 0-4-3-5z"/></svg>;
 
-type Mod = { n: number; title: string; desc: string; min: string; status:"done" |"current" |"locked"; img: string };
+type Mod = { n: number; title: string; desc: string; min: string; status:"done" |"current" |"locked"; img: string; lessonId?: string };
 // Módulos reais serão carregados via CMS (course_modules) — sem mocks.
 const modulos: Mod[] = [
  { n: 1, title:"Módulo 1", desc:"—", min:"—", status:"locked", img: mod1 },
@@ -81,7 +81,7 @@ const ModCard = ({ m }: { m: Mod }) => {
  <button
  type="button"
  disabled={isLock}
- onClick={() => !isLock && navigate(al("/aula"))}
+ onClick={() => !isLock && navigate(al(m.lessonId ? `/aula?lesson=${m.lessonId}` : "/aula"))}
  className="group relative w-full flex items-stretch text-left bg-white rounded-[20px] overflow-hidden transition active:scale-[0.995]"
  style={{
  boxShadow: isCur
@@ -162,6 +162,13 @@ const CursoScreen = () => {
   const courseLongDesc = course?.long_description || course?.short_description || "Uma jornada desenvolvida para fortalecer sua mente, desacelerar pensamentos acelerados e construir inteligência emocional no dia a dia.";
 
   const hasCms = dbModules.length > 0;
+  const firstLesson = useMemo(() => {
+    for (const m of dbModules) {
+      if (m.lessons.length) return m.lessons[0];
+    }
+    return null;
+  }, [dbModules]);
+  const playHref = firstLesson ? al(`/aula?lesson=${firstLesson.id}`) : al("/aula");
   const displayModules: Mod[] = useMemo(() => {
     if (!hasCms) return [];
     return dbModules.map((m, i) => {
@@ -174,6 +181,7 @@ const CursoScreen = () => {
         // No progress tracking yet — first module is the entry point.
         status: (i === 0 ? "current" : "locked") as Mod["status"],
         img: modImgs[i % modImgs.length],
+        lessonId: m.lessons[0]?.id,
       };
     });
   }, [dbModules, hasCms]);
@@ -315,7 +323,7 @@ const CursoScreen = () => {
  {/* CTA */}
  {hasCms && <section className="px-5 mt-5">
  <Link
- to={al("/aula")}
+ to={playHref}
  className="w-full lg:w-fit lg:px-12 h-14 rounded-full flex items-center justify-center gap-2.5 text-white text-[15px] font-bold active:scale-[0.98] transition shadow-lg shadow-[#F88A2B]/20"
  style={{
  background:"linear-gradient(180deg, #FFA75C 0%, #F88A2B 100%)",
