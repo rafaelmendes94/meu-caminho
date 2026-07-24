@@ -43,7 +43,6 @@ export default function VTurbPlayer({
     if (!parsed?.playerId) return;
     const playerId = parsed.playerId;
     const scriptId = `scr_${playerId}`;
-    if (document.getElementById(scriptId)) return; // já carregado
 
     const scriptUrl: string | undefined =
       parsed.scriptUrl ??
@@ -52,14 +51,19 @@ export default function VTurbPlayer({
         : undefined);
     if (!scriptUrl) return;
 
+    // Reaplica o script quando o div deste player estiver vazio (ex.: após HMR/remount).
+    const holder = document.getElementById(`vid_${playerId}`);
+    const needsInject = !document.getElementById(scriptId) || (holder && holder.childElementCount === 0);
+    if (!needsInject) return;
+
+    // Remove instância anterior se estava lá (força recarregar o embed).
+    document.getElementById(scriptId)?.remove();
+
     const s = document.createElement("script");
     s.id = scriptId;
     s.src = scriptUrl;
     s.async = true;
     document.head.appendChild(s);
-    return () => {
-      // não removemos o script para permitir reuso; VTurb gerencia instância pelo id do div
-    };
   }, [parsed?.playerId, parsed?.accountId, parsed?.scriptUrl]);
 
   if (!parsed?.playerId) {

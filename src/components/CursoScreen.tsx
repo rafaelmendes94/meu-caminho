@@ -162,6 +162,13 @@ const CursoScreen = () => {
   const courseLongDesc = course?.long_description || course?.short_description || "Uma jornada desenvolvida para fortalecer sua mente, desacelerar pensamentos acelerados e construir inteligência emocional no dia a dia.";
 
   const hasCms = dbModules.length > 0;
+  const firstLesson = useMemo(() => {
+    for (const m of dbModules) {
+      if (m.lessons.length) return m.lessons[0];
+    }
+    return null;
+  }, [dbModules]);
+  const playHref = firstLesson ? al(`/aula?lesson=${firstLesson.id}`) : al("/aula");
   const displayModules: Mod[] = useMemo(() => {
     if (!hasCms) return [];
     return dbModules.map((m, i) => {
