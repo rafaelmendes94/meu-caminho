@@ -1,6 +1,8 @@
-import { useEffect, useState } from"react";
-import { Link } from"react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { MediaDesktopLayout } from "./layouts/MediaDesktopLayout";
+import { supabase } from "@/integrations/supabase/client";
+import VTurbPlayer, { parseVTurbSource } from "@/components/VTurbPlayer";
 
 const serif = { fontFamily:"'Playfair Display', Georgia, serif", letterSpacing:"-0.015em" } as const;
 
@@ -16,8 +18,6 @@ const Back15 = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none
 const Fwd30 = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /><text x="11.5" y="15" fill="#fff" stroke="none" fontSize="7" fontWeight="700" textAnchor="middle">30</text></svg>);
 const Heart = ({ filled }: { filled?: boolean }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill={filled ?"#FF3B5C" :"none"} stroke={filled ?"#FF3B5C" :"currentColor"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 6.6a5.5 5.5 0 0 0-9.3-2.4l-.5.5-.5-.5A5.5 5.5 0 1 0 2.7 12l8.3 8.3 8.3-8.3a5.5 5.5 0 0 0 1.5-5.4z" /></svg>);
 const Verified = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="#F88A2B"><path d="M12 1l2.4 2.1 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 20l-2.4-2.1-3.2.4-.9-3.1L2.6 13.7l1-3.1-1-3.1L5.5 6l.9-3.1 3.2.4L12 1z" /><path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-
-const COVER = "";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2,"0")}`;
 
@@ -42,25 +42,74 @@ const Wave = ({ progress }: { progress: number }) => {
  );
 };
 
-const chapters: { t: string; title: string; dur: string }[] = [];
-const comments: { name: string; time: string; text: string; avatar: string }[] = [];
-const related: { title: string; meta: string; img: string }[] = [];
+type PodcastRow = {
+  id: string;
+  title: string;
+  slug: string;
+  short_description: string | null;
+  long_description: string | null;
+  cover_url: string | null;
+  banner_url: string | null;
+  duration_minutes: number | null;
+  media_url: string | null;
+  file_url: string | null;
+  metadata: any;
+};
 
 const PodcastPlayerScreen = () => {
-  // Sem episódio real conectado — não simular reprodução.
-  const total = 0;
+  const [params] = useSearchParams();
+  const slug = params.get("slug");
+  const id = params.get("id");
+
+  const [pod, setPod] = useState<PodcastRow | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [related, setRelated] = useState<{ id: string; slug: string; title: string; cover_url: string | null; duration_minutes: number | null }[]>([]);
+
+  const total = (pod?.duration_minutes ?? 0) * 60;
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
- const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(false);
   const [activeChapter, setActiveChapter] = useState(0);
 
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      let q = supabase.from("content_items").select("id,title,slug,short_description,long_description,cover_url,banner_url,duration_minutes,media_url,file_url,metadata").eq("type", "podcast");
+      if (id) q = q.eq("id", id);
+      else if (slug) q = q.eq("slug", slug);
+      else q = q.eq("status", "published").order("published_at", { ascending: false }).limit(1);
+      const { data } = await q.maybeSingle();
+      setPod((data as any) ?? null);
+      if (data) {
+        const seriesName = (data as any).metadata?.series_name;
+        let r = supabase.from("content_items").select("id,slug,title,cover_url,duration_minutes").eq("type", "podcast").eq("status", "published").neq("id", (data as any).id).limit(6);
+        if (seriesName) r = r.contains("metadata", { series_name: seriesName });
+        const { data: rel } = await r;
+        setRelated((rel as any) ?? []);
+      }
+      setLoading(false);
+    })();
+  }, [id, slug]);
+
  useEffect(() => {
-  if (!playing || total <= 0) return;
- const id = setInterval(() => setT((v) => (v + 1 >= total ? 0 : v + 1)), 1000);
- return () => clearInterval(id);
+    if (!playing || total <= 0) return;
+    const iv = setInterval(() => setT((v) => (v + 1 >= total ? 0 : v + 1)), 1000);
+    return () => clearInterval(iv);
  }, [playing, total]);
 
   const progress = total > 0 ? t / total : 0;
+  const meta = (pod?.metadata ?? {}) as any;
+  const podcastMode: string = meta.podcast_mode ?? meta.podcast_format ?? "video_podcast";
+  const provider: string = meta.media_provider ?? (pod?.media_url && pod.media_url.includes("converteai.net") ? "vturb" : "external");
+  const isVturb = provider === "vturb" && !!pod?.media_url && !!parseVTurbSource(pod.media_url);
+  const isVideoPodcast = podcastMode !== "audio_only" && !!pod?.media_url;
+  const keyMoments: { timestamp?: string; label?: string; title?: string }[] = Array.isArray(meta.key_moments) ? meta.key_moments : [];
+  const topics: string[] = Array.isArray(meta.topics) ? meta.topics : [];
+  const reflectionQuestions: string[] = Array.isArray(meta.reflection_questions) ? meta.reflection_questions : [];
+  const chapters = keyMoments.map((k, i) => ({ t: (k.timestamp ?? `${i + 1}:00`), title: k.label ?? k.title ?? `Momento ${i + 1}`, dur: "" }));
+  const cover = pod?.cover_url ?? pod?.banner_url ?? "";
+  const seriesLabel = [meta.series_name, meta.season_number ? `T${meta.season_number}` : null, meta.episode_number ? `E${meta.episode_number}` : null].filter(Boolean).join(" · ");
+  const cta = (meta.cta_suggestion || meta.cta_label) ? { label: meta.cta_label || meta.cta_suggestion?.label, url: meta.cta_url || meta.cta_suggestion?.url } : null;
 
   return (
   <MediaDesktopLayout title="Podcast" backTo="/explorar">
@@ -82,7 +131,7 @@ const PodcastPlayerScreen = () => {
 
  {/* Atmospheric blurred bg */}
  <div className="absolute inset-0">
- {COVER && <img src={COVER} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(40px) saturate(1.15)" }} />}
+  {cover && <img src={cover} alt="" className="w-full h-full object-cover scale-125" style={{ filter:"blur(40px) saturate(1.15)" }} />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(14,11,20,0.45) 0%, rgba(14,11,20,0.7) 40%, rgba(14,11,20,0.96) 100%)" }} />
  <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[440px] h-[440px] rounded-full" style={{ background:"radial-gradient(circle, rgba(248,138,43,0.32) 0%, rgba(248,138,43,0) 65%)" }} />
  <div className="absolute bottom-[-80px] right-[-60px] w-[320px] h-[320px] rounded-full" style={{ background:"radial-gradient(circle, rgba(155,138,201,0.28) 0%, rgba(155,138,201,0) 65%)" }} />
@@ -99,8 +148,8 @@ const PodcastPlayerScreen = () => {
  <Chevron />
  </Link>
  <div className="text-center leading-tight">
- <p className="text-[10px] uppercase tracking-[0.24em] text-white/60 font-semibold">Podcast</p>
- <p className="text-[12px] font-semibold tracking-tight" style={{ ...serif }}>—</p>
+  <p className="text-[10px] uppercase tracking-[0.24em] text-white/60 font-semibold">Podcast{isVideoPodcast ? " · Vídeo" : ""}</p>
+  <p className="text-[12px] font-semibold tracking-tight truncate max-w-[220px]" style={{ ...serif }}>{seriesLabel || "—"}</p>
  </div>
  <button aria-label="Compartilhar" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur ring-1 ring-white/15 flex items-center justify-center text-white active:scale-95 transition">
  <Share />
@@ -109,35 +158,59 @@ const PodcastPlayerScreen = () => {
 
  {/* Scroll body */}
  <div className="relative z-10 flex-1 overflow-y-auto no-scrollbar px-6 pb-[100px]">
- {/* Cover */}
- <div className="relative mt-3 mx-auto w-[230px] h-[230px] fade-up">
- <div className="absolute inset-0 rounded-[34px]" style={{ background:"radial-gradient(circle at 50% 50%, rgba(248,138,43,0.45) 0%, rgba(248,138,43,0) 70%)", filter:"blur(22px)" }} />
- <div className="relative w-full h-full rounded-[28px] overflow-hidden ring-1 ring-white/10" style={{ boxShadow:"0 32px 60px -22px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.06)" }}>
- {COVER ? <img src={COVER} alt="Capa do podcast" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5" />}
- <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)" }} />
- <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide text-white" style={{ background:"rgba(248,138,43,0.92)", backdropFilter:"blur(8px)" }}>PODCAST</span>
- </div>
- </div>
+  {/* Player em destaque para video_podcast */}
+  {loading ? (
+  <p className="mt-8 text-center text-white/60 text-sm">Carregando episódio…</p>
+  ) : !pod ? (
+  <div className="mt-10 text-center text-white/70 fade-up">
+  <div className="mx-auto w-[180px] h-[180px] rounded-[28px] bg-white/5 ring-1 ring-white/10" />
+  <h1 className="mt-6 text-[22px]" style={{ ...serif, fontWeight: 600 }}>Podcast ainda não configurado.</h1>
+  <p className="mt-2 text-[12.5px] text-white/60 px-2">Peça ao curador para publicar um episódio.</p>
+  </div>
+  ) : isVideoPodcast && isVturb ? (
+  <div className="relative mt-3 mx-auto w-full max-w-[520px] fade-up rounded-[22px] overflow-hidden ring-1 ring-white/10" style={{ aspectRatio: "16/9", boxShadow:"0 32px 60px -22px rgba(0,0,0,0.75)" }}>
+   <VTurbPlayer source={pod.media_url!} className="w-full h-full" />
+  </div>
+  ) : isVideoPodcast && pod.media_url ? (
+  <div className="relative mt-3 mx-auto w-full max-w-[520px] fade-up rounded-[22px] overflow-hidden ring-1 ring-white/10 bg-black" style={{ aspectRatio: "16/9" }}>
+   <video src={pod.media_url} controls playsInline className="w-full h-full" poster={cover || undefined} />
+  </div>
+  ) : (
+  <div className="relative mt-3 mx-auto w-[230px] h-[230px] fade-up">
+   <div className="absolute inset-0 rounded-[34px]" style={{ background:"radial-gradient(circle at 50% 50%, rgba(248,138,43,0.45) 0%, rgba(248,138,43,0) 70%)", filter:"blur(22px)" }} />
+   <div className="relative w-full h-full rounded-[28px] overflow-hidden ring-1 ring-white/10" style={{ boxShadow:"0 32px 60px -22px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.06)" }}>
+   {cover ? <img src={cover} alt="Capa do podcast" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5" />}
+   <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)" }} />
+   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide text-white" style={{ background:"rgba(248,138,43,0.92)", backdropFilter:"blur(8px)" }}>PODCAST</span>
+   </div>
+  </div>
+  )}
 
- {/* Title + author */}
- <div className="mt-6 text-center text-white fade-up">
- <h1 className="text-[24px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>
-  Episódio indisponível
- </h1>
- <p className="mt-2 text-[12.5px] text-white/60 px-2">Conteúdo será publicado em breve.</p>
- </div>
+  {/* Title + série */}
+  {pod && (
+  <div className="mt-6 text-center text-white fade-up">
+   <h1 className="text-[24px] leading-[1.15]" style={{ ...serif, fontWeight: 600 }}>{pod.title}</h1>
+   {pod.short_description && <p className="mt-2 text-[12.5px] text-white/70 px-2 max-w-[520px] mx-auto">{pod.short_description}</p>}
+   <div className="mt-2 flex items-center justify-center gap-2 text-[11px] text-white/60 flex-wrap">
+   {seriesLabel && <span>{seriesLabel}</span>}
+   {pod.duration_minutes ? <span>· {pod.duration_minutes} min</span> : null}
+   {Array.isArray(meta.host_names) && meta.host_names.length > 0 && <span>· Com {meta.host_names.join(", ")}</span>}
+   {Array.isArray(meta.guest_names) && meta.guest_names.length > 0 && <span>· Convidado(s): {meta.guest_names.join(", ")}</span>}
+   </div>
+  </div>
+  )}
 
- {/* Waveform */}
- <div className="mt-6 fade-up">
+  {/* Waveform e transporte só para áudio */}
+  {pod && !isVideoPodcast && (
+  <>
+  <div className="mt-6 fade-up">
  <Wave progress={progress} />
  <div className="mt-1.5 flex items-center justify-between text-[11px] font-semibold text-white/70 tabular-nums">
  <span>{fmt(t)}</span>
  <span>-{fmt(total - t)}</span>
  </div>
- </div>
-
- {/* Transport */}
- <div className="mt-3 flex items-center justify-center gap-7 text-white">
+  </div>
+  <div className="mt-3 flex items-center justify-center gap-7 text-white">
  <button className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition opacity-85" aria-label="Voltar 15s"><Back15 /></button>
  <button
  onClick={() => setPlaying((v) => !v)}
@@ -148,12 +221,14 @@ const PodcastPlayerScreen = () => {
  {playing ? <Pause size={26} /> : <Play size={28} />}
  </button>
  <button className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition opacity-85" aria-label="Avançar 30s"><Fwd30 /></button>
- </div>
+  </div>
+  </>
+  )}
 
  {/* Chapters */}
  {chapters.length > 0 && <section className="mt-7 fade-up">
  <div className="flex items-center justify-between mb-3">
- <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Capítulos</h2>
+  <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Momentos-chave</h2>
  <span className="text-[11px] text-white/50">{chapters.length} momentos</span>
  </div>
  <div className="rounded-[20px] overflow-hidden ring-1 ring-white/8" style={{ background:"rgba(255,255,255,0.05)", backdropFilter:"blur(14px)" }}>
@@ -175,7 +250,7 @@ const PodcastPlayerScreen = () => {
  </span>
  <div className="flex-1 min-w-0">
  <p className="text-[13px] font-semibold tracking-tight truncate" style={{ color: active ?"#fff" :"rgba(255,255,255,0.92)" }}>{c.title}</p>
- <p className="text-[10.5px] text-white/55 mt-0.5 tabular-nums">{c.t} · {c.dur}</p>
+  <p className="text-[10.5px] text-white/55 mt-0.5 tabular-nums">{c.t}{c.dur ? ` · ${c.dur}` : ""}</p>
  </div>
  {active && <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFB778]">tocando</span>}
  </button>
@@ -184,43 +259,47 @@ const PodcastPlayerScreen = () => {
  </div>
  </section>}
 
- {/* Insight */}
- {/* Insight/quote oculto até o CMS fornecer citação real do episódio. */}
+  {/* Tópicos */}
+  {topics.length > 0 && (
+   <section className="mt-7 fade-up">
+    <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778] mb-3">Tópicos</h2>
+    <div className="flex flex-wrap gap-2">
+     {topics.map((t) => (<span key={t} className="text-[11px] px-2.5 py-1 rounded-full bg-white/10 text-white/85">{t}</span>))}
+    </div>
+   </section>
+  )}
 
- {/* Reflexões da comunidade */}
- {comments.length > 0 && <section className="mt-7 fade-up">
- <div className="flex items-center justify-between mb-3">
- <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Reflexões da comunidade</h2>
- <button className="text-[11px] font-semibold text-white/70">Ver todas</button>
- </div>
- <div className="space-y-2.5">
- {comments.map((c) => (
- <div key={c.name} className="flex gap-3 rounded-[18px] p-3 ring-1 ring-white/8" style={{ background:"rgba(255,255,255,0.05)", backdropFilter:"blur(12px)" }}>
- <span className="w-9 h-9 rounded-full bg-cover bg-center shrink-0 ring-1 ring-white/15" style={{ backgroundImage: `url(${c.avatar})` }} />
- <div className="flex-1 min-w-0">
- <div className="flex items-center justify-between">
- <p className="text-[12.5px] font-semibold text-white">{c.name}</p>
- <p className="text-[10.5px] text-white/45">{c.time}</p>
- </div>
- <p className="mt-1 text-[12.5px] leading-snug text-white/80" style={{ ...serif }}>"{c.text}"</p>
- </div>
- </div>
- ))}
- </div>
- </section>}
+  {/* Perguntas de reflexão */}
+  {reflectionQuestions.length > 0 && (
+   <section className="mt-7 fade-up">
+    <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778] mb-3">Perguntas de reflexão</h2>
+    <ul className="space-y-2">
+     {reflectionQuestions.map((q) => (
+      <li key={q} className="rounded-[16px] p-3 ring-1 ring-white/8 text-[12.5px] text-white/85" style={{ background:"rgba(255,255,255,0.05)", ...serif }}>"{q}"</li>
+     ))}
+    </ul>
+   </section>
+  )}
+
+  {pod?.long_description && (
+   <section className="mt-7 fade-up">
+    <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778] mb-3">Sobre este episódio</h2>
+    <p className="text-[12.5px] text-white/80 leading-relaxed whitespace-pre-line">{pod.long_description}</p>
+   </section>
+  )}
 
  {/* Episódios relacionados */}
  {related.length > 0 && <section className="mt-7 fade-up">
  <div className="flex items-center justify-between mb-3">
- <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Episódios relacionados</h2>
+  <h2 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#FFB778]">Outros episódios</h2>
  <Link to="/feed" className="text-[11px] font-semibold text-white/70">Ver mais</Link>
  </div>
  <div className="-mx-6 px-6 overflow-x-auto no-scrollbar">
  <div className="flex gap-3 w-max">
  {related.map((r) => (
- <Link key={r.title} to="/conteudo/detalhe" className="w-[170px] shrink-0 rounded-[20px] overflow-hidden active:scale-[0.98] transition ring-1 ring-white/10" style={{ background:"rgba(255,255,255,0.05)", backdropFilter:"blur(12px)" }}>
+  <Link key={r.id} to={`/player/podcast?slug=${r.slug}`} className="w-[170px] shrink-0 rounded-[20px] overflow-hidden active:scale-[0.98] transition ring-1 ring-white/10" style={{ background:"rgba(255,255,255,0.05)", backdropFilter:"blur(12px)" }}>
  <div className="relative h-[110px] overflow-hidden">
- <img src={r.img} alt="" className="w-full h-full object-cover" />
+  {r.cover_url ? <img src={r.cover_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5" />}
  <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%)" }} />
  <span className="absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center" style={{ background:"linear-gradient(180deg, #FFA158, #F88A2B)", boxShadow:"0 6px 14px -4px rgba(248,138,43,0.6)" }}>
  <Play size={11} />
@@ -228,7 +307,7 @@ const PodcastPlayerScreen = () => {
  </div>
  <div className="p-3">
  <p className="text-[12.5px] font-bold leading-tight text-white" style={{ ...serif }}>{r.title}</p>
- <p className="mt-1 text-[10.5px] text-white/55">Podcast · {r.meta}</p>
+  <p className="mt-1 text-[10.5px] text-white/55">Podcast{r.duration_minutes ? ` · ${r.duration_minutes} min` : ""}</p>
  </div>
  </Link>
  ))}
@@ -237,16 +316,18 @@ const PodcastPlayerScreen = () => {
  </section>}
  </div>
 
- {/* Sticky CTA */}
- <div className="absolute bottom-[78px] left-0 right-0 z-20 px-5">
- <Link
- to="/cury-digital/chat"
- className="flex items-center justify-center gap-2 h-[52px] rounded-full text-white text-[14px] font-bold tracking-tight active:scale-[0.985] transition"
- style={{ background:"linear-gradient(180deg, #FFA158 0%, #F88A2B 100%)", boxShadow:"0 18px 40px -12px rgba(248,138,43,0.65), inset 0 1px 0 rgba(255,255,255,0.35)" }}
- >
- Continuar reflexão
- </Link>
- </div>
+  {/* Sticky CTA (do podcast, se configurado; senão, "Continuar reflexão") */}
+  {pod && (
+  <div className="absolute bottom-[78px] left-0 right-0 z-20 px-5">
+   <Link
+    to={cta?.url || "/cury-digital/chat"}
+    className="flex items-center justify-center gap-2 h-[52px] rounded-full text-white text-[14px] font-bold tracking-tight active:scale-[0.985] transition"
+    style={{ background:"linear-gradient(180deg, #FFA158 0%, #F88A2B 100%)", boxShadow:"0 18px 40px -12px rgba(248,138,43,0.65), inset 0 1px 0 rgba(255,255,255,0.35)" }}
+   >
+    {cta?.label || (isVideoPodcast ? "Assistir episódio" : "Ouvir episódio")}
+   </Link>
+  </div>
+  )}
 
  <div className="relative z-10">
  </div>
