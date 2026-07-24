@@ -322,7 +322,7 @@ const CursoScreen = () => {
  {/* CTA */}
  {hasCms && <section className="px-5 mt-5">
  <Link
- to={al("/aula")}
+ to={playHref}
  className="w-full lg:w-fit lg:px-12 h-14 rounded-full flex items-center justify-center gap-2.5 text-white text-[15px] font-bold active:scale-[0.98] transition shadow-lg shadow-[#F88A2B]/20"
  style={{
  background:"linear-gradient(180deg, #FFA75C 0%, #F88A2B 100%)",
