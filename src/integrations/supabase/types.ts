@@ -5535,6 +5535,57 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_r2_storage: {
+        Row: {
+          access_key_id: string | null
+          account_id: string | null
+          bucket_name: string | null
+          connection_status: string | null
+          created_at: string
+          id: string
+          last_test_at: string | null
+          last_test_message: string | null
+          last_tested_by: string | null
+          provider: string
+          public_base_url: string | null
+          region: string | null
+          secret_access_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_key_id?: string | null
+          account_id?: string | null
+          bucket_name?: string | null
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_tested_by?: string | null
+          provider?: string
+          public_base_url?: string | null
+          region?: string | null
+          secret_access_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_key_id?: string | null
+          account_id?: string | null
+          bucket_name?: string | null
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_tested_by?: string | null
+          provider?: string
+          public_base_url?: string | null
+          region?: string | null
+          secret_access_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_resend_settings: {
         Row: {
           api_key: string | null
